@@ -13,9 +13,9 @@ path(path,'~/matlab_bgl/');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                   %PARALLEL ENVIRONMENT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                  
-%Note: You should decide which set-up is most suitable given
-%      your own setup. I made use of the dcs configuration
-%      available for the Berkeley hpc. 
+%Note: The user should decide which set-up is most suitable given
+%      her own configuration. Make sure to delete the pool once
+%      estimation has been carried out. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %pool = parpool('dcs', 64);
 %pool=parpool(12);
@@ -40,7 +40,7 @@ id=data(:,1);
 firmid=data(:,2);
 year=data(:,3);
 y=data(:,4);
-controls=data(:,5:end); %in the test data this is a matrix containing year dummies, omitting one year (1995 in this case). Check description of leave_out_FD to understand how we handle these controls.
+controls=data(:,5:end); %in the test data this is a matrix containing year dummies, omitting one year (1995 in this case).
 clear data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     %RUN LEAVE-OUT (GENERAL BUT SLOW)
@@ -53,7 +53,7 @@ eigen_diagno=0;
 subsample_llr_fit=0;
 restrict_movers=0;
 resid_controls=1;
-Ndiagno=1;
+Ndiagno=3;
 %Log File
 logname=['../logs/leave_one_out_complete' namelog];
 system(['rm ' logname])
@@ -69,7 +69,7 @@ if 1 == 1
 leave_out_level='workers';
 type_algorithm='JL';
 eigen_diagno=1;
-eigen_fast=0; %This checks the conditions of theorem 1 of KSS. It is computationally intensive so I turned this off but I suggest turning this option to 1 at one point.  
+eigen_fast=0; 
 do_montecarlo=0;
 %Log File
 logname=['../logs/leave_one_out_firm_effects_only' namelog];
