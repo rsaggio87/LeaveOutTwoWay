@@ -17,7 +17,7 @@ path(path,'~/matlab_bgl/');
 %      her own configuration. Make sure to delete the pool once
 %      estimation has been carried out. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%pool = parpool('dcs', 64);
+pool = parpool('dcs', 64);
 %pool=parpool(12);
 %pool=parpool(str2num(getenv('SLURM_CPUS_PER_TASK')));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,18 +47,17 @@ clear data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if 0 == 1
 %Options (see description inside leave_out_COMPLETE)
-leave_out_level='workers';
+leave_out_level='obs';
 andrews_estimates=0;
 eigen_diagno=0;
 subsample_llr_fit=0;
 restrict_movers=0;
-resid_controls=1;
-Ndiagno=3;
+controls=[];
 %Log File
 logname=['../logs/leave_one_out_complete' namelog];
 system(['rm ' logname])
 diary(logname)
-[sigma2_psi, V] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,Ndiagno,namelog);    
+[sigma2_psi, V] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,namelog);    
 diary off
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
