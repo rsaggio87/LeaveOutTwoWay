@@ -1,9 +1,14 @@
-function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,Ndiagno,filename)
+function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,filename)
 %% Author: Raffaele Saggio
 %Email: raffaele.saggio@berkeley.edu
 
 %% Version:
 % 1.0: Wrote documentation. 06.15.2018.
+
+% 1.1: Speed up computation of eigenvalues/vectors - by avoiding storage of
+%      large matrices. 06.18.2018.
+
+% 1.11: Eliminated the option Ndiagno. 06.19.2018.
 
 
 %% DESCRIPTION
@@ -88,16 +93,6 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_COMPLETE(y,id,fir
 %If 1, the code performs leave-out estimation just by focusing on sample
 %of movers.
 % Default is 0.
-
-%-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
-%Ndiagno: Takes three values. 
-%1: Code reports conditions of Theorem 1 for Variance of Firm Effects only. 
-%2: Code reports conditions of Theorem 1 for Variance of Firm Effects and 
-    %Covariance of Person and Firm effects. 
-%3: Code reports conditions of Theorem 1 for Variance of Firm Effects, 
-%   %Covariance of Person and Firm effects and Variance of person effects.
-
-%Default is 1.
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
@@ -126,81 +121,69 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_COMPLETE(y,id,fir
 no_controls=0;
 
 if nargin < 4
-error('More arguments needed');
+    error('More arguments needed');
 end
 
 if nargin == 4
-no_controls=1;
-controls=ones(size(y,1),1);
-resid_controls=0;
-andrews_estimates=0;
-eigen_diagno=0;
-subsample_llr_fit=0;
-restrict_movers=0;
-Ndiagno=1;
-filename='leave_one_out_estimates';
+    no_controls=1;
+    controls=ones(size(y,1),1);
+    resid_controls=0;
+    andrews_estimates=0;
+    eigen_diagno=0;
+    subsample_llr_fit=0;
+    restrict_movers=0;
+    filename='leave_one_out_estimates';
 end
 
 if nargin == 5
-resid_controls=1;    
-andrews_estimates=0;
-eigen_diagno=0;
-subsample_llr_fit=0;
-restrict_movers=0;
-Ndiagno=1;
-filename='leave_one_out_estimates';
+    resid_controls=1;    
+    andrews_estimates=0;
+    eigen_diagno=0;
+    subsample_llr_fit=0;
+    restrict_movers=0;
+    filename='leave_one_out_estimates';
 end
 
 if nargin == 6
-andrews_estimates=0;    
-eigen_diagno=0;
-subsample_llr_fit=0;
-restrict_movers=0;
-Ndiagno=1;
-filename='leave_one_out_estimates';
+    andrews_estimates=0;    
+    eigen_diagno=0;
+    subsample_llr_fit=0;
+    restrict_movers=0;
+    filename='leave_one_out_estimates';
 end
 
 if nargin == 7    
-eigen_diagno=0;    
-subsample_llr_fit=0;
-restrict_movers=0;
-Ndiagno=1;
-filename='leave_one_out_estimates';
+    eigen_diagno=0;    
+    subsample_llr_fit=0;
+    restrict_movers=0;
+    filename='leave_one_out_estimates';
 end
 
 if nargin == 8      
-subsample_llr_fit=0;    
-restrict_movers=0;
-Ndiagno=1;
-filename='leave_one_out_estimates';
+    subsample_llr_fit=0;    
+    restrict_movers=0;
+    filename='leave_one_out_estimates';
 end
 
 if nargin == 9     
-restrict_movers=0; 
-Ndiagno=1;
-filename='leave_one_out_estimates';
+    restrict_movers=0; 
+    filename='leave_one_out_estimates';
 end
 
 if nargin == 10  
-Ndiagno=1;
-filename='leave_one_out_estimates';
-end
-
-if nargin == 11  
-Ndiagno=1;
-filename='leave_one_out_estimates';
+    filename='leave_one_out_estimates';
 end
 
 
 if size(controls,2)==0
-no_controls=1;
-controls=ones(size(y,1),1);
-resid_controls=0;
+    no_controls=1;
+    controls=ones(size(y,1),1);
+    resid_controls=0;
 end
 
 
 if resid_controls==1 && no_controls== 1 
-error('cannot residualize if there are no controls specified')    
+    error('cannot residualize if there are no controls specified')    
 end
 %Listing options
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
@@ -480,6 +463,7 @@ end
 
 %% STEP 3C: NOW COMPUTE THE LEAVE OUT MATRICES
 tic
+disp('Calculating Leave Out Matrices...')
 [Lambda_P, Lambda_B_fe, Lambda_B_cov, Lambda_B_pe]=eff_res(X,xx,Lchol,N,J,elist,leave_out_level);
 disp('Time to compute Leave one out matrices')
 toc
@@ -512,10 +496,6 @@ max_x1bar_sq=zeros(3,1);
 lambda_1=zeros(3,1);
 SUM_EIG=zeros(3,3);
 tic    
-%Keep track of #of py observations associated with each worker-firm
-degree_workers=accumarray(id,1);
-degree_firms=diag((F*S)'*(F*S));
-
 %Begin by calcuting the sum of the squared of the eigenvalues for the corresponding Atilde
 disp('Calculating Sum of Squared Eigenvalues via Hutchinson...')
 [trace_fe,trace_pe,trace_cov] = trace_Atilde_sqr(X,F*S,D,xx,Lchol);
@@ -525,16 +505,15 @@ SUM_EIG(3)=trace_cov;
 disp('done') 
 
 %Variance of firm effects
+
+%Issue: we use a trick in order to compute the eigenvalues/vectors
+%associated with the matrix Atilde without having to store the matrix
+%Atilde in memory
+
+
 disp('Calculating Diagnostic for Variance of Firm Effects...')
-degree=(F*S)'*F*S-(1/NT)*(degree_firms)*degree_firms'; 
-if K>0
-degree=[sparse(N,N+J+K-1); sparse(J-1,N) degree sparse(J-1,K); sparse(K,K+N+J-1)];
-end
-if K==0
-degree=[sparse(N,N+J-1); sparse(J-1,N) degree];
-end 
-[Q, lambda_eig] = eigs(degree,xx,3);
-clear degree
+type_quadratic_form='fe';
+[Q,lambda_eig] = eigAux(type_quadratic_form,xx,Lchol,F*S,D,K);
 lambda_eig=diag(lambda_eig);
 lambda_1(1)=lambda_eig(1);
 %Calculate normalized eigenvalues and corresponding x1bar. 
@@ -544,39 +523,22 @@ max_x1bar_sq(1)=max(x1bar_fe.^2);
 disp('done')
 %Note: What we label as x1bar in the code corresponds to w_i1 in KSS.
 
-if Ndiagno == 3
 %Variance of person effects.
 disp('Calculating Diagnostic for Variance of Person Effects...')
-degree=D'*D-(1/NT)*(degree_workers)*degree_workers'; 
-if K>0
-degree=[degree sparse(N,K+J-1); sparse(J+K-1,N+J+K-1)];
-end
-if K==0
-degree=[degree sparse(N,J-1); sparse(J-1,N+J-1)];
-end
-[Q, lambda_eig] = eigs(degree,xx,3);
-clear degree
+type_quadratic_form='pe';
+[Q,lambda_eig] = eigAux(type_quadratic_form,xx,Lchol,F*S,D,K);
 lambda_eig=diag(lambda_eig);
 lambda_1(2)=lambda_eig(1);
 %Calculate normalized eigenvalues and corresponding x1bar.
 [lambda_pe,x1bar_pe] = eig_x1bar(X,Q,lambda_eig,trace_pe);
 EIG_NORM(:,2)=lambda_pe;
 max_x1bar_sq(2)=max(x1bar_pe.^2);
-disp('done.')
-end 
+disp('done.') 
 
-if Ndiagno == 2
 %Covariance of person, firm effects.
 disp('Calculating Diagnostic for CoVariance of Person,Firm Effects...')
-degree=D'*F*S-(1/NT)*(degree_workers)*degree_firms'; 
-if K>0
-degree=[sparse(N,N) 0.5*degree sparse(N,K); 0.5*degree' sparse(J-1,J-1)  sparse(J,K); sparse(K,K+N+J-1)];
-end
-if K==0
-degree=[sparse(N,N) 0.5*degree; 0.5*degree' sparse(J-1,J-1)];
-end
-[Q, lambda_eig] = eigs(degree,xx,3);
-clear degree
+type_quadratic_form='cov';
+[Q,lambda_eig] = eigAux(type_quadratic_form,xx,Lchol,F*S,D,K);
 lambda_eig=diag(lambda_eig);
 lambda_1(3)=lambda_eig(1);
 %Calculate normalized eigenvalues and corresponding x1bar.
@@ -584,19 +546,16 @@ lambda_1(3)=lambda_eig(1);
 EIG_NORM(:,3)=lambda_cov;
 max_x1bar_sq(3)=max(x1bar_cov.^2);
 disp('done.')
-end
 %Finish up
 disp('Time to Calculate Eigenvalues Conditions')
 toc
 
 disp('checking, must report 1')
 sum(x1bar_fe.^2)
-if Ndiagno==3
 sum(x1bar_pe.^2)
-end
-if Ndiagno==2
 sum(x1bar_cov.^2)  
 end
+
 %% STEP 5: ESTIMATION
 %We now conduct estimation on leave-out connected set. 
 
@@ -664,6 +623,7 @@ end
 if no_controls == 1
 A_b=[zeros(N,1); S'*F'*(fe-mean(fe))];
 end
+entry=['Calculating Leave out, Variance of Firm Effects...'];
 end
 
 if pp == 2 %Variance of Person Effects
@@ -679,6 +639,7 @@ end
 if no_controls==1
 A_b=[D'*(pe-mean(pe)); zeros(J-1,1)];
 end
+entry=['Calculating Leave out, Variance of Person Effects...'];
 end
 
 if pp == 3 %CoVariance of Person,Firm Effects
@@ -694,8 +655,10 @@ end
 if no_controls==1
 A_b=[0.5*D'*(fe-mean(fe)); 0.5*S'*F'*(pe-mean(pe))];
 end
+entry=['Calculating Leave out, Covariance of Person, Firm Effects...'];
 end
 
+disp(entry)
 %Auxiliary
 [W_to_use, my_first_part] = construc_W(y,X,xx,Lchol,A_b,Lambda_B,I_Lambda_P,L_P,eta_h);
 
@@ -853,7 +816,7 @@ disp(s);
 %      we report the results obtained via simulations. 
 %      The differences are neglible as one can see from below.
 if eigen_diagno==1
-for pp=1:Ndiagno
+for pp=1:3
 if pp == 1
 title='Diagnostics on Variance of Firm Effects';
 end    
@@ -889,7 +852,7 @@ disp(s);
 end
 end
 %% Focus on Inference
-for pp=1:Ndiagno
+for pp=1:3
 if pp == 1
 title='Inference on Variance of Firm Effects';
 end    
