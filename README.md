@@ -3,7 +3,7 @@
  * Version 1.1 (19June2017): Improved Eigenvalues/vectors calculations. Fixed other small bugs in `<leave_out_COMPLETE.m>`
 
 
-# LeaveOutTwoWay
+# Description 
 Leave Out estimates in two fixed effects models as described in Kline, Saggio and Sølvsten (2018).
 
 Within this repository, there are three independent  routines that users can test on their own
