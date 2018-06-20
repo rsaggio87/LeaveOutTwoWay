@@ -6,7 +6,7 @@
 # LeaveOutTwoWay
 Leave Out estimates in two fixed effects models as described in Kline, Saggio and Sølvsten (2018).
 
-Within this repository, there are three indepedent routines that users can test on their own
+Within this repository, there are three independent  routines that users can test on their own
 datasets:
 
 Users interested in applying the homoskedastic correction in two-way
