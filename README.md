@@ -30,8 +30,6 @@ The m-file `main.m` runs Leave Out estimates in an test dataset provided within 
 
 * `leave_out_COMPLETE.m` outputs estimates of the VCM of the person, firm effects with associated standard errors (assuming q=0 in KSS).  Standard errors for the case q=1 can also be obtained. In future releases, we plan also to allow users to specificy the variance component associated with a specific (sub)set of controls. 
 
-* `leave_out_COMPLETE.m` is currently not optimized for large datasets. We'll make an effort to constantly update the code in order to deal with very large datasets. Version 1.1 is a first step towards that direction. 
-
 * Adding Controls to the model: This is easily handled by `leave_out_COMPLETE.m`. However, to speed up computations, we suggest to partial out the effects of these controls in a first step so that the associated design matrix has a Laplacian structure. See the documentation provided inside the functions `leave_out_COMPLETE.m` and `leave_out_FD.m` and Appendix B of KSS.
 
 * It is highly suggested that the user runs any of the function mentioned above on an hpc system in order to fully exploit the parallelization features of Matlab.
