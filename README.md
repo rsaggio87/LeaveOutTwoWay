@@ -1,7 +1,9 @@
 # Updates
 
- * Version 1.1 (19June2017): Improved Eigenvalues/vectors calculations. Fixed other small bugs in `leave_out_COMPLETE.m`
- * Version 1.0 (16June2017): Original upload. 
+
+ * Version 1.12 (20June2018): Fixed minor bugs when running leave out estimation with controls. 
+ * Version 1.1 (19June2018): Improved Eigenvalues/vectors calculations. Fixed other small bugs in `leave_out_COMPLETE.m`
+ * Version 1.0 (16June2018): Original upload. 
 
 
 # Description 
