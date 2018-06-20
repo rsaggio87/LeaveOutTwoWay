@@ -31,7 +31,7 @@ pool = parpool('dcs', 64);
 %(xtset id year).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 namesrc='../src/test.csv';
-namelog='test';
+namelog='test_';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     %LOAD DATA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -40,21 +40,22 @@ id=data(:,1);
 firmid=data(:,2);
 year=data(:,3);
 y=data(:,4);
-controls=data(:,5:end); %in the test data this is a matrix containing year dummies, omitting one year (1995 in this case).
+controls=data(:,5:5); %in the test data this is a matrix containing year dummies, omitting one year (2001 in this case) in order to avoid collinearity.
 clear data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     %RUN LEAVE-OUT (GENERAL BUT SLOW)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if 0 == 1
+if 1 == 1
 %Options (see description inside leave_out_COMPLETE)
 leave_out_level='obs';
 andrews_estimates=0;
 eigen_diagno=0;
 subsample_llr_fit=0;
 restrict_movers=0;
-controls=[];
+resid_controls=1;
+%controls=[];
 %Log File
-logname=['../logs/leave_one_out_complete' namelog];
+logname=['../logs/leave_one_out_complete' namelog '.log'];
 system(['rm ' logname])
 diary(logname)
 [sigma2_psi, V] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,namelog);    
@@ -63,7 +64,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
          %RUN LEAVE-OUT (JUST VARIANCE OF FIRMS EFFECTS BUT FAST)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if 1 == 1
+if 0 == 1
 %Options (see description inside leave_out_FD)
 leave_out_level='workers';
 type_algorithm='JL';
@@ -71,7 +72,7 @@ eigen_diagno=1;
 eigen_fast=0; 
 do_montecarlo=0;
 %Log File
-logname=['../logs/leave_one_out_firm_effects_only' namelog];
+logname=['../logs/leave_one_out_firm_effects_only' namelog '.log'];
 system(['rm ' logname])
 diary(logname)
 [sigma2_psi, V]= leave_out_FD(y,id,firmid,leave_out_level,controls,type_algorithm,eigen_diagno,eigen_fast,do_montecarlo,namelog);    

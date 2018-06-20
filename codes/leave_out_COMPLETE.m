@@ -248,7 +248,6 @@ fe=F*S*ghat;
 xb=X*b;
 r=y-xb;
 dof=NT-size(X,2)-1;
-clear X
 TSS=sum((y-mean(y)).^2);
 R2=1-sum(r.^2)/TSS;
 adjR2=1-sum(r.^2)/TSS*(NT-1)/dof;
@@ -303,7 +302,7 @@ disp(s);
 s=['Adj.R2: ' num2str(adjR2)];
 disp(s);
 %Do some cleaning of matrices in memory
-clear xx xy b L xb pe fe ahat ghat F D S Lchol
+clear xx xy L xb pe fe ahat ghat F D S Lchol
 
 
 %%Deresidualized outcome variable (allows the leave one out methodology to run faster)
@@ -311,6 +310,7 @@ if resid_controls==1
 y=y-X(:,N+J:end)*b(N+J:end);
 no_controls=1;
 end
+clear X b
 
 %% STEP 2: LEAVE ONE OUT CONNECTED SET
 %Here we compute the leave out connected set as defined in Appendix B. 
