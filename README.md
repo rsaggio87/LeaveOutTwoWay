@@ -1,6 +1,6 @@
 # Updates
 
- * Version 1.1 (19June2017): Improved Eigenvalues/vectors calculations. Fixed other small bugs in `<leave_out_COMPLETE.m>`
+ * Version 1.1 (19June2017): Improved Eigenvalues/vectors calculations. Fixed other small bugs in `leave_out_COMPLETE.m`
  * Version 1.0 (16June2017): Original upload. 
 
 
@@ -22,7 +22,7 @@ of the variance of firm effects only can use the function
 
 All that is required for these functions to run appropriately is that the
 original person-year file is sorted by worker-identifiers
-and year (xtset id year in Stat).
+and year (xtset id year in Stata).
 
 The m-file `main.m` runs Leave Out estimates in an test dataset provided within this repository. 
 
