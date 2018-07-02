@@ -3,6 +3,19 @@ function [Lambda_P, Lambda_B_fe, Lambda_B_cov, Lambda_B_pe] = eff_res(X,xx,Lchol
 %two way fixed effects model. The code is likely to be slow on large
 %datasets.
 
+%Read
+do_cov=1;
+do_pe=1;
+if nargout<2
+    error('More output should be specified')
+end
+if nargout<=2
+    do_cov=0;
+    do_pe=0;
+end
+if nargout<=3
+    do_pe=0;
+end
 
 %Dimensions
 NT=size(X,1);
@@ -38,16 +51,20 @@ COV=cov(X(:,N+1:N+J-1)*aux_left,X(:,N+1:N+J-1)*aux_right);
 Bii_fe(i)=COV(1,2)*(NT-1);
 
 %Bii for Variance of Person Effects
-aux_right=xtilde_right(1:N);
-aux_left=xtilde_left(1:N);
-COV=cov(X(:,1:N)*aux_left,X(:,1:N)*aux_right);
-Bii_pe(i)=COV(1,2)*(NT-1);
-
+if do_pe == 1
+    aux_right=xtilde_right(1:N);
+    aux_left=xtilde_left(1:N);
+    COV=cov(X(:,1:N)*aux_left,X(:,1:N)*aux_right);
+    Bii_pe(i)=COV(1,2)*(NT-1);
+end
+    
 %Bii for Covariance of Person, Firm Effects
-aux_right=xtilde_right(N+1:N+J-1);
-aux_left=xtilde_left(1:N);
-COV=cov(X(:,1:N)*aux_left,X(:,N+1:N+J-1)*aux_right);
-Bii_cov(i)=COV(1,2)*(NT-1);
+if do_cov == 1
+    aux_right=xtilde_right(N+1:N+J-1);
+    aux_left=xtilde_left(1:N);
+    COV=cov(X(:,1:N)*aux_left,X(:,N+1:N+J-1)*aux_right);
+    Bii_cov(i)=COV(1,2)*(NT-1);
+end
 end
 end
 
@@ -64,17 +81,22 @@ aux_left=xtilde(N+1:N+J-1,:);
 COV=cov(X(:,N+1:N+J-1)*aux_left,X(:,N+1:N+J-1)*aux_right);
 Bii_fe(i)=COV(1,2)*(NT-1);
 
+
 %Bii for Variance of Person Effects
+if do_pe==1
 aux_right=xtilde(1:N);
 aux_left=xtilde(1:N);
 COV=cov(X(:,1:N)*aux_left,X(:,1:N)*aux_right);
 Bii_pe(i)=COV(1,2)*(NT-1);
+end
 
 %Bii for Covariance of Person, Firm Effects
+if do_cov==1
 aux_right=xtilde(N+1:N+J-1);
 aux_left=xtilde(1:N);
 COV=cov(X(:,1:N)*aux_left,X(:,N+1:N+J-1)*aux_right);
 Bii_cov(i)=COV(1,2)*(NT-1);
+end
 end
 end
 
@@ -89,10 +111,14 @@ Lambda_P=Lambda_P+triu(Lambda_P,1)'; %make it symmetric.
 Lambda_B_fe=sparse(rows,column,Bii_fe,NT,NT);
 Lambda_B_fe=Lambda_B_fe+triu(Lambda_B_fe,1)'; %make it symmetric.
 %Lambda B cov(fe,pe)
+if do_cov==1
 Lambda_B_cov=sparse(rows,column,Bii_cov,NT,NT);
 Lambda_B_cov=Lambda_B_cov+triu(Lambda_B_cov,1)';
+end
 %Lambda B, var(pe)
+if do_pe==1
 Lambda_B_pe=sparse(rows,column,Bii_pe,NT,NT);
 Lambda_B_pe=Lambda_B_pe+triu(Lambda_B_pe,1)'; %make it symmetric.
+end
 end
 

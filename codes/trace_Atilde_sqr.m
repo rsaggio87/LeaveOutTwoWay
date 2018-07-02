@@ -1,6 +1,19 @@
-function [trace_fe,trace_pe,trace_cov] = trace_Atilde_sqr(X,F,D,xx,Lchol,NSIM)
+function [trace_fe,trace_cov,trace_pe] = trace_Atilde_sqr(X,F,D,xx,Lchol,NSIM)
 %Compute the sum of squared eigenvalues associated to Atilde via
 %Hutchinson trick to estimate the trace of large matrices.
+
+%Read
+do_cov=1;
+do_pe=1;
+
+if nargout<=1
+    do_cov=0;
+    do_pe=0;
+end
+
+if nargout<=2
+    do_pe=0;
+end
 
 if nargin<=5
 NSIM=100;
@@ -36,6 +49,7 @@ aux=X*aux;
 trace_fe(s)=aux'*aux;
 
 %Variance of person effects
+if do_pe==1
 eff=D*coeff(1:N,1);
 if K>0
 A_b=[D'*(eff-mean(eff)); sparse(J,1); zeros(K,1)];
@@ -46,8 +60,9 @@ end
 [aux, flag]=pcg(xx,A_b,1e-10,1000,Lchol,Lchol');
 aux=X*aux;
 trace_pe(s)=aux'*aux;
-
+end
 %Covariance of person,firm effects
+if do_cov==1
 pe=D*coeff(1:N,1);
 fe=F*coeff(N+1:N+J,1);
 if K>0
@@ -59,7 +74,7 @@ end
 [aux, flag]=pcg(xx,A_b,1e-10,1000,Lchol,Lchol');
 aux=X*aux;
 trace_cov(s)=aux'*aux;
-
+end
 end
 
 %Results
