@@ -1,4 +1,4 @@
-function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,filename)
+function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alpha,SE_sigma2_alpha] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,do_SE, filename)
 %% Author: Raffaele Saggio
 %Email: raffaele.saggio@berkeley.edu
 
@@ -9,6 +9,13 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_COMPLETE(y,id,fir
 %      large matrices. 06.18.2018.
 
 % 1.11: Eliminated the option Ndiagno. 06.19.2018.
+
+% 1.12: Read Nargout and compute only parameters asked by user and added
+%       option for whether user wants computation of standard error.
+%       06.22.2018
+
+% 1.2: Added options to run fast Local Linear Regression, helpful in large
+       %datasets. 01.07.2018 
 
 
 %% DESCRIPTION
@@ -78,22 +85,65 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_COMPLETE(y,id,fir
 
 % If 1, the code outputs the lindeberg condition and 
 % eigenvalue ratio of theorem 1. The code will also output the 
-% weak-id confidence intervals using the AM method described in the paper 
-% Default is 0. The eigenvalue ratio is calculated via simulations.  
+% weak-id confidence intervals using the AM method described in the paper
+% (assuming q=1) provided that do_SE=1.
+
+% Default is 0.  
 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
-%subsample_llr_fit: Binary. 
-%If 1, the code performs the non-parametric fit needed to compute standard 
-%errors in the strong identification case using a subsample of the data. 
-%See the end of Appendix B for further details.
-% Default is 0.
+%subsample_llr_fit: Discrete. 
+
+%This governs how to compute the local linear regressions (LLR) fit needed
+%to derive the standard errors as described in KSS when q=0. 
+%See Remark 10 and appendix B of KSS.
+
+%If 0, the code computes LLR (i.e. Lowess model) using the entire data 
+%(i.e. both movers and stayers). 
+
+%If 1, and there are no controls in the model, the code distinguishes
+%between movers and stayers. For stayers, the assigned fitted value 
+%is the average of \hat{\sigma}_i within cells defined in
+%terms of unique values of T_i, where T_i is the number of person-year
+%observations in which we observe a given worker. For movers, the code runs
+%a standard LLR model. 
+
+%If 1, and there are controls in the model, the code runs a stratified
+%LLR separately for movers and stayers.
+
+%If 2, and there are no controls in the model, the code creates "Kgrid"
+%equally sized bins of Bii and Pii for movers only. 
+%The code then fits a weighted LLR model across these "KGrid" x "KGrid" cells 
+%weighting by cell size. For stayers, the assigned fitted value 
+%is the average of \hat{\sigma}_i within cells defined in
+%terms of unique values of T_i, where T_i is the number of person-year
+%observations in which we observe a given worker. 
+
+%If 2, and there are controls in the model, the code creates "Kgrid"
+%equally sized bins of Bii and Pii for both movers and stayers. 
+%We then fit a stratified binned LLR model separately 
+%for movers and stayers across these "KGrid" x "KGrid" cells weighting 
+%the estimates by cell size. 
+
+%If 3, the code creates "Kgrid" equally sized bins of Bii and Pii
+%The code then fits a weighted LLR model across these "KGrid" x "KGrid" 
+%cells weighting by cell size. 
+
+%See the function "llr_fit" for further details. Default value of
+%"Kgrid=1000".
+
+%Default value is 2. 
 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
 %restrict_movers: Binary. 
 %If 1, the code performs leave-out estimation just by focusing on sample
 %of movers.
 % Default is 0.
+
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
+%do_SE: do_SE. 
+%If 1, the code provides calculations of the standard errors assuming
+%strong identification (q=1). 
+% Default is 1.
 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
 %filename: string. 
@@ -104,9 +154,15 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_COMPLETE(y,id,fir
 %% DESCRIPTION OF THE OUTPUTS
 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
-%sigma2_psi: leave-out variance of firm effects. 
-%sigma_psi_alpha: leave-out covariance of firm, person effects. 
+%sigma2_psi: leave-out variance of firm effects.
+%SE_sigma2_psi: Standard Error (SE) of leave-out variance of firm effects
+%(q=0, high rank case)
+
+%sigma_psi_alpha: leave-out covariance of firm, person effects.
+%SE_sigma_psi_alpha: SE of leave-out covariance of firm, person effects.
+
 %sigma2_alpha: leave-out variance of person effects. 
+%SE_sigma2_alpha: SE of leave-out variance of person effects.
 
 %Check Log File for additional results reported by the code. 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
@@ -132,6 +188,7 @@ if nargin == 4
     eigen_diagno=0;
     subsample_llr_fit=0;
     restrict_movers=0;
+    do_SE=1;
     filename='leave_one_out_estimates';
 end
 
@@ -141,6 +198,7 @@ if nargin == 5
     eigen_diagno=0;
     subsample_llr_fit=0;
     restrict_movers=0;
+    do_SE=1;
     filename='leave_one_out_estimates';
 end
 
@@ -149,6 +207,7 @@ if nargin == 6
     eigen_diagno=0;
     subsample_llr_fit=0;
     restrict_movers=0;
+    do_SE=1;
     filename='leave_one_out_estimates';
 end
 
@@ -156,21 +215,29 @@ if nargin == 7
     eigen_diagno=0;    
     subsample_llr_fit=0;
     restrict_movers=0;
+    do_SE=1;
     filename='leave_one_out_estimates';
 end
 
 if nargin == 8      
     subsample_llr_fit=0;    
     restrict_movers=0;
+    do_SE=1;
     filename='leave_one_out_estimates';
 end
 
 if nargin == 9     
     restrict_movers=0; 
+    do_SE=1;
     filename='leave_one_out_estimates';
 end
 
 if nargin == 10  
+    do_SE=1;
+    filename='leave_one_out_estimates';
+end
+
+if nargin == 11  
     filename='leave_one_out_estimates';
 end
 
@@ -185,10 +252,26 @@ end
 if resid_controls==1 && no_controls== 1 
     error('cannot residualize if there are no controls specified')    
 end
+
+%Read number of outputs
+if nargout==1
+    n_of_parameters=1;
+end
+
+if nargout==2
+    n_of_parameters=2;
+end
+
+if nargout>=3
+    n_of_parameters=3;
+end
+
+
 %Listing options
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
 disp('Listing options')
+n_of_parameters
 leave_out_level
 no_controls
 resid_controls
@@ -196,9 +279,12 @@ andrews_estimates
 eigen_diagno
 subsample_llr_fit
 restrict_movers
+do_SE
 filename
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
+
+
 
 
 
@@ -377,6 +463,7 @@ T=accumarray(id,1);
 stayer=T==stayer;
 movers=stayer~=1;
 movers=movers(id);
+T=T(id);
 id_movers=id(movers);
 [~,~,n]=unique(id_movers);
 Nmovers=max(n);
@@ -464,19 +551,25 @@ end
 %% STEP 3C: NOW COMPUTE THE LEAVE OUT MATRICES
 tic
 disp('Calculating Leave Out Matrices...')
-[Lambda_P, Lambda_B_fe, Lambda_B_cov, Lambda_B_pe]=eff_res(X,xx,Lchol,N,J,elist,leave_out_level);
+
+if n_of_parameters==1
+    [Lambda_P, Lambda_B_fe]=eff_res(X,xx,Lchol,N,J,elist,leave_out_level);
+end
+
+if n_of_parameters==2
+    [Lambda_P, Lambda_B_fe,Lambda_B_cov]=eff_res(X,xx,Lchol,N,J,elist,leave_out_level);
+end
+
+if n_of_parameters==3
+    [Lambda_P, Lambda_B_fe,Lambda_B_cov,Lambda_B_pe]=eff_res(X,xx,Lchol,N,J,elist,leave_out_level);
+end
+
+
 disp('Time to compute Leave one out matrices')
 toc
-
+disp('Saving (Bii,Pii)')
 s=['mat/after_step_3_complete' filename];
 save(s)
-
-
-disp('checking, must report 1')
-issymmetric(Lambda_P)
-issymmetric(Lambda_B_fe)
-issymmetric(Lambda_B_cov)
-issymmetric(Lambda_B_pe)
 
 %% STEP 4: DIAGNOSTICS
 %This part is only computed provided that the option 'eigen_diagno' is
@@ -489,71 +582,76 @@ issymmetric(Lambda_B_pe)
 %the A matrix for calculation of the eigenvectors can be sidestepped.
 
 if eigen_diagno==1 
-x1bar_pe=zeros(NT,1);
-x1bar_cov=zeros(NT,1);
-EIG_NORM=zeros(3,3);
-max_x1bar_sq=zeros(3,1);
-lambda_1=zeros(3,1);
-SUM_EIG=zeros(3,3);
+EIG_NORM=zeros(3,n_of_parameters);
+max_x1bar_sq=zeros(n_of_parameters,1);
+lambda_1=zeros(n_of_parameters,1);
+SUM_EIG=zeros(n_of_parameters,1);
+x1bar_all=zeros(NT,n_of_parameters);
 tic    
 %Begin by calcuting the sum of the squared of the eigenvalues for the corresponding Atilde
 disp('Calculating Sum of Squared Eigenvalues via Hutchinson...')
-[trace_fe,trace_pe,trace_cov] = trace_Atilde_sqr(X,F*S,D,xx,Lchol);
-SUM_EIG(1)=trace_fe;
-SUM_EIG(2)=trace_pe;
-SUM_EIG(3)=trace_cov;
-disp('done') 
 
-%Variance of firm effects
+if n_of_parameters==1
+    [trace_fe]=trace_Atilde_sqr(X,F*S,D,xx,Lchol);
+end
+
+if n_of_parameters==2
+    [trace_fe, trace_cov]=trace_Atilde_sqr(X,F*S,D,xx,Lchol);
+end
+
+if n_of_parameters==3
+    [trace_fe,trace_cov,trace_pe]=trace_Atilde_sqr(X,F*S,D,xx,Lchol);
+end
+
+if n_of_parameters==1
+    SUM_EIG(1)=trace_fe;
+end
+
+if n_of_parameters==2
+    SUM_EIG(1)=trace_fe;
+    SUM_EIG(2)=trace_pe;
+end
+
+if n_of_parameters==3
+    SUM_EIG(1)=trace_fe;
+    SUM_EIG(2)=trace_pe;
+    SUM_EIG(3)=trace_cov;
+end
+disp('done') 
 
 %Issue: we use a trick in order to compute the eigenvalues/vectors
 %associated with the matrix Atilde without having to store the matrix
 %Atilde in memory
 
-
-disp('Calculating Diagnostic for Variance of Firm Effects...')
-type_quadratic_form='fe';
-[Q,lambda_eig] = eigAux(type_quadratic_form,xx,Lchol,F*S,D,K);
-lambda_eig=diag(lambda_eig);
-lambda_1(1)=lambda_eig(1);
-%Calculate normalized eigenvalues and corresponding x1bar. 
-[lambda_fe,x1bar_fe] = eig_x1bar(X,Q,lambda_eig,trace_fe);
-EIG_NORM(:,1)=lambda_fe;
-max_x1bar_sq(1)=max(x1bar_fe.^2);
-disp('done')
-%Note: What we label as x1bar in the code corresponds to w_i1 in KSS.
-
-%Variance of person effects.
-disp('Calculating Diagnostic for Variance of Person Effects...')
-type_quadratic_form='pe';
-[Q,lambda_eig] = eigAux(type_quadratic_form,xx,Lchol,F*S,D,K);
-lambda_eig=diag(lambda_eig);
-lambda_1(2)=lambda_eig(1);
-%Calculate normalized eigenvalues and corresponding x1bar.
-[lambda_pe,x1bar_pe] = eig_x1bar(X,Q,lambda_eig,trace_pe);
-EIG_NORM(:,2)=lambda_pe;
-max_x1bar_sq(2)=max(x1bar_pe.^2);
-disp('done.') 
-
-%Covariance of person, firm effects.
-disp('Calculating Diagnostic for CoVariance of Person,Firm Effects...')
-type_quadratic_form='cov';
-[Q,lambda_eig] = eigAux(type_quadratic_form,xx,Lchol,F*S,D,K);
-lambda_eig=diag(lambda_eig);
-lambda_1(3)=lambda_eig(1);
-%Calculate normalized eigenvalues and corresponding x1bar.
-[lambda_cov,x1bar_cov] = eig_x1bar(X,Q,lambda_eig,trace_cov);
-EIG_NORM(:,3)=lambda_cov;
-max_x1bar_sq(3)=max(x1bar_cov.^2);
-disp('done.')
-%Finish up
-disp('Time to Calculate Eigenvalues Conditions')
-toc
-
+for pp=1:n_of_parameters
+  
+    if pp == 1
+    type_quadratic_form='fe';
+    entry=['Calculating Diagnostic for Variance of Firm Effects...'];
+    end
+    
+    if pp == 2
+    type_quadratic_form='cov';
+    entry=['Calculating Diagnostic for Covariance of Firm, Person Effects...'];
+    end
+    
+    if pp == 3
+    type_quadratic_form='pe';
+    entry=['Calculating Diagnostic for Variance of Person Effects...'];
+    end
+    
+    %Calculate
+    disp(entry)
+    [Q,lambda_eig] = eigAux(type_quadratic_form,xx,Lchol,F*S,D,K);
+    lambda_eig=diag(lambda_eig);
+    lambda_1(pp)=lambda_eig(1); 
+    [EIG_NORM(:,pp),x1bar_all(:,pp)] = eig_x1bar(X,Q,lambda_eig,SUM_EIG(pp)); %Note: What we label as x1bar in the code corresponds to w_i1 in KSS.
+    max_x1bar_sq(1)=max(x1bar_all(:,pp));
+    
+    
+end
 disp('checking, must report 1')
-sum(x1bar_fe.^2)
-sum(x1bar_pe.^2)
-sum(x1bar_cov.^2)  
+sum(x1bar_all.^2,1)  
 end
 
 %% STEP 5: ESTIMATION
@@ -599,92 +697,134 @@ L_P=ichol(I_Lambda_P,struct('type','ict','droptol',1e-2,'diagcomp',2));
 [eta_h, flag]=pcg(I_Lambda_P,eta,1e-5,1000,L_P,L_P'); %leave-out residuals
 
 %Preallocate vectors with results
-theta=zeros(3,1);
-V_theta=zeros(3,1);
-COV_R1=zeros(2,2,3);
-gamma_sq=zeros(3,1);
-F_stat=zeros(3,1);
-b_1=zeros(3,1);
-theta_1=zeros(3,1);
+theta=zeros(n_of_parameters,1);
+V_theta=zeros(n_of_parameters,1);
+COV_R1=zeros(2,2,n_of_parameters);
+gamma_sq=zeros(n_of_parameters,1);
+F_stat=zeros(n_of_parameters,1);
+b_1=zeros(n_of_parameters,1);
+theta_1=zeros(n_of_parameters,1);
 
 %Loop over parameters to be estimated
-for pp=1:3
+for pp=1:n_of_parameters
     
-if pp == 1 %Variance of Firm Effects
-type_quadratic_form='fe';
-Lambda_B=Lambda_B_fe;
-bias_part=sigma_2_psi_AKM; 
-if eigen_diagno == 1
-x1_bar=x1bar_fe;
-end
-if no_controls == 0
-A_b=[zeros(N,1); S'*F'*(fe-mean(fe)); zeros(K,1)];    
-end 
-if no_controls == 1
-A_b=[zeros(N,1); S'*F'*(fe-mean(fe))];
-end
-entry=['Calculating Leave out, Variance of Firm Effects...'];
-end
+    if eigen_diagno == 1
+        x1_bar=x1bar_all(:,pp);
+    end
+    
+    if pp == 1 %Variance of Firm Effects
+        type_quadratic_form='fe';
+        Lambda_B=Lambda_B_fe;
+        bias_part=sigma_2_psi_AKM; 
+        if no_controls == 0
+            A_b=[zeros(N,1); S'*F'*(fe-mean(fe)); zeros(K,1)];    
+        end 
+        if no_controls == 1
+            A_b=[zeros(N,1); S'*F'*(fe-mean(fe))];
+        end
+        entry=['Calculating Leave out, Variance of Firm Effects...'];
+    end
 
-if pp == 2 %Variance of Person Effects
-type_quadratic_form='pe';
-Lambda_B=Lambda_B_pe;
-bias_part=sigma_2_alpha_AKM; 
-if eigen_diagno == 1
-x1_bar=x1bar_pe;
-end
-if no_controls==0
-A_b=[D'*(pe-mean(pe)); zeros(J-1,1); zeros(K,1)];
-end
-if no_controls==1
-A_b=[D'*(pe-mean(pe)); zeros(J-1,1)];
-end
-entry=['Calculating Leave out, Variance of Person Effects...'];
-end
 
-if pp == 3 %CoVariance of Person,Firm Effects
-type_quadratic_form='cov';
-Lambda_B=Lambda_B_cov;
-bias_part=sigma_alpha_psi_AKM; 
-if eigen_diagno == 1
-x1_bar=x1bar_cov;
-end
-if no_controls==0
-A_b=[0.5*D'*(fe-mean(fe)); 0.5*S'*F'*(pe-mean(pe)); zeros(K,1)];
-end
-if no_controls==1
-A_b=[0.5*D'*(fe-mean(fe)); 0.5*S'*F'*(pe-mean(pe))];
-end
-entry=['Calculating Leave out, Covariance of Person, Firm Effects...'];
-end
+    if pp == 2 %CoVariance of Person,Firm Effects
+        type_quadratic_form='cov';
+        Lambda_B=Lambda_B_cov;
+        bias_part=sigma_alpha_psi_AKM; 
+        if no_controls==0
+        A_b=[0.5*D'*(fe-mean(fe)); 0.5*S'*F'*(pe-mean(pe)); zeros(K,1)];
+        end
+        if no_controls==1
+        A_b=[0.5*D'*(fe-mean(fe)); 0.5*S'*F'*(pe-mean(pe))];
+        end
+        entry=['Calculating Leave out, Covariance of Person, Firm Effects...'];
+    end
 
-disp(entry)
+    if pp == 3 %Variance of Person Effects
+        type_quadratic_form='pe';
+        Lambda_B=Lambda_B_pe;
+        bias_part=sigma_2_alpha_AKM; 
+        if no_controls==0
+            A_b=[D'*(pe-mean(pe)); zeros(J-1,1); zeros(K,1)];
+        end
+        if no_controls==1
+            A_b=[D'*(pe-mean(pe)); zeros(J-1,1)];
+        end
+        entry=['Calculating Leave out, Variance of Person Effects...'];
+    end
+
+%Tell me what are we doing
+     disp(entry)
+   
 %Auxiliary
-[W_to_use, my_first_part] = construc_W(y,X,xx,Lchol,A_b,Lambda_B,I_Lambda_P,L_P,eta_h);
-
+    if do_SE  == 1 
+        [W_to_use, my_first_part] = construc_W(y,X,xx,Lchol,A_b,Lambda_B,I_Lambda_P,L_P,eta_h);
+    end
 %Compute the non-parametric fit needed for standard error estimation in 
 %high rank case.
-sigma_predict= llr_fit(Lambda_P,Lambda_B,y,eta_h,subsample_llr_fit);
+    if do_SE == 1  
+        sigma_predict= llr_fit(Lambda_P,Lambda_B,y,eta_h,subsample_llr_fit,K,movers,T);
+    end
 
 %Run
-if eigen_diagno == 0 
-[theta(pp), V_theta(pp)]= leave_out_estimation_two_way(type_quadratic_form,y,J,N,X,xx,Lchol,bias_part,eta_h,I_Lambda_P,L_P,Lambda_B,W_to_use,my_first_part,sigma_predict);
-end
-if eigen_diagno == 1 
-[theta(pp), V_theta(pp), COV_R1(:,:,pp), gamma_sq(pp), F_stat(pp), b_1(pp), theta_1(pp)]= leave_out_estimation_two_way(type_quadratic_form,y,J,N,X,xx,Lchol,bias_part,eta_h,I_Lambda_P,L_P,Lambda_B,W_to_use,my_first_part,sigma_predict,x1_bar,lambda_1(pp));
-end
-end
-clear A_b Lambda_B W_to_use I_Lambda_P L_P
-%Rename some things
-sigma2_psi=theta(1);
-sigma2_alpha=theta(2);
-sigma_psi_alpha=theta(3);
-V_sigma2_psi=V_theta(1);
-V_sigma2_alpha=V_theta(2);
-V_sigma_alpha_psi=V_theta(3);
-%R2
-explained_var_leave_out=(sigma2_psi+2*sigma_psi_alpha+sigma2_alpha)/var(y);
+    if eigen_diagno == 1  && do_SE == 0
+        [theta(pp)]= leave_out_estimation_two_way(type_quadratic_form,y,J,N,X,xx,Lchol,bias_part,eta_h,I_Lambda_P,L_P,Lambda_B);
+    end
 
+    if eigen_diagno == 0  && do_SE == 0
+        [theta(pp)]= leave_out_estimation_two_way(type_quadratic_form,y,J,N,X,xx,Lchol,bias_part,eta_h,I_Lambda_P,L_P,Lambda_B);
+    end
+    
+    if eigen_diagno == 0  && do_SE == 1
+        [theta(pp), V_theta(pp)]= leave_out_estimation_two_way(type_quadratic_form,y,J,N,X,xx,Lchol,bias_part,eta_h,I_Lambda_P,L_P,Lambda_B,W_to_use,my_first_part,sigma_predict);
+    end
+    if eigen_diagno == 1  && do_SE == 1
+        [theta(pp), V_theta(pp), COV_R1(:,:,pp), gamma_sq(pp), F_stat(pp), b_1(pp), theta_1(pp)]= leave_out_estimation_two_way(type_quadratic_form,y,J,N,X,xx,Lchol,bias_part,eta_h,I_Lambda_P,L_P,Lambda_B,W_to_use,my_first_part,sigma_predict,x1_bar,lambda_1(pp));
+    end
+end
+
+clear A_b Lambda_B W_to_use I_Lambda_P L_P
+
+if n_of_parameters==1 && do_SE==0
+    sigma2_psi=theta(1);
+end
+
+if n_of_parameters==2 && do_SE==0
+    sigma2_psi=theta(1);
+    sigma_psi_alpha=theta(2);
+end   
+
+if n_of_parameters==3 && do_SE==0
+    sigma2_psi=theta(1);
+    sigma_psi_alpha=theta(2);
+    sigma2_alpha=theta(3);
+end
+
+
+if n_of_parameters==1 && do_SE==1
+    sigma2_psi=theta(1);
+    SE_sigma2_psi=sqrt(V_theta(1));
+end
+
+if n_of_parameters==2 && do_SE==1
+    sigma2_psi=theta(1);
+    SE_sigma2_psi=sqrt(V_theta(1));
+    sigma_psi_alpha=theta(2);
+    SE_sigma_psi_alpha=sqrt(V_theta(2));
+end   
+
+if n_of_parameters==3 && do_SE==1
+    sigma2_psi=theta(1);
+    SE_sigma2_psi=sqrt(V_theta(1));
+    sigma_psi_alpha=theta(2);
+    SE_sigma_psi_alpha=sqrt(V_theta(2));
+    sigma2_alpha=theta(3);
+    SE_sigma2_alpha=sqrt(V_theta(3));
+end  
+
+%R2
+if n_of_parameters==3
+    explained_var_leave_out=(sigma2_psi+2*sigma_psi_alpha+sigma2_alpha)/var(y);
+end
 
 
 
@@ -745,14 +885,18 @@ s=['-*-*-*-*-*-*LEAVE ONE OUT*-*-*-*'];
 disp(s)
 s=['Variance of Firm Effects: ' num2str(sigma2_psi)];
 disp(s);
+if n_of_parameters>=2
 s=['Covariance of Firm and Person Effects: ' num2str(sigma_psi_alpha)];
 disp(s);
+end
+if n_of_parameters==3
 s=['Variance of Person Effects: ' num2str(sigma2_alpha)];
 disp(s);
 s=['Correlation of Firm Effect and Person Effects: ' num2str(sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)))];
 disp(s);
 s=['Total Explained Variation: ' num2str(explained_var_leave_out)];
 disp(s);
+end
 %% Alternative Way to Show Output
 s=['-*-*-*-*-*-*Variance of Firm Effects-*-*-*-*-*-*'];
 disp(s)
@@ -764,119 +908,138 @@ disp(s)
 end
 s=['Leave One Out: ' num2str(sigma2_psi)];
 disp(s)
-s=['Leave One Out SE: ' num2str(sqrt(V_sigma2_psi))];
+if do_SE == 1
+s=['Leave One Out SE: ' num2str(SE_sigma2_psi)];
 disp(s)
-s=['-*-*-*-*-*-*Covariance of Firm,Person Effects-*-*-*-*-*-*'];
-disp(s)
-s=['AKM: ' num2str(sigma_alpha_psi_AKM)];
-disp(s);
-if andrews_estimates == 1
-s=['Andrews: ' num2str(var_corrected_cov)];
-disp(s);
 end
-s=['Leave One Out: ' num2str(sigma_psi_alpha)];
-disp(s);
-s=['Leave One Out SE: ' num2str(sqrt(V_sigma_alpha_psi))];
-disp(s)
-s=['-*-*-*-*-*-*Variance of Person Effects-*-*-*-*-*-*'];
-disp(s)
-s=['AKM: ' num2str(sigma_2_alpha_AKM)];
-disp(s);
-if andrews_estimates == 1
-s=['Andrews: ' num2str(var_corrected_pe)];
-disp(s);
+if n_of_parameters>=2
+    s=['-*-*-*-*-*-*Covariance of Firm,Person Effects-*-*-*-*-*-*'];
+    disp(s)
+    s=['AKM: ' num2str(sigma_alpha_psi_AKM)];
+    disp(s);
+    if andrews_estimates == 1
+    s=['Andrews: ' num2str(var_corrected_cov)];
+    disp(s);
+    end
+    s=['Leave One Out: ' num2str(sigma_psi_alpha)];
+    disp(s);
+    if do_SE==1
+    s=['Leave One Out SE: ' num2str(SE_sigma_psi_alpha)];
+    disp(s)
+    end
 end
-s=['Leave One Out: ' num2str(sigma2_alpha)];
-disp(s);
-s=['Leave One Out SE: ' num2str(sqrt(V_sigma2_alpha))];
-disp(s)
-s=['-*-*-*-*-*-*Correlation of Person,Firm Effects-*-*-*-*-*-*'];
-disp(s)
-s=['AKM: ' num2str((corr(fe,pe)))];
-disp(s);
-if andrews_estimates == 1
-s=['Andrews: ' num2str(var_corrected_cov/(sqrt(var_corrected_fe)*sqrt(var_corrected_pe)))];
-disp(s);
+if n_of_parameters>=3
+    s=['-*-*-*-*-*-*Variance of Person Effects-*-*-*-*-*-*'];
+    disp(s)
+    s=['AKM: ' num2str(sigma_2_alpha_AKM)];
+    disp(s);
+    if andrews_estimates == 1
+    s=['Andrews: ' num2str(var_corrected_pe)];
+    disp(s);
+    end
+    s=['Leave One Out: ' num2str(sigma2_alpha)];
+    disp(s);
+    if do_SE==1
+    s=['Leave One Out SE: ' num2str(SE_sigma2_alpha)];
+    disp(s)
+    end
+    s=['-*-*-*-*-*-*Correlation of Person,Firm Effects-*-*-*-*-*-*'];
+    disp(s)
+    s=['AKM: ' num2str((corr(fe,pe)))];
+    disp(s);
+    if andrews_estimates == 1
+    s=['Andrews: ' num2str(var_corrected_cov/(sqrt(var_corrected_fe)*sqrt(var_corrected_pe)))];
+    disp(s);
+    end
+    s=['Leave One Out: ' num2str(sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)))];
+    disp(s);
+    s=['-*-*-*-*-*-*R2-*-*-*-*-*-*'];
+    disp(s)
+    s=['AKM: '  num2str(R2)];
+    disp(s);
+    if andrews_estimates == 1
+    s=['Andrews: ' num2str(adjR2)];
+    disp(s);
+    end
+    s=['Leave One Out: ' num2str(explained_var_leave_out)];
+    disp(s);
 end
-s=['Leave One Out: ' num2str(sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)))];
-disp(s);
-s=['-*-*-*-*-*-*R2-*-*-*-*-*-*'];
-disp(s)
-s=['AKM: '  num2str(R2)];
-disp(s);
-if andrews_estimates == 1
-s=['Andrews: ' num2str(adjR2)];
-disp(s);
-end
-s=['Leave One Out: ' num2str(explained_var_leave_out)];
-disp(s);
 %% Focus on Diagnostics
 %Note: The eigenvalue ratios (and sum of squared eigenvalues) 
 %      reported in Table 3 of KSS have been calculated exactly whereas here
 %      we report the results obtained via simulations. 
 %      The differences are neglible as one can see from below.
 if eigen_diagno==1
-for pp=1:3
-if pp == 1
-title='Diagnostics on Variance of Firm Effects';
-end    
-if pp == 2
-title='Diagnostics on Variance of Person Effects';
-end
-if pp == 3
-title='Diagnostics on CoVariance of Person, Firm Effects';
-end
-s=['*********************' title '*********************'];
-disp(s);
-s=['ratio of eigenvalues: '];
-disp(s)
-EIG_NORM(1:3,pp)
-s=['Weak Lindeberg Condition: ' num2str(max_x1bar_sq(pp))];
-disp(s)
-s=['Sum of squared eigenvalues: ' num2str(SUM_EIG(pp)/NT^2)];
-disp(s)
-s=['Variance of b_1:  ' num2str(COV_R1(1,1,pp))];
-disp(s);
-s=['Variance of \hat{\theta}_1: ' num2str(COV_R1(2,2,pp))];
-disp(s);
-s=['Covariance of (b_1,\theta_1): ' num2str(COV_R1(1,2,pp))];
-disp(s);
-s=['Correlation of (b_1,\theta_1): ' num2str((COV_R1(1,2,pp))/(sqrt(COV_R1(2,2,pp))*sqrt(COV_R1(1,1,pp))))];
-disp(s);
-s=['gamma squared: ' num2str(gamma_sq(pp))];
-disp(s);
-s=['Fstatistic: ' num2str(F_stat(pp))];
-disp(s);
-s=['******************************************'];
-disp(s);
-end
+    for pp=1:n_of_parameters
+        
+        if pp == 1
+            title='Diagnostics on Variance of Firm Effects';
+        end  
+        if pp == 2
+            title='Diagnostics on CoVariance of Person, Firm Effects';
+        end
+        if pp == 3
+            title='Diagnostics on Variance of Person Effects';
+        end
+
+        s=['*********************' title '*********************'];
+        disp(s);
+        s=['ratio of eigenvalues: '];
+        disp(s)
+        EIG_NORM(1:3,pp)
+        s=['Weak Lindeberg Condition: ' num2str(max_x1bar_sq(pp))];
+        disp(s)
+        s=['Sum of squared eigenvalues: ' num2str(SUM_EIG(pp)/NT^2)];
+        disp(s)
+        s=['Variance of b_1:  ' num2str(COV_R1(1,1,pp))];
+        disp(s);
+        s=['Variance of \hat{\theta}_1: ' num2str(COV_R1(2,2,pp))];
+        disp(s);
+        s=['Covariance of (b_1,\theta_1): ' num2str(COV_R1(1,2,pp))];
+        disp(s);
+        s=['Correlation of (b_1,\theta_1): ' num2str((COV_R1(1,2,pp))/(sqrt(COV_R1(2,2,pp))*sqrt(COV_R1(1,1,pp))))];
+        disp(s);
+        s=['gamma squared: ' num2str(gamma_sq(pp))];
+        disp(s);
+        s=['Fstatistic: ' num2str(F_stat(pp))];
+        disp(s);
+        s=['******************************************'];
+        disp(s);
+    end
 end
 %% Focus on Inference
-for pp=1:3
-if pp == 1
-title='Inference on Variance of Firm Effects';
-end    
-if pp == 2
-title='Inference on Variance of Person Effects';
-end
-if pp == 3
-title='Inference on CoVariance of Person, Firm Effects';
-end
-s=['*********************' title '*********************'];
-disp(s);
-s=['SE under q=0: ' num2str(sqrt(V_theta(pp)))];
-disp(s);
-s=['CI under q=0: ' num2str(theta(pp)-1.96*sqrt(V_theta(pp))) '  '  '  ' num2str(theta(pp)+1.96*sqrt(V_theta(pp)))];
-disp(s);   
-if eigen_diagno==1
-[UB,LB,C]=AM_CI(NT,lambda_1(pp),gamma_sq(pp),COV_R1(:,:,pp),b_1(pp),theta_1(pp));
-s=['CI under q=1: ' num2str(LB) '  '  '  ' num2str(UB)];
-disp(s);  
-s=['Curvature: ' num2str(C)];
-disp(s); 
-s=['******************************************'];
-disp(s); 
-end
+if do_SE==1
+    for pp=1:n_of_parameters
+        
+        if pp == 1
+            title='Inference on Variance of Firm Effects';
+        end
+        
+        if pp == 2
+            title='Inference on CoVariance of Person, Firm Effects';
+        end
+        
+        if pp == 3
+            title='Inference on Variance of Person Effects';
+        end
+        
+        s=['*********************' title '*********************'];
+        disp(s);
+        s=['SE under q=0: ' num2str(sqrt(V_theta(pp)))];
+        disp(s);
+        s=['CI under q=0: ' num2str(theta(pp)-1.96*sqrt(V_theta(pp))) '  '  '  ' num2str(theta(pp)+1.96*sqrt(V_theta(pp)))];
+        disp(s);   
+        
+        if eigen_diagno==1
+                [UB,LB,C]=AM_CI(NT,lambda_1(pp),gamma_sq(pp),COV_R1(:,:,pp),b_1(pp),theta_1(pp));
+                s=['CI under q=1: ' num2str(LB) '  '  '  ' num2str(UB)];
+                disp(s);  
+                s=['Curvature: ' num2str(C)];
+                disp(s); 
+                s=['******************************************'];
+                disp(s); 
+        end
+    end
 end
 %Save File.
 s=['mat/COMPLETE_' filename];
