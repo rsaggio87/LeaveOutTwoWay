@@ -1,6 +1,6 @@
 # Updates
 
- * Version 1.2 (01Jul2018): Added options to compute fast standard errors
+ * Version 1.2 (01Jul2018): Added more options to speed-up computation of the standard errors.
  * Version 1.13 (22June2018):Better read of Nargout options. Added option if user wants computation of standard error.
  * Version 1.12 (20June2018): Fixed minor bugs when running leave out estimation with controls. 
  * Version 1.1 (19June2018): Improved Eigenvalues/vectors calculations. Fixed other small bugs in `leave_out_COMPLETE.m`
