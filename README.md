@@ -1,3 +1,7 @@
+# Next Releases
+
+ * Next release will allow for fast computation of covariance of person, firm effects and variance of person effects in large datasets. 
+
 # Updates
 
  * Version 1.2 (01Jul2018): Added more options to speed-up computation of the standard errors.
