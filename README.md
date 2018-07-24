@@ -4,6 +4,7 @@
 
 # Updates
 
+ * Version 1.3 (25Jul2018): Dropped stayers with a single person-year observations (for whom Pii=1 when estimating model in levels).
  * Version 1.2 (01Jul2018): Added more options to speed-up computation of the standard errors.
  * Version 1.13 (22June2018):Better read of Nargout options. Added option if user wants computation of standard error.
  * Version 1.12 (20June2018): Fixed minor bugs when running leave out estimation with controls. 
