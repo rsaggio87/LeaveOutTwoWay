@@ -5,8 +5,8 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %% Version:
 % 1.0: Wrote documentation. 06.15.2018.
 
-% 1.1: Speed up computation of eigenvalues/vectors - by avoiding storage of
-%      large matrices. 06.18.2018.
+% 1.1:  Speed up computation of eigenvalues/vectors - by avoiding storage of
+%       large matrices. 06.18.2018.
 
 % 1.11: Eliminated the option Ndiagno. 06.19.2018.
 
@@ -14,8 +14,14 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %       option for whether user wants computation of standard error.
 %       06.22.2018
 
-% 1.2: Added options to run fast Local Linear Regression, helpful in large
-       %datasets. 01.07.2018 
+% 1.2:  Added options to run fast Local Linear Regression, helpful in large
+        %datasets. 01.07.2018 
+
+% 1.25: Fix some bugs arising when setting leave_out_level to either
+%       "matches" or "workers"  10.07.2018 
+
+% 1.3: Dropped stayers that have only one person year observations (for
+%       which Pii=1 when estimating the model in levels). 25.07.2018
 
 
 %% DESCRIPTION
@@ -50,9 +56,6 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %'matches': perform leave-out by leaving an entire person-firm match out.
 
 %'workers': perform leave-out by leaving an entire worker's history out.
-
-%Please note that 'matches' and 'workers' options are still in beta mode
-%and need further testing.
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-                   
                     %---NON-MANDATORY INPUTS
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
@@ -437,6 +440,24 @@ toc
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
 
+%%%Drop stayers with a single person year observation
+T=accumarray(id,1);
+T=T(id);
+sel=T>1;
+y=y(sel,:);
+firmid=firmid(sel,:);
+id=id(sel,:);
+id_old=id_old(sel,:);
+firmid_old=firmid_old(sel,:);
+controls=controls(sel,:);
+
+%Resetting ids one last time.
+[~,~,n]=unique(firmid);
+firmid=n;
+[~,~,n]=unique(id);
+id=n; 
+
+
 %%%Resort data if running leave one out on matches
 if strcmp(leave_out_level,'matches')
 [~,~,match_id]=unique([id firmid],'rows');  
@@ -449,6 +470,7 @@ firmid_old=firmid_old(IX);
 controls=controls(IX,:);
 match_id=match_id(IX);
 end
+
 
 
 %Important Auxiliaries
