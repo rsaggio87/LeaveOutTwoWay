@@ -17,9 +17,12 @@ path(path,'~/matlab_bgl/');
 %      her own configuration. Make sure to delete the pool once
 %      estimation has been carried out. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+try
 pool = parpool('dcs', 64);
-%pool=parpool(12);
+%delete(gcp('nocreate'))
+%pool=parpool(32);
 %pool=parpool(str2num(getenv('SLURM_CPUS_PER_TASK')));
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         %CALL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                  
@@ -31,7 +34,7 @@ pool = parpool('dcs', 64);
 %(xtset id year).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 namesrc='../src/test.csv';
-namelog='test_';
+namelog='test';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     %LOAD DATA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,37 +49,19 @@ clear data
                     %RUN LEAVE-OUT (GENERAL BUT SLOW)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if 1 == 1
-%Options (see description inside leave_out_COMPLETE)
 leave_out_level='obs';
 andrews_estimates=0;
 eigen_diagno=0;
-subsample_llr_fit=0;
 restrict_movers=0;
-resid_controls=1;
-%controls=[];
-%Log File
-logname=['../logs/leave_one_out_complete' namelog '.log'];
+resid_controls=0;
+controls=[]; %equivalent to no controls
+do_SE=0;
+subsample_llr_fit=0;
+logname=['../logs/leave_one_out_' leave_out_level '_' namelog '.log'];
 system(['rm ' logname])
 diary(logname)
-[sigma2_psi, V] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,namelog);    
-diary off
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-         %RUN LEAVE-OUT (JUST VARIANCE OF FIRMS EFFECTS BUT FAST)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if 0 == 1
-%Options (see description inside leave_out_FD)
-leave_out_level='workers';
-type_algorithm='JL';
-eigen_diagno=1;
-eigen_fast=0; 
-do_montecarlo=0;
-%Log File
-logname=['../logs/leave_one_out_firm_effects_only' namelog '.log'];
-system(['rm ' logname])
-diary(logname)
-[sigma2_psi, V]= leave_out_FD(y,id,firmid,leave_out_level,controls,type_algorithm,eigen_diagno,eigen_fast,do_montecarlo,namelog);    
+sigma2_psi = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,do_SE,namelog);    
 diary off
 end
 %close
-%delete(pool)
+delete(pool)
