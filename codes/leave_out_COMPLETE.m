@@ -1,6 +1,6 @@
 function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alpha,SE_sigma2_alpha] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,do_SE, filename)
 %% Author: Raffaele Saggio
-%Email: raffaele.saggio@berkeley.edu
+%Email: rsaggio@princeton.edu
 
 %% Version:
 % 1.0: Wrote documentation. 06.15.2018.
@@ -20,10 +20,12 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 % 1.25: Fix some bugs arising when setting leave_out_level to either
 %       "matches" or "workers"  10.07.2018 
 
-% 1.3: Dropped stayers that have only one person year observations (for
+% 1.3:  Dropped stayers that have only one person year observations (for
 %       which Pii=1 when estimating the model in levels). 25.07.2018
 
-
+% 1.32: Improved readability of saved results at the end of the code. 
+%       Changed locations of saved results 
+%       Added export to .csv results 31.07.2018
 %% DESCRIPTION
 %This function computes leave out estimates in two-way fixed effects 
 %model and conducts inference as described in KSS.
@@ -150,11 +152,13 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
 %filename: string. 
-%Used to name the saved outputs.
+%Where saved results should be stored and named. Use name like 
+%"leave_out_results" and not "leave_out_results.csv"
+
 %Default is 'leave_one_out_estimates';
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
 
-%% DESCRIPTION OF THE OUTPUTS
+% DESCRIPTION OF THE OUTPUTS
 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
 %sigma2_psi: leave-out variance of firm effects.
@@ -170,11 +174,26 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %Check Log File for additional results reported by the code. 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
 
-%% SAVED FILES
+%-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
+
+% SAVED FILES
+
+%-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
 %The code saves the following files:
 
-%One mat file after step 3.
-%One mat file after finishing computation with all the relevant matrices.
+%One .mat file after step 3  in codes/mat/ with all matrices in memory.
+%One .mat file after completing the code in codes/mat/ with all matrices in memory.
+%A   .csv file with location and name specified by the user.
+
+%The .csv saves the following variables belonging 
+%to the leave out connected set.
+
+%y: outcome variable.
+%firmid: firm identifier. (normalized)
+%id: worker identifier. (normalized)
+%firmid_old: firm identifier. (as in original input data)
+%firmid: firm identifier. (as in original input data)
+%controls: vector of controls
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
 %% READ
 no_controls=0;
@@ -590,7 +609,7 @@ end
 disp('Time to compute Leave one out matrices')
 toc
 disp('Saving (Bii,Pii)')
-s=['mat/after_step_3_complete' filename];
+s=[filename '_after_step3'];
 save(s)
 
 %% STEP 4: DIAGNOSTICS
@@ -1064,7 +1083,12 @@ if do_SE==1
     end
 end
 %Save File.
-s=['mat/COMPLETE_' filename];
+s=[filename '_completed'];
 save(s)
+
+%Export csv with data from leave out connected set
+out=[y,firmid,id,firmid_old,id_old,controls];
+s=[filename '_export_leave_out_connected_set'];
+dlmwrite(s, out, 'delimiter', '\t', 'precision', 16); 
 end
 
