@@ -4,6 +4,7 @@
 
 # Updates
 
+ * Version 1.32 (01JAug2018): Introduced example.m with better management of folders where results are saved. `leave_out_COMPLETE.m` now                               also exports a .csv file containing the main variables in the leave out connected set
  * Version 1.31 (31Jul2018): Added the option "DO_SE" in main.m.
  * Version 1.3 (25Jul2018): Dropped stayers with a single person-year observations (for whom Pii=1 when estimating model in levels).
  * Version 1.2 (01Jul2018): Added more options to speed-up computation of the standard errors.
