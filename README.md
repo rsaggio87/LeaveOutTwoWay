@@ -37,6 +37,8 @@ The m-file `example.m` runs Leave Out estimates in an test dataset provided with
 
 # Things to have in mind 
 
+* `example.m` provides a simple example where the user calls a test dataset in .csv and then calls the function `leave_out_COMPLETE.m` to compute leave out estimates. See the documentation provided within the function of `leave_out_COMPLETE.m` for a description of the inputs and the outputs associated with this function.
+
 * `leave_out_COMPLETE.m` outputs estimates of the VCM of the person, firm effects with associated standard errors (assuming q=0 in KSS).  Standard errors for the case q=1 can also be obtained. In future releases, we plan also to allow users to specificy the variance component associated with a specific (sub)set of controls. 
 
 * Adding Controls to the model: This is easily handled by `leave_out_COMPLETE.m`. However, to speed up computations, we suggest to partial out the effects of these controls in a first step so that the associated design matrix has a Laplacian structure. See the documentation provided inside the functions `leave_out_COMPLETE.m` and `leave_out_FD.m` and Appendix B of KSS.
