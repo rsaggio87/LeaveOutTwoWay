@@ -33,7 +33,7 @@ All that is required for these functions to run appropriately is that the
 original person-year file is sorted by worker-identifiers
 and year (xtset id year in Stata).
 
-The m-file `main.m` runs Leave Out estimates in an test dataset provided within this repository. 
+The m-file `example.m` runs Leave Out estimates in an test dataset provided within this repository. 
 
 # Things to have in mind 
 
