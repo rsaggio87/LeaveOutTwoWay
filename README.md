@@ -4,6 +4,8 @@
                 
                 * Added CMG routine to speed computation of linear system
                 involving the Laplacian matrix as design matrix. 
+                
+                * CMG package - available here: http://www.cs.cmu.edu/~jkoutis/cmg.html - has been already included in the repository.
  
                 * Read movers-stayers structure to fasten computation of (Bii,Pii).
                 
