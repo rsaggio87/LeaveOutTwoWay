@@ -3,15 +3,15 @@
  * Code now is significantly faster in computing (Bii,Pii). In particular, we have introduced the following changes:
                 
                 * Added CMG routine to speed computation of linear system
-                involving the Laplacian matrix as design matrix. Users need
-                to make sure that the CMG package is installed and placed
-                in the main directory as shown in the GitHub repository.
-                
+                involving the Laplacian matrix as design matrix. 
+ 
                 * Read movers-stayers structure to fasten computation of (Bii,Pii).
                 
   * In terms of speed, for the test dataset used in "example.m": 
+  
                 * With version 1.32 the code takes 260 seconds to compute (Bii,Pii).
-                * With version 1.5 the code takes  23 seconds to compute (Bii,Pii)
+                
+                * With version 1.5 the code takes 23 seconds to compute (Bii,Pii)
                 
 # Next Releases
 
