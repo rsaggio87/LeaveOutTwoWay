@@ -1,8 +1,21 @@
+# Current Release (Version 1.5)
+
+ * Code now is significantly faster in computing (Bii,Pii). In particular, we have introduced the following changes:
+                1. Added CMG routine to speed computation of linear system
+                involving the Laplacian matrix as design matrix. Users need
+                to make sure that the CMG package is installed and placed
+                in the main directory as shown in the GitHub repository.
+                2. Read movers-stayers structure to fasten computation of (Bii,Pii).
+                
+  * In terms of speed, for the test dataset used in "example.m": 
+                1. With version 1.32 the code takes 260 seconds to compute (Bii,Pii).
+                2. With version 1.5 the code takes  23 seconds to compute (Bii,Pii)
+                
 # Next Releases
 
- * Next release will allow for fast computation of covariance of person, firm effects and variance of person effects in large datasets. 
+ * Next release will include random projection methods to further speed up computaiton of (Bii,Pii). 
 
-# Updates
+# History of Updates
 
  * Version 1.32 (01JAug2018): Introduced example.m with better management of folders where results are saved. `leave_out_COMPLETE.m` now                               also exports a .csv file containing the main variables in the leave out connected set
  * Version 1.31 (31Jul2018): Added the option "DO_SE" in main.m.
@@ -12,7 +25,6 @@
  * Version 1.12 (20June2018): Fixed minor bugs when running leave out estimation with controls. 
  * Version 1.1 (19June2018): Improved Eigenvalues/vectors calculations. Fixed other small bugs in `leave_out_COMPLETE.m`
  * Version 1.0 (16June2018): Original upload. 
-
 
 # Description 
 Leave Out estimates in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth.
