@@ -26,6 +26,26 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 % 1.32: Improved readability of saved results at the end of the code. 
 %       Changed locations of saved results 
 %       Added export to .csv results 31.07.2018
+
+% 1.5:  Significantly improved computation of Leave out matrices when there
+%       are no controls in the model or the controls have been residualized
+%       in a prior step.
+%          
+%               We introduced the following changes:
+%
+%                1. Added CMG routine to speed computation of linear system
+%                involving the Laplacian matrix as design matrix. Users need
+%                to make sure that the CMG package is installed and placed
+%                in the main directory as shown in the GitHub repository.
+%
+%                2. Read movers-stayers structure to fasten computation of (Bii,Pii).
+%
+%                In terms of speed, for the test dataset used in "example.m": 
+%
+%                1. With version 1.32 the code takes 260 seconds to compute (Bii,Pii).
+%                2. With version 1.5 the code takes  23 seconds to compute (Bii,Pii).
+%          
+                
 %% DESCRIPTION
 %This function computes leave out estimates in two-way fixed effects 
 %model and conducts inference as described in KSS.
@@ -35,9 +55,9 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %automatically performs computation of the largest connected set and leave
 %out connected set. 
 
-%This function is specifically written not only to replicate the results of
-%KSS but also to be applied to any other two-way fixed effects model
-%(student-teachers, patient-doctors, etc).
+%This function can be applied to any two-way fixed effects model
+%(student-teachers, patient-doctors, etc). We use the AKM jargon (workers vs. firms) 
+%here for simplicity.
 
 %Check webpage for updates and other comments. 
 %% DESCRIPTION OF THE INPUTS
@@ -46,18 +66,19 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
                         %-MANDATORY INPUTS
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
 %y: outcome. Dimensions: N* x 1; N*= # of person-year observations.
-
+%--
 %id: worker indicators. Dimensions: N* x 1
-
+%--
 %firmid: firm indicators. Dimensions: N* x 1
+%--
+%leave_out_level: string variable that takes two values:
 
-%leave_out_level: string variable that takes three values:
+    %'obs': perform leave-out by leaving a person-year observation out (default)
 
-%'obs': perform leave-out by leaving a person-year observation out (default)
+    %'matches': perform leave-out by leaving an entire person-firm match out.
+    
+%Option 'matches' is currently in beta mode and needs further testing.
 
-%'matches': perform leave-out by leaving an entire person-firm match out.
-
-%'workers': perform leave-out by leaving an entire worker's history out.
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-                   
                     %---NON-MANDATORY INPUTS
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
@@ -420,6 +441,14 @@ no_controls=1;
 end
 clear X b
 
+%Call CMG routine if there are no controls from the model
+if no_controls==1
+cd codes;    
+path(path,'CMG'); %this contains the main LeaveOut Routines.
+MakeCMG
+cd ..
+end
+
 %% STEP 2: LEAVE ONE OUT CONNECTED SET
 %Here we compute the leave out connected set as defined in Appendix B. 
 %The input data is represented by the largest connected set. After applying
@@ -558,9 +587,6 @@ disp(s)
 
 
 %% STEP 3A: Indexes needed to construct Bii, Pii 
-if strcmp(leave_out_level,'workers') 
-clustering_var=id;
-end
 if strcmp(leave_out_level,'obs')
 index=(1:NT)';    
 clustering_var=index;
@@ -584,9 +610,9 @@ xx=X'*X;
 Lchol=ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
 end
 if no_controls==1
-X=[D,F*S];
+X=[D,-F];
 xx=X'*X;
-Lchol=ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
+Lchol = cmg_sdd(xx); %preconditioner for Laplacian matrices.
 end
 
 %% STEP 3C: NOW COMPUTE THE LEAVE OUT MATRICES
@@ -594,15 +620,15 @@ tic
 disp('Calculating Leave Out Matrices...')
 
 if n_of_parameters==1
-    [Lambda_P, Lambda_B_fe]=eff_res(X,xx,Lchol,N,J,elist,leave_out_level);
+    [Lambda_P, Lambda_B_fe]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T);
 end
 
 if n_of_parameters==2
-    [Lambda_P, Lambda_B_fe,Lambda_B_cov]=eff_res(X,xx,Lchol,N,J,elist,leave_out_level);
+    [Lambda_P, Lambda_B_fe,Lambda_B_cov]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T);
 end
 
 if n_of_parameters==3
-    [Lambda_P, Lambda_B_fe,Lambda_B_cov,Lambda_B_pe]=eff_res(X,xx,Lchol,N,J,elist,leave_out_level);
+    [Lambda_P, Lambda_B_fe,Lambda_B_cov,Lambda_B_pe]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T);
 end
 
 
@@ -612,15 +638,18 @@ disp('Saving (Bii,Pii)')
 s=[filename '_after_step3'];
 save(s)
 
+%Reshape the X back to grounded Laplacian.
+if K == 0
+    X=[D,F*S];
+    xx=X'*X;
+    Lchol=ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
+end
+
 %% STEP 4: DIAGNOSTICS
 %This part is only computed provided that the option 'eigen_diagno' is
 %turned on. In this part, we calculate the squared eigenvalue ratio and
 %Lindeberg conditions that constitute the key conditions to verify the
 %validity of Theorem 1. Lindeberg condition assumes q=1.
-
-%Future releases of this function will allow for faster computation of the 
-%eigenvalue conditions. In particular, the step where we build and store 
-%the A matrix for calculation of the eigenvectors can be sidestepped.
 
 if eigen_diagno==1 
 EIG_NORM=zeros(3,n_of_parameters);
@@ -687,7 +716,7 @@ for pp=1:n_of_parameters
     lambda_eig=diag(lambda_eig);
     lambda_1(pp)=lambda_eig(1); 
     [EIG_NORM(:,pp),x1bar_all(:,pp)] = eig_x1bar(X,Q,lambda_eig,SUM_EIG(pp)); %Note: What we label as x1bar in the code corresponds to w_i1 in KSS.
-    max_x1bar_sq(1)=max(x1bar_all(:,pp));
+    max_x1bar_sq(pp)=max(x1bar_all(:,pp).^2);
     
     
 end
