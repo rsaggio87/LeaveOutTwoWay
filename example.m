@@ -6,8 +6,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                      %External Packages
 
-%Note: cd is LeaveOutTwoWay
-%Note: MakeCMG called only if running leave_out_FD.                    
+%Note: cd is LeaveOutTwoWay                   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 path(path,'~/matlab_bgl/'); %note: matlab BGL obtained from http://www.mathworks.com/matlabcentral/fileexchange/10922
 path(path,'codes'); %this contains the main LeaveOut Routines.
@@ -19,9 +18,9 @@ path(path,'codes'); %this contains the main LeaveOut Routines.
 %      estimation has been carried out.                  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 try
-delete(gcp('nocreate'))
-pool = parpool('dcs', 64);
-%pool=parpool(32,'IdleTimeout', Inf);
+%delete(gcp('nocreate'))
+%pool = parpool('dcs', 64);
+pool=parpool(32,'IdleTimeout', Inf);
 %pool=parpool(str2num(getenv('SLURM_CPUS_PER_TASK')),'IdleTimeout', Inf);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -60,7 +59,7 @@ year=data(:,3);
 y=data(:,4);
 clear data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    %RUN LEAVE-OUT (GENERAL BUT SLOW)
+                    %RUN LEAVE-OUT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 %Options (See Description in leave_out_COMPLETE)   
 leave_out_level='obs';
@@ -70,7 +69,7 @@ restrict_movers=0;
 resid_controls=0;
 controls=[]; %equivalent to no controls
 do_SE=0;
-subsample_llr_fit=0;
+subsample_llr_fit=2;
 
 %Log File
 logname=[placelog namelog '.log'];
