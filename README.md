@@ -3,7 +3,7 @@
  * Code now is significantly faster in computing (Bii,Pii). In particular, we have introduced the following changes:
                 
                 * Added CMG routine to speed computation of linear system
-                involving the Laplacian matrix as design matrix. 
+                  involving the Laplacian matrix as design matrix. 
                 
                 * CMG package - available here: http://www.cs.cmu.edu/~jkoutis/cmg.html - 
                   has been already included in the repository.
