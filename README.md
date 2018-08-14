@@ -10,7 +10,7 @@
  
                 * Read movers-stayers structure to fasten computation of (Bii,Pii).
                 
-  * In terms of speed, for the test dataset used in `example.m'
+  * In terms of speed, for the test dataset used in `example.m`
   
                 * With version 1.32 the code takes 260 seconds to compute (Bii,Pii).
                 
