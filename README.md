@@ -22,7 +22,8 @@
 
 # History of Updates
 
- * Version 1.5 (14August2018) Improved computation of (Bii,Pii). In particular, we have introduced the following changes:
+ * Version 1.5 (14August2018): 
+   Improved computation of (Bii,Pii). In particular, we have introduced the following changes:
  
                 * Added CMG routine to speed computation of linear system
                   involving the Laplacian matrix as design matrix. 
