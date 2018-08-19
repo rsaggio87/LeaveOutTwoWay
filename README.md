@@ -2,6 +2,8 @@
 
 This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth - using Matlab.
 
+The m-file `example.m` shows how to compute Leave Out estimates in a test dataset.
+
 # Current Release: Version 2.0
 
  * Added option to estimate (Bii,Pii) using Random Projections methods that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
@@ -66,7 +68,7 @@ This repository computes Leave Out estimates of variance components in two fixed
  * Version 1.1 (19June2018): Improved Eigenvalues/vectors calculations. Fixed other small bugs in `leave_out_COMPLETE.m`
  * Version 1.0 (16June2018): Original upload. 
 
-# Description 
+# Routines included within the Repository.
 Within this repository, there are three independent  routines that users can test on their own
 datasets:
 
@@ -83,8 +85,6 @@ of the variance of firm effects only can use the function
 All that is required for these functions to run appropriately is that the
 original person-year file is sorted by worker-identifiers
 and year (xtset id year in Stata).
-
-The m-file `example.m` runs Leave Out estimates in an test dataset provided within this repository. 
 
 # Things to have in mind 
 
