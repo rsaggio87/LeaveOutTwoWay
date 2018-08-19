@@ -1,3 +1,5 @@
+Leave Out estimates in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth.
+
 # Current Release (Version 2.0 - Updated on August 20th 2018)
 
  * Added option to estimate (Bii,Pii) using Random Projections methods that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
@@ -63,8 +65,6 @@
  * Version 1.0 (16June2018): Original upload. 
 
 # Description 
-Leave Out estimates in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth.
-
 Within this repository, there are three independent  routines that users can test on their own
 datasets:
 
