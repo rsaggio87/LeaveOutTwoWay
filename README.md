@@ -15,9 +15,9 @@
                     approximate (Bii,Pii) as detailed in Appendix B of
                     KSS.
                 
-               *   "epsilon": this governs the tradeoff b/w speed and unbiasdness 
-                   when estimating (Bii,Pii). Smaller values of epsilon implies 
-                   more accuracy but slower performance.
+               *    "epsilon": this governs the tradeoff b/w speed and unbiasdness 
+                    when estimating (Bii,Pii). Smaller values of epsilon implies 
+                    more accuracy but slower performance.
 
 * In terms of speed, for a dataset with approx 50K workers, 15K Firms
 
