@@ -8,14 +8,13 @@
                 
                 *   "type_of_algorithm": This takes two values: "exact or "JLL".
 
-                *   "type_of_algorithm = exact": performs exact computation of (Bii,Pii)
-                     as described in version 1.5.          
+                           "type_of_algorithm = exact": performs exact computation of (Bii,Pii)
+                           as described in version 1.5.          
                     
-                *   "type_of_algorithm = JLL": performs random projection methods to
-                    approximate (Bii,Pii) as detailed in Appendix B of
-                    KSS.
+                           "type_of_algorithm = JLL": performs random projection methods to
+                           approximate (Bii,Pii) as detailed in Appendix B of KSS.
                 
-               *    "epsilon": this governs the tradeoff b/w speed and unbiasdness 
+               *    "epsilon": this governs the tradeoff b/w speed and accuracy 
                     when estimating (Bii,Pii). Smaller values of epsilon implies 
                     more accuracy but slower performance.
 
