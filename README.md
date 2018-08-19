@@ -37,7 +37,7 @@ The m-file `example.m` shows how to compute Leave Out estimates in a test datase
                    and covariance of person, firm effects. 
  
                 *  The estimates from JLL differ from those obtained with 
-                   the exact algorithm by a factor less than 0.1.
+                   the exact algorithm by a factor less than 0.1 percent.
  
 # History of Updates
 
