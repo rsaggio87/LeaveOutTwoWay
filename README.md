@@ -1,6 +1,8 @@
-Leave Out estimates in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth.
+# Brief Description
 
-# Current Release (Version 2.0 - Updated on August 20th 2018)
+This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth - using Matlab.
+
+# Current Release: Version 2.0
 
  * Added option to estimate (Bii,Pii) using Random Projections methods that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
  
