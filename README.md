@@ -22,19 +22,18 @@
 
 # History of Updates
 
- * Version 1.5 (14August2018): 
-   Improved computation of (Bii,Pii). In particular, we have introduced the following changes:
- 
+ * Version 1.5 (14August2018): Improved "exact" computation of (Bii,Pii). In particular, we have introduced the following changes:
+                
                 * Added CMG routine to speed computation of linear system
                   involving the Laplacian matrix as design matrix. 
-                  
+                
                 * CMG package - available here: http://www.cs.cmu.edu/~jkoutis/cmg.html - 
                   has been already included in the repository.
-                  
+ 
                 * Read movers-stayers structure to fasten computation of (Bii,Pii).
                 
-         * In terms of speed, for the test dataset used in `example.m
-                
+  * In terms of speed, for the test dataset used in `example.m`
+  
                 * With version 1.32 the code takes 260 seconds to compute (Bii,Pii).
                 
                 * With version 1.5 the code takes 23 seconds to compute (Bii,Pii).
