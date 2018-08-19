@@ -1,4 +1,4 @@
-# Current Release (Version 1.5)
+# Current Release (Version 2.0)
 
  * Code is significantly faster in computing (Bii,Pii). In particular, we have introduced the following changes:
                 
@@ -16,11 +16,10 @@
                 
                 * With version 1.5 the code takes 23 seconds to compute (Bii,Pii).
                 
-# Next Releases
-
- * Next release will include random projection methods to further speed up computaiton of (Bii,Pii). 
 
 # History of Updates
+
+ * Version 1.51 (15August2018): Better management of large sparse matrices when invoking parfor to compute (Bii,Pii) using the option      `parallel.pool.Constant`.
 
  * Version 1.5 (14August2018): Improved "exact" computation of (Bii,Pii). In particular, we have introduced the following changes:
                 
