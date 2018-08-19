@@ -1,6 +1,6 @@
 # Current Release (Version 2.0)
 
- * Added option to approximate (Bii,Pii) using Random Projections methods that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
+ * Added option to estimate (Bii,Pii) using Random Projections methods that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
  
  * This especially helpful in massive datasets where exact computation of (Bii,Pii), even after the improvements introduced from version 1.5, is close to be prohibitive in terms of computation time.
  
