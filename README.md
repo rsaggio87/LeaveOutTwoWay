@@ -10,7 +10,7 @@ The m-file `example.m` shows how to compute Leave Out estimates in a test datase
  
  * This especially helpful in massive datasets where exact computation of (Bii,Pii), even after the improvements introduced from version 1.5, is close to be prohibitive in terms of computation time.
  
- * We have added the following inputs
+ * We added the following inputs
                 
                 *   "type_of_algorithm": This takes two values: "exact or "JLL".
 
