@@ -6,27 +6,27 @@
  
  * We have added the following inputs
                 
-                *   type_of_algorithm: This takes two values: "exact or "JLL".
+                *   "type_of_algorithm": This takes two values: "exact or "JLL".
 
-                    "exact": performs exact computation of (Bii,Pii)
+                *   "type_of_algorithm = exact": performs exact computation of (Bii,Pii)
                      as described in version 1.5.          
                     
-                    "JLL": performs random projection methods to
+                *   "type_of_algorithm = JLL": performs random projection methods to
                     approximate (Bii,Pii) as detailed in Appendix B of
                     KSS.
                 
-               *   epsilon: this governs the tradeoff b/w speed and unbiasdness 
-                    when estimating (Bii,Pii). Smaller values of epsilon implies 
-                    more accuracy but slower performance.
+               *   "epsilon": this governs the tradeoff b/w speed and unbiasdness 
+                   when estimating (Bii,Pii). Smaller values of epsilon implies 
+                   more accuracy but slower performance.
 
 * In terms of speed, for a dataset with approx 50K workers, 15K Firms
 
-                *  When type_of_algorithm=`exact`, the code takes 1600
+                *  When "type_of_algorithm = exact", the code takes 1600
                    seconds to compute (Bii,Pii) for variance of firm
                    effects, variance of person effects and covariance of
                    person, firm effects. 
  
-                *  When type_of_algorithm=`JLL` and `epsilon`=0.005, 
+                *  When "type_of_algorithm = JLL" and `epsilon`=0.005, 
                    the code takes 100 seconds to compute (Bii,Pii) 
                    for variance of firm effects, variance of person effects 
                    and covariance of person, firm effects. 
