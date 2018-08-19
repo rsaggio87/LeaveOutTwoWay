@@ -1,20 +1,46 @@
 # Current Release (Version 2.0)
 
- * Code is significantly faster in computing (Bii,Pii). In particular, we have introduced the following changes:
-                
-                * Added CMG routine to speed computation of linear system
-                  involving the Laplacian matrix as design matrix. 
-                
-                * CMG package - available here: http://www.cs.cmu.edu/~jkoutis/cmg.html - 
-                  has been already included in the repository.
+ * Added option to approximate (Bii,Pii) using Random Projections methods that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
  
-                * Read movers-stayers structure to fasten computation of (Bii,Pii).
+ * This especially helpful in massive datasets where exact computation of (Bii,Pii), even after the improvements introduced from version 1.5, is close to be prohibitive in terms of computation time.
                 
-  * In terms of speed, for the test dataset used in `example.m`
-  
-                * With version 1.32 the code takes 260 seconds to compute (Bii,Pii).
+                *In particular, with this new release we added the following inputs:
+
+                1. type_of_algorithm: This takes two values: `exact` or `JLL`.
+
+                    `exact`: corresponds to exact computation of (Bii,Pii)
+                     as in version 1.5.          
+                    
+                    `JLL`: applies random projection methods to
+                    approximate (Bii,Pii) as detailed in Appendix B of
+                    KSS. 
+                   
+                    Default is `exact`.
                 
-                * With version 1.5 the code takes 23 seconds to compute (Bii,Pii).
+                 2. `epsilon`: this governs the tradeoff b/w speed and unbiasdness 
+                    when estimating (Bii,Pii). Smaller values of epsilon implies 
+                    less accuracy but slower performance.
+
+       In terms of speed, for a dataset with approx 50K workers, 15K Firms
+
+                1. When type_of_algorithm=exact, the code takes 1600
+                   seconds to compute (Bii,Pii) for variance of firm
+                   effects, variance of person effects and covariance of
+                   person, firm effects. 
+ 
+                2. When type_of_algorithm=JLL and epsilon=0.005, 
+                   the code takes 100 seconds to compute (Bii,Pii) 
+                   for variance of firm effects, variance of person effects 
+                   and covariance of person, firm effects. 
+ 
+                   The estimates from JLL differ from those obtained with 
+                   the exact algorithm by a factor less than 0.1.
+
+       Note: The algorithm introduced with this new release only applies to
+       the case when there are no controls in the model or the controls 
+       have been residualized in a prior step so that the design matrix 
+       corresponds to a Laplacian matrix.  
+
                 
 
 # History of Updates
