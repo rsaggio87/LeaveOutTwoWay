@@ -41,6 +41,8 @@ The m-file `example.m` shows how to compute Leave Out estimates in a test datase
  
 # History of Updates
 
+ * Version 1.52: Added more outputs to the function `leave_out_COMPLETE.m`  to simplify possible post-estimation commands.
+
  * Version 1.51 (15August2018): Better management of large sparse matrices when invoking parfor to compute (Bii,Pii) using the option      `parallel.pool.Constant`.
 
  * Version 1.5 (14August2018): Improved "exact" computation of (Bii,Pii). In particular, we have introduced the following changes:
