@@ -58,10 +58,10 @@ if subsample_llr_fit == 1 && K>0
 end
 
 if subsample_llr_fit == 2 && K==0
-    sigma_predict=zeros(NT,1);
+    sigma_stayers=zeros(NT,1);
     for ti=1:maxT
             sel=(T==ti & ~movers);
-            sigma_predict(sel)=mean(sigma_i(sel));
+            sigma_stayers=sigma_stayers+sparse(find(sel),1,mean(sigma_i(sel)),NT,1);
     end
     Bii=Bii(movers);
     Pii=Pii(movers);
@@ -74,15 +74,18 @@ if subsample_llr_fit == 2 && K==0
     sigma_use=accumarray(qq,sigma_i(movers),[],@mean);
     Xuse=[Bii_bin Pii_bin];
     cellS=size(Bii_bin,1);
-    hBest=1/cellS^(1/3);
+    tic
     f = fit(Xuse,sigma_use,'lowess','Normalize','on','Span',hBest,'Weights',weight);
-    sigma_predict(movers) = feval(f,[Bii, Pii]);
+    toc
+    tic
+    sigma_movers=sparse(find(movers),1,feval(f,[Bii, Pii]),NT,1);
+    toc
+    sigma_predict = sigma_movers + sigma_stayers;
     selnan=isnan(sigma_predict);
     sigma_predict(selnan)=sigma_i(selnan);
 end
 
 if subsample_llr_fit == 2 && K>0
-    sigma_predict=zeros(NT,1);
     Bii_old=Bii;
     Pii_old=Pii;
     %Binned LLR on stayers.
@@ -100,7 +103,7 @@ if subsample_llr_fit == 2 && K>0
     cellS=size(Bii_bin,1);
     hBest=1/cellS^(1/3);
     f = fit(Xuse,sigma_use,'lowess','Normalize','on','Span',hBest,'Weights',weight);
-    sigma_predict(~movers) = feval(f,[Bii, Pii]);
+    sigma_stayers=sparse(find(~movers),1,feval(f,[Bii, Pii]),NT,1);
     %Binned LLR on movers.
     Bii=Bii_old(movers);
     Pii=Pii_old(movers);
@@ -116,7 +119,8 @@ if subsample_llr_fit == 2 && K>0
     cellS=size(Bii_bin,1);
     hBest=1/cellS^(1/3);
     f = fit(Xuse,sigma_use,'lowess','Normalize','on','Span',hBest,'Weights',weight);
-    sigma_predict(movers) = feval(f,[Bii, Pii]);
+    sigma_movers=sparse(find(movers),1,feval(f,[Bii, Pii]),NT,1);
+    sigma_predict = sigma_stayers + sigma_movers;
     selnan=isnan(sigma_predict);
     sigma_predict(selnan)=sigma_i(selnan);
 end
@@ -137,6 +141,17 @@ if subsample_llr_fit == 3
     selnan=isnan(sigma_predict);
     sigma_predict(selnan)=sigma_i(selnan);
 end
+
+if subsample_llr_fit == 4
+    g_B = group_equally(Bii, KGrid);
+    g_P = group_equally(Pii, KGrid);
+    [~,~,qq]=unique([g_B,g_P],'rows');
+    sigma_use=accumarray(qq,sigma_i,[],@mean);
+    sigma_predict=sigma_use(qq);
+    selnan=isnan(sigma_predict);
+    sigma_predict(selnan)=sigma_i(selnan);
+end
+
 
 
 disp('Time to Perform non-parametric fit')

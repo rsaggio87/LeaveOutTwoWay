@@ -1,7 +1,22 @@
-function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alpha,SE_sigma2_alpha] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,do_SE, filename)
+function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alpha,SE_sigma2_alpha] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,do_SE, type_of_algorithm,epsilon,filename)
 %% Author: Raffaele Saggio
 %Email: rsaggio@princeton.edu
 
+%% DESCRIPTION
+%This function computes leave out estimates in two-way fixed effects 
+%model and conducts inference as described in KSS.
+
+%The mandatory input is person-year dataset that has to be sorted
+%by workers' identifiers (id) and year (xtset id year in Stata). The function
+%automatically performs computation of the largest connected set and leave
+%out connected set. 
+
+%This function can be applied to any two-way fixed effects model
+%(student-teachers, patient-doctors, etc) and supports unbalanced data as
+%well as T>2 panels.
+
+%We use AKM jargon (workers, firms) when describing the code for
+%simplicity.
 %% Version:
 % 1.0: Wrote documentation. 06.15.2018.
 
@@ -29,7 +44,7 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 
 % 1.5:  Significantly improved computation of Leave out matrices when there
 %       are no controls in the model or the controls have been residualized
-%       in a prior step.
+%       in a prior step. 
 %          
 %               We introduced the following changes:
 %
@@ -44,24 +59,46 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %
 %                1. With version 1.32 the code takes 260 seconds to compute (Bii,Pii).
 %                2. With version 1.5 the code takes  23 seconds to compute (Bii,Pii).
+% 
+% 
+% 1.51: Better management of large sparse matrices when invoking parfor to 
+%       compute using the option parallel.pool.Constant.
+%
+% 1.52: Added more outputs to the function to simplify possible post-estimation 
+%       commands.
+%
+% 1.55: Added more options to run non-parametric fit.
+%
+% 2.0:  Added option to approximate (Bii,Pii) using Random Projections methods
+%       that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
+%
+%       This especially helpful in massive datasets where exact computation 
+%       of (Bii,Pii), even after the improvements introduced from version 1.5, 
+%       is close to be prohibitive in terms of computation time.
 %          
-                
-%% DESCRIPTION
-%This function computes leave out estimates in two-way fixed effects 
-%model and conducts inference as described in KSS.
-
-%The mandatory input is person-year dataset that has to be sorted
-%by workers' identifiers (id) and year (xtset id year in Stata). The function
-%automatically performs computation of the largest connected set and leave
-%out connected set. 
-
-%This function can be applied to any two-way fixed effects model
-%(student-teachers, patient-doctors, etc). We use the AKM jargon (workers vs. firms) 
-%here for simplicity.
-
-%Check webpage for updates and other comments. 
+%       In particular, with this new release we added the following inputs:
+%
+%                1. type_of_algorithm: This takes two values: "exact" or "JLL".
+%
+%                    "exact": corresponds to exact computation of (Bii,Pii)
+%                     as in version 1.5.          
+%                    
+%                    "JLL": applies random projection methods to
+%                    approximate (Bii,Pii) as detailed in Appendix B of
+%                    KSS. 
+%                   
+%                    Default is "exact".
+%                
+%                 2. epsilon: this governs the tradeoff b/w speed and unbiasdness 
+%                    when estimating (Bii,Pii). Smaller values of epsilon implies 
+%                    less bias but more computation time.
+%
+%
+%       Note: The algorithm introduced with this new release only applies to
+%       the case when there are no controls in the model or the controls 
+%       have been residualized in a prior step so that the design matrix 
+%       corresponds to a Laplacian matrix.                  
 %% DESCRIPTION OF THE INPUTS
-
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-                   
                         %-MANDATORY INPUTS
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
@@ -90,13 +127,20 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %effect, making sure to avoid potential collinearity issues. 
 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
-%resid_controls: Binary. 
+%resid_controls: 0 1 2. 
+
+%If 0, the code includes the vector of controls specified by the user
+%(provided that is not empty) in estimation of the two-way model.
 
 %If 1 and input "controls" is not empty, then the code partials out 
 %the effects of these controls before performing leave out estimates.
 %In particular, in Step 1, after performing AKM on the largest connected
 %set, we partial out the effect of controls using the corresponding AKM
 %estimates.
+
+%If 2 and input "controls" is not empty, the code acts as if the controls
+%are not used in estimation of the model but saves the corresponding vector
+%of controls in the leave out connected set.
 
 %Default is 0. 
 
@@ -154,6 +198,10 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %The code then fits a weighted LLR model across these "KGrid" x "KGrid" 
 %cells weighting by cell size. 
 
+%If 4, the code fits a multivariate Nadaraya Watson style of non parametric
+%estimator by averaging the value of \hat{\sigma}_i within "KGrid" x "KGrid" 
+%cells of (Bii,Pii).
+
 %See the function "llr_fit" for further details. Default value of
 %"Kgrid=1000".
 
@@ -171,6 +219,28 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %strong identification (q=1). 
 % Default is 1.
 
+%-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
+%type_of_algorithm: 
+%This takes two values: "exact" or "JLL".                    
+
+%   "exact": performs exact computation of (Bii,Pii). 
+
+%   "JLL": perform random projection methods to approximate (Bii,Pii) as 
+%   detailed in Appendix B of KSS. 
+
+%In large datasets (say where #of Workers + #of Firms > 50K) we suggest
+%setting type_of_algorithm="JLL". As described in Table B1 in large
+%datasets JLL gives back idenentical estimates compared to exact methods
+%while taking 20-30 times less computation time. 
+%-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
+%epsilon: This should be b/w 0 and 1.
+
+%epsilon governs the tradeoff b/w speed and accuracy when estimating 
+%(Bii,Pii) using type_of_algorithm=JLL.
+
+%Smaller values of epsilon implies less accuracy but higher computation time.
+
+%Default is 0.1. 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
 %filename: string. 
 %Where saved results should be stored and named. Use name like 
@@ -191,6 +261,16 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 
 %sigma2_alpha: leave-out variance of person effects. 
 %SE_sigma2_alpha: SE of leave-out variance of person effects.
+
+%y: outcome variable in the leave out connected set.
+
+%id: re-normalized worker identifiers in the leave out connected set.
+
+%firmid: re-normalized firm identifiers in the leave out connected set.
+
+%controls: vector of extra controls in the leave out connected set.
+
+%Pii: statistical leverage associated with two way model.
 
 %Check Log File for additional results reported by the code. 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
@@ -223,7 +303,7 @@ if nargin < 4
     error('More arguments needed');
 end
 
-if nargin == 4
+if nargin == 4 
     no_controls=1;
     controls=ones(size(y,1),1);
     resid_controls=0;
@@ -232,16 +312,22 @@ if nargin == 4
     subsample_llr_fit=0;
     restrict_movers=0;
     do_SE=1;
+    type_of_algorithm='exact';
+    epsilon=0.1;   
     filename='leave_one_out_estimates';
 end
 
-if nargin == 5
-    resid_controls=1;    
+if nargin == 5   
+    no_controls=1;
+    resid_controls=1; 
+    controls=ones(size(y,1),1);
     andrews_estimates=0;
     eigen_diagno=0;
     subsample_llr_fit=0;
     restrict_movers=0;
     do_SE=1;
+    type_of_algorithm='exact';
+    epsilon=0.005;   
     filename='leave_one_out_estimates';
 end
 
@@ -251,6 +337,8 @@ if nargin == 6
     subsample_llr_fit=0;
     restrict_movers=0;
     do_SE=1;
+    type_of_algorithm='exact';
+    epsilon=0.005;
     filename='leave_one_out_estimates';
 end
 
@@ -259,6 +347,8 @@ if nargin == 7
     subsample_llr_fit=0;
     restrict_movers=0;
     do_SE=1;
+    type_of_algorithm='exact';
+    epsilon=0.005;
     filename='leave_one_out_estimates';
 end
 
@@ -266,21 +356,38 @@ if nargin == 8
     subsample_llr_fit=0;    
     restrict_movers=0;
     do_SE=1;
+    type_of_algorithm='exact';
+    epsilon=0.005;
     filename='leave_one_out_estimates';
 end
 
 if nargin == 9     
     restrict_movers=0; 
     do_SE=1;
+    type_of_algorithm='exact';
+    epsilon=0.005;
     filename='leave_one_out_estimates';
 end
 
 if nargin == 10  
     do_SE=1;
+    type_of_algorithm='exact';
+    epsilon=0.005;
     filename='leave_one_out_estimates';
 end
 
-if nargin == 11  
+if nargin == 11 
+    type_of_algorithm='exact';
+    epsilon=0.005;
+    filename='leave_one_out_estimates';
+end
+
+if nargin == 12 
+    epsilon=0.005;
+    filename='leave_one_out_estimates';
+end
+
+if nargin == 13 
     filename='leave_one_out_estimates';
 end
 
@@ -291,13 +398,23 @@ if size(controls,2)==0
     resid_controls=0;
 end
 
+if size(controls,2)>0 && resid_controls==2
+    no_controls=1;
+    resid_controls=0;
+end
+
 
 if resid_controls==1 && no_controls== 1 
     error('cannot residualize if there are no controls specified')    
 end
 
+if resid_controls==0 && no_controls== 0 && strcmp(type_of_algorithm,'JLL')
+    error('cannot run JLL algorithm on non-Laplacian design matrix. Please set resid_controls=1')    
+end
+
+
 %Read number of outputs
-if nargout==1
+if  nargout==1
     n_of_parameters=1;
 end
 
@@ -323,6 +440,8 @@ eigen_diagno
 subsample_llr_fit
 restrict_movers
 do_SE
+type_of_algorithm
+epsilon
 filename
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
@@ -439,7 +558,7 @@ if resid_controls==1
 y=y-X(:,N+J:end)*b(N+J:end);
 no_controls=1;
 end
-clear X b
+clear X b r
 
 %Call CMG routine if there are no controls from the model
 if no_controls==1
@@ -620,17 +739,18 @@ tic
 disp('Calculating Leave Out Matrices...')
 
 if n_of_parameters==1
-    [Lambda_P, Lambda_B_fe]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T);
+    [Lambda_P, Lambda_B_fe]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T,type_of_algorithm,id,firmid,epsilon);
 end
 
 if n_of_parameters==2
-    [Lambda_P, Lambda_B_fe,Lambda_B_cov]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T);
+    [Lambda_P, Lambda_B_fe,Lambda_B_cov]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T,type_of_algorithm,id,firmid,epsilon);
 end
 
 if n_of_parameters==3
-    [Lambda_P, Lambda_B_fe,Lambda_B_cov,Lambda_B_pe]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T);
+    [Lambda_P, Lambda_B_fe,Lambda_B_cov,Lambda_B_pe]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T,type_of_algorithm,id,firmid,epsilon);
 end
 
+clear elist index clustering_var
 
 disp('Time to compute Leave one out matrices')
 toc
@@ -850,6 +970,9 @@ for pp=1:n_of_parameters
     if eigen_diagno == 1  && do_SE == 1
         [theta(pp), V_theta(pp), COV_R1(:,:,pp), gamma_sq(pp), F_stat(pp), b_1(pp), theta_1(pp)]= leave_out_estimation_two_way(type_quadratic_form,y,J,N,X,xx,Lchol,bias_part,eta_h,I_Lambda_P,L_P,Lambda_B,W_to_use,my_first_part,sigma_predict,x1_bar,lambda_1(pp));
     end
+    
+    
+
 end
 
 clear A_b Lambda_B W_to_use I_Lambda_P L_P
@@ -1116,8 +1239,9 @@ s=[filename '_completed'];
 save(s)
 
 %Export csv with data from leave out connected set
-out=[y,firmid,id,firmid_old,id_old,controls];
-s=[filename '_export_leave_out_connected_set'];
+Pii=full(diag(Lambda_P));
+out=[y,firmid,id,firmid_old,id_old,controls,Pii];
+s=[filename '.csv'];
 dlmwrite(s, out, 'delimiter', '\t', 'precision', 16); 
 end
 

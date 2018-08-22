@@ -18,10 +18,10 @@ path(path,'codes'); %this contains the main LeaveOut Routines.
 %      estimation has been carried out.                  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 try
-%delete(gcp('nocreate'))
-%pool = parpool('dcs', 64);
+delete(gcp('nocreate'))
 pool=parpool(32,'IdleTimeout', Inf);
 %pool=parpool(str2num(getenv('SLURM_CPUS_PER_TASK')),'IdleTimeout', Inf);
+%pool = parpool('dcs', 64);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         %CALL
@@ -36,8 +36,9 @@ end
         
 
 %Make sure that the input .csv file is sorted by worker id and year
-%(xtset id year in Stata).                        
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                  
+%(xtset id year in Stata). 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                  
 %Input File
 namesrc='src/test.csv'; %where original data is
 
@@ -55,7 +56,6 @@ filename=[placeFile nameFile];
 data=importdata(namesrc);
 id=data(:,1);
 firmid=data(:,2);
-year=data(:,3);
 y=data(:,4);
 clear data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -69,16 +69,18 @@ restrict_movers=0;
 resid_controls=0;
 controls=[]; %equivalent to no controls
 do_SE=0;
-subsample_llr_fit=2;
+subsample_llr_fit=0;
+type_of_algorithm='exact';
+epsilon=0.005;
+
 
 %Log File
-logname=[placelog namelog '.log'];
+logname=[placelog namelog  '.log'];
 system(['rm ' logname])
 diary(logname)
 
 %Run
-[sigma2_psi,sigma_psi_alpha,sigma2_alpha]= leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,do_SE,filename);    
-
+[sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_COMPLETE(y,id,firmid,leave_out_level,controls,resid_controls,andrews_estimates,eigen_diagno,subsample_llr_fit,restrict_movers,do_SE,type_of_algorithm,epsilon,filename);
 
 %Close
 delete(pool)
