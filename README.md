@@ -28,18 +28,24 @@ The m-file `example.m` shows how to compute Leave Out estimates in a test datase
 
 * For a more complete picture of the accuracy vs. speed tradeoff involving the random projection approach, here are some diagnostics for a dataset with approx 50K workers, 15K Firms
 
-                *  When "type_of_algorithm = exact", the code takes 1600
+                *  When "type_of_algorithm = exact", the code takes 1500
                    seconds to compute (Bii,Pii) for variance of firm
                    effects, variance of person effects and covariance of
                    person, firm effects. 
  
                 *  When "type_of_algorithm = JLL" and `epsilon`=0.005, 
-                   the code takes 100 seconds to compute (Bii,Pii) 
+                   the code takes 82 seconds to compute (Bii,Pii) 
                    for variance of firm effects, variance of person effects 
                    and covariance of person, firm effects. 
+                   
+                *  The correlation b/w the P_ii found with the exact method and 
+                   the Pii found with the random projection method is equal
+                   to 0.9987. The maxium difference found between the two is
+                   less than <5%.
  
-                *  The estimates from JLL differ from those obtained with 
-                   the exact algorithm by a factor less than 0.1 percent.
+                *  The variance components estimates from JLL differ from those 
+                   obtained with the exact algorithm by a factor less than 0.1 percent.
+                   Similarly, for the estimated standard errors.
  
 # History of Updates
 
