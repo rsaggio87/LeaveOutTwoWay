@@ -10,7 +10,9 @@ The m-file `example.m` shows how to compute Leave Out estimates in a test datase
  
  * This especially helpful in massive datasets where exact computation of (Bii,Pii), even after the improvements introduced from version 1.5, is close to be prohibitive in terms of computation time.
  
- * We added the following inputs
+ * To give an idea about previous point: In a dataset with approximately 1.3 Milion Worker Effects, 90K firm effects, with random   projections it takes *21 minutes* to compute (Bii,Pii) associated with variance of firm effects. It takes more than *30 hours* when using the exact method.  
+ 
+ * In terms of the code, We added the following inputs
                 
                 *   "type_of_algorithm": This takes two values: "exact or "JLL".
 
@@ -24,7 +26,7 @@ The m-file `example.m` shows how to compute Leave Out estimates in a test datase
                     when estimating (Bii,Pii). Smaller values of epsilon implies 
                     more accuracy but slower performance.
 
-* In terms of speed, for a dataset with approx 50K workers, 15K Firms
+* For a more complete picture of the accuracy vs. speed tradeoff involving the random projection approach, here are some diagnostics for a dataset with approx 50K workers, 15K Firms
 
                 *  When "type_of_algorithm = exact", the code takes 1600
                    seconds to compute (Bii,Pii) for variance of firm
