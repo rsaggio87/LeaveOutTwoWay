@@ -2,7 +2,9 @@
 
 This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth - using Matlab.
 
-The m-file `example.m` shows how to compute Leave Out estimates in a test dataset.
+With the introduction of random projections techniques in version 2.0, it is possible to run leave out estimation on very large datasets. To give an idea, for a dataset containing 5 million person year observations, 1.3 million person effects, 90K firm effects the code takes approximately 20 minutes to compute the relevant leave out matrices.  
+
+The m-file `example.m` shows how to compute Leave Out estimates in a small test dataset.
 
 # Current Release: Version 2.0
 
@@ -10,7 +12,7 @@ The m-file `example.m` shows how to compute Leave Out estimates in a test datase
  
  * This especially helpful in massive datasets where exact computation of (Bii,Pii), even after the improvements introduced from version 1.5, is close to be prohibitive in terms of computation time.
  
- * To give an idea about previous point: In a dataset with approximately 1.3 Milion Worker Effects, 90K firm effects, with random   projections it takes *21 minutes* to compute (Bii,Pii). It takes more than *30 hours* when using the exact method.  
+ * To give an idea about previous point: In a dataset with approximately 5 million person years observations, 1.3 million worker effects, 90K firm effects, with random projections it takes *21 minutes* to compute (Bii,Pii). It takes more than *30 hours* when using the exact method.  
  
  * In terms of the code, We added the following inputs
                 
@@ -42,11 +44,11 @@ The m-file `example.m` shows how to compute Leave Out estimates in a test datase
                 *  The correlation b/w the P_ii found with the exact method and 
                    the Pii found with the random projection method is equal
                    to 0.9987. The maxium difference found between the two is
-                   less than <5%.
+                   less than <0.05.
  
                 *  The variance components estimates from JLL differ from those 
                    obtained with the exact algorithm by a factor less than 0.1 percent.
-                   Similarly, for the estimated standard errors.
+                   Similarly, for the estimated standard errors (subsample_llr_fit=0).
  
 # History of Updates
 
