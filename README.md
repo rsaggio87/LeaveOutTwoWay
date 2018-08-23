@@ -12,7 +12,7 @@ The m-file `example.m` shows how to compute Leave Out estimates in a small test 
  
  * This especially helpful in massive datasets where exact computation of (Bii,Pii), even after the improvements introduced from version 1.5, is close to be prohibitive in terms of computation time.
  
- * To give an idea about previous point: In a dataset with approximately 5 million person years observations, 1.3 million worker effects, 90K firm effects, with random projections it takes *21 minutes* to compute (Bii,Pii). It takes more than *30 hours* when using the exact method.  
+ * A benchmark: in a data set with approximately 5 million observations, 1.3 million worker effects, and 90 thousand firm effects, it takes *21 minutes* to compute (Bii,Pii) via random projections. By contrast, it takes more than *30 hours* using the exact method." 
  
  * In terms of the code, We added the following inputs
                 
