@@ -6,7 +6,11 @@ With the introduction of random projections techniques in version 2.0, it is pos
 
 The m-file `example.m` shows how to compute Leave Out estimates in a small test dataset.
 
-# Current Release: Version 2.0
+# Current Release: Version 2.0.1
+
+ * Fixed Bug where code could not run because it could not locate the function `leave_out_estimation_two_way'.
+ 
+# Version 2.0
 
  * Added option to estimate the stastistical leverages, Pii, and what we define as Bii in KSS using Random Projections methods that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
  
