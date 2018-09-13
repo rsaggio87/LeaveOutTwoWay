@@ -95,7 +95,7 @@ See the function `codes/lincom_KSS` and `example_testing` for a set of different
  * Version 1.0 (16June2018): Original upload. 
 
 # Routines included within the Repository.
-Within this repository, there are three independent  routines that users can test on their own
+Within this repository, there are four independent routines that users can test on their own
 datasets:
 
 * Users interested in applying the homoskedastic correction in two-way
