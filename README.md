@@ -8,7 +8,7 @@ With the release of version 2.1, it is also possible to run inference on linear 
 
 # Current Release: Version 2.1
 
-It is now possible with "lincom_KSS" to make inference on linear combinations of regression coefficients suitable for settings with many regressors, heteroscedastic errors potentially serially correlated within "clusters". For theoretical justification and further details, see Proposition 1 and Remark 9 of KSS.
+With "lincom_KSS", users can now make inference on linear combinations of regression coefficients suitable for settings with many regressors, heteroscedastic errors potentially serially correlated within "clusters". For theoretical justification and further details, see Proposition 1 and Remark 9 of KSS.
 
 The typical example where one would apply "lincom_KSS" is when in a prior step, the user has estimated a two-way fixed effects
 model and obtained the associated, say, worker and firm fixed effects. In a second step, the user is interested in regressing
