@@ -1,16 +1,30 @@
 # Brief Description
 
-This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth - using Matlab.
+This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth - using Matlab. See the m-file `example.m` whichs provides a simple example on how one would compute leave out estimates on a small test dataset.
 
-With the introduction of random projections techniques in version 2.0, it is possible to run leave out estimation of variance components on very large datasets. To give an idea, for a dataset containing 5 million person year observations, 1.3 million person effects, 90K firm effects the code takes approximately 20 minutes to compute the relevant leave out matrices.  
+With the introduction of random projections techniques in version 2.0, it is possible to run leave out estimation of variance components on very large datasets. To give an idea, for a dataset containing 5 million person year observations, 1.3 million person effects, 90K firm effects the code takes approximately 20 minutes to compute the relevant leave out matrices on a hpc system with 32 cores assigned.  
 
-The m-file `example.m` shows how to compute Leave Out estimates in a small test dataset.
+With the release of version 2.1, it is also possible to run inference on linear contrasts of regression coefficients that accounts for (i) many regressors (ii) heteroskedasticity (iii) serial correlation within cluster. See the function `codes/lincom_KSS` and `example_testing` for a set of different scenarios where one would be interested in using the function "lincom_KSS".
 
-# Current Release: Version 2.0.1
+# Current Release: Version 2.1 - Inference on Linear Contrasts.
 
- * Fixed Bug where code could not run because it could not locate the function `leave_out_estimation_two_way'.
+It is now possible with "lincom_KSS" to make inference on linear combinations of regression coefficients suitable for settings with many regressors   and potentially heteroscedastic errors. For theoretical justification and further details, see Proposition 1 and 
+Remark 9 of Kline, Saggio, Solvsten (2018) - KSS henceforth.
+
+The typical example where one would apply "lincom_KSS" is when in a prior step, the user has run a two-way fixed effects
+model and obtained the associated, say, worker and firm fixed effects. Then the user is interested in regressing, say, 
+the firm effects onto a bunch of observable characteristics. "lincom_KSS" provides the valid standard errors associated with this
+regression.
+
+Importantly: lincom_KSS can accomodate serial correlation in the error term within "clusters". 
+See the documentation inside the function "lincom_KSS" for further details.
+
+ # Version 2.
+ Fixed Bug where code could not run because it could not locate the function `leave_out_estimation_two_way'.
  
 # Version 2.0
+
+ * Fixed Bug where code could not run because it could not locate the function `leave_out_estimation_two_way'.
 
  * Added option to estimate the stastistical leverages, Pii, and what we define as Bii in KSS using Random Projections methods that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
  
@@ -55,6 +69,50 @@ The m-file `example.m` shows how to compute Leave Out estimates in a small test 
                    Similarly, for the estimated standard errors (subsample_llr_fit=0).
  
 # History of Updates
+
+ * Version 2.0.1: Fixed Bug where code could not run because it could not locate the function `leave_out_estimation_two_way'.
+
+ * Version 2.0: Added option to estimate the stastistical leverages, Pii, and what we define as Bii in KSS using Random Projections methods that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
+ 
+     * This especially helpful in massive datasets where exact computation of (Bii,Pii), even after the improvements introduced from version 1.5, is close to be prohibitive in terms of computation time.
+ 
+     * A benchmark: in a data set with approximately 5 million observations, 1.3 million worker effects, and 90 thousand firm effects, it takes *21 minutes* to compute (Bii,Pii) via random projections. By contrast, it takes more than *30 hours* using the exact method." 
+ 
+     * In terms of the code, We added the following inputs
+                
+                *   "type_of_algorithm": This takes two values: "exact or "JLL".
+
+                           "type_of_algorithm = exact": performs exact computation of (Bii,Pii)
+                           as described in version 1.5.          
+                    
+                           "type_of_algorithm = JLL": performs random projection methods to
+                           approximate (Bii,Pii) as detailed in Appendix B of KSS.
+                
+               *    "epsilon": this governs the tradeoff b/w speed and accuracy 
+                    when estimating (Bii,Pii). Smaller values of epsilon implies 
+                    more accuracy but slower performance. See the paper by 
+                    Spielman-Srivastava (2011) for further details.  
+
+     * For a more complete picture of the accuracy vs. speed tradeoff involving the random projection approach, here are some diagnostics  for a dataset with approx 50K workers, 15K Firms
+
+                *  When "type_of_algorithm = exact", the code takes 1500
+                   seconds to compute (Bii,Pii) for variance of firm
+                   effects, variance of person effects and covariance of
+                   person, firm effects. 
+ 
+                *  When "type_of_algorithm = JLL" and `epsilon`=0.005, 
+                   the code takes 82 seconds to compute (Bii,Pii) 
+                   for variance of firm effects, variance of person effects 
+                   and covariance of person, firm effects. 
+                   
+                *  The correlation b/w the P_ii found with the exact method and 
+                   the Pii found with the random projection method is equal
+                   to 0.9987. The maxium difference found between the two is
+                   less than <0.05.
+ 
+                *  The variance components estimates from JLL differ from those 
+                   obtained with the exact algorithm by a factor less than 0.1 percent.
+                   Similarly, for the estimated standard errors (subsample_llr_fit=0).
 
  * Version 1.55 (22August2018): Added more options to run non-parametric fit.
  
