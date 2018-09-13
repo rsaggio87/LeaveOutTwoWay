@@ -106,15 +106,20 @@ fixed effects models can use the function `leave_out_COMPLETE.m`.
 
 * Users interested in computing leave-out estimates and inference 
 of the variance of firm effects only can use the function 
-`leave_out_FD.m` which works well with large datasets.
+`leave_out_FD.m`.
 
-All that is required for these functions to run appropriately is that the
-original person-year file is sorted by worker-identifiers
-and year (xtset id year in Stata).
+* Users interested in computing valid inference on linear combination 
+of regression coefficients that is robust to many regressors asymptotics, 
+heteroskedasticity and serial correlation within clusters can use
+`lincom_KSS.m`. lincom_KSS can be applied to ANY linear regression model (i.e.
+not only two-way models) but it optimized to run as essentially a post-estimation
+command following the command `leave_out_COMPLETE.m`.
 
 # Things to have in mind 
 
 * `example.m` provides a simple example where the user calls a test dataset in .csv and then calls the function `leave_out_COMPLETE.m` to compute leave out estimates. See the documentation provided within the function of `leave_out_COMPLETE.m` for a description of the inputs and the outputs associated with this function.
+
+* `example_testing.m` provides five examples that show how to conduct inference on linear combination of linear regression parameters using the function `lincom_KSS.m.
 
 * `leave_out_COMPLETE.m` outputs estimates of the VCM of the person, firm effects with associated standard errors (assuming q=0 in KSS).  Standard errors for the case q=1 can also be obtained. In future releases, we plan also to allow users to specificy the variance component associated with a specific (sub)set of controls. 
 
