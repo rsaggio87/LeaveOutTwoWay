@@ -4,16 +4,13 @@ This repository computes Leave Out estimates of variance components in two fixed
 
 With the introduction of random projections techniques in version 2.0, it is possible to run leave out estimation of variance components on large datasets. To give an idea, for a dataset containing 5 million person year observations, 1.3 million person effects, 90K firm effects the code takes approximately 20 minutes to compute the relevant leave out matrices on a hpc system with 32 cores assigned.  
 
-With the release of version 2.1, it is also possible to run inference on linear contrasts of regression coefficients that accounts for (i) many regressors asymptotics (ii) heteroskedasticity (iii) serial correlation within a given cluster of observations. 
+With the release of version 2.1, it is now possible to conduct inference on linear combinations of regression coefficients that accounts for (i) many regressor asymptotics (ii) heteroskedasticity (iii) within-cluster correlation of errors.
 
 # Current Release: Version 2.1
 
-With "lincom_KSS", users can now make inference on linear combinations of regression coefficients, see Proposition 1 and Remark 9 of KSS.
+With "lincom_KSS", users can now conduct inference on linear combinations of regression coefficients, see Proposition 1 and Remark 9 of KSS.
 
-The typical example where one would apply "lincom_KSS" is when in a prior step, the user has estimated a two-way fixed effects
-model and obtained the associated, say, worker and firm fixed effects. In a second step, the user is interested in regressing
-the firm effects onto a bunch of observable characteristics. "lincom_KSS" provides the valid standard errors associated with this
-regression.
+The typical use case for "lincom_KSS" is when the user is interested in projecting a set of estimated fixed effects onto a set of observable characteristics. "lincom_KSS" provides asymptotically valid standard errors for those projection coefficients. The procedure also returns the p-value on a joint test that the projection coefficients are all zero.
 
 See the function `codes/lincom_KSS` and `example_testing` for a set of different scenarios where one would be interested in using the function "lincom_KSS".
  
