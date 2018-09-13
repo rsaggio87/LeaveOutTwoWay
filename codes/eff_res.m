@@ -38,7 +38,7 @@ Bii_pe=zeros(M,1);
 %Options for solver
 numIterations = 300; %iteration for the pcg solver
 tol=1e-6; %tol for pcg
-    
+
 %Objects for parfor 
     xx_c = parallel.pool.Constant(xx);
     X_c =  parallel.pool.Constant(X);
@@ -47,27 +47,33 @@ tol=1e-6; %tol for pcg
     if K > 0
         Lchol_c=parallel.pool.Constant(Lchol);
     end
-    
+
 %Special case of Laplacian design matrix    
-if K == 0 && strcmp(clustering_level,'obs')  
-    Xright=X(movers,:);
-    Xright=parallel.pool.Constant(Xright);
-    Nmovers=sum(movers);
-    maxT=max(T(~movers)); 
-    movers_index=find(movers);
-    stayers_index=find(~movers);
+if K == 0
+    [~,~,match_id]=unique([id firmid],'rows');
+    Nmatches=max(match_id);
+    match_id_movers=match_id(movers);
+    firmid_movers=firmid(movers);
+    id_movers=id(movers);
+    [~,sel,~]=unique(match_id_movers,'rows');
+    match_id_movers=match_id_movers(sel);
+    firmid_movers=firmid_movers(sel);
+    id_movers=id_movers(sel);
+    maxT=max(T(~movers));
+    count=ones(NT,1);
+    gcs = cell2mat(accumarray(id,count,[],@(x){cumsum(x)}));
+    sel_stayers=(gcs==1).*(~movers);
+    sel_stayers=sel_stayers>0;
+    stayers_matches_sel=match_id(sel_stayers);
     Tinv=1./T;
-    Pii_movers=zeros(Nmovers,1);
-    Bii_fe_movers=zeros(Nmovers,1);
-    Bii_cov_movers=zeros(Nmovers,1);
-    Bii_pe_movers=zeros(Nmovers,1);
-        
-    if strcmp(type_algorithm,'JLL')
-            elist_JLL=[id(movers) N+firmid(movers) id(movers) N+firmid(movers)];
-    end
-
+    elist_JLL=[id_movers N+firmid_movers id_movers N+firmid_movers];
+    M=size(elist_JLL,1);
+    Pii_movers=zeros(M,1);
+    Bii_fe_movers=zeros(M,1);
+    Bii_cov_movers=zeros(M,1);
+    Bii_pe_movers=zeros(M,1);
 end
-
+    
 %Loop
 if K>0
     if ~strcmp(clustering_level,'obs')
@@ -137,41 +143,13 @@ end
 
 %Loop
 if K==0
-    if ~strcmp(clustering_level,'obs')
-        parfor i=1:M     
-            [xtilde_right, flag]= pcg(xx_c.Value,Xright.Value(i,:)',tol,numIterations,Lchol);
-            [xtilde_left, flag]= pcg(xx_c.Value,Xleft.Value(i,:)',tol,numIterations,Lchol);
-
-            %Statistical Leverage
-            Pii(i)=Xleft.Value(i,:)*xtilde_right;
-
-            %Bii for Variance of Firm Effects
-            aux_right=xtilde_right(N+1:N+J-1,:);
-            aux_left=xtilde_left(N+1:N+J-1,:);
-            COV=cov(X_c.Value(:,N+1:N+J-1)*aux_left,X_c.X_c.Value(:,N+1:N+J-1)*aux_right);
-            Bii_fe(i)=COV(1,2)*(NT-1);
-
-            %Bii for Variance of Person Effects
-            if do_pe == 1
-                aux_right=xtilde_right(1:N);
-                aux_left=xtilde_left(1:N);
-                COV=cov(X_c.Value(:,1:N)*aux_left,X_c.Value(:,1:N)*aux_right);
-                Bii_pe(i)=COV(1,2)*(NT-1);
-            end
-
-            %Bii for Covariance of Person, Firm Effects
-            if do_cov == 1
-                aux_right=xtilde_right(N+1:N+J-1);
-                aux_left=xtilde_left(1:N);
-                COV=cov(X_c.Value(:,1:N)*aux_left,X_c.Value(:,N+1:N+J-1)*aux_right);
-                Bii_cov(i)=COV(1,2)*(NT-1);
-            end
-        end
-    end
-
-    if strcmp(clustering_level,'obs') && strcmp(type_algorithm,'exact')
-
-        parfor i=1:Nmovers     
+    
+    if  strcmp(type_algorithm,'exact')
+        Xright = sparse((1:M)',elist_JLL(:,1),1,M,N+J);
+        Xright =  Xright+sparse((1:M)',elist_JLL(:,2),-1,M,N+J);
+        Xright=parallel.pool.Constant(Xright);
+        
+        parfor i=1:M
         [xtilde, flag]= pcg(xx_c.Value,Xright.Value(i,:)',tol,numIterations,Lchol);
 
         %Statistical Leverage
@@ -203,8 +181,8 @@ if K==0
         
     end
     
-   if strcmp(clustering_level,'obs') && strcmp(type_algorithm,'JLL')
-      
+   if  strcmp(type_algorithm,'JLL') 
+       
        %Number of random draws to implement Random Projection Algorithm.
        disp('# of Simulated Projections for JLL:')
        
@@ -223,9 +201,13 @@ if K==0
        elist_1=parallel.pool.Constant(elist_JLL(:,1));
        elist_2=parallel.pool.Constant(elist_JLL(:,2));
        elist_3=parallel.pool.Constant(elist_JLL(:,3));
-       elist_4=parallel.pool.Constant(elist_JLL(:,4));
-      
+       elist_4=parallel.pool.Constant(elist_JLL(:,4));        
        parfor i=1:scale
+                
+                %To avoid redundant warnings from each worker.
+                Z=0;
+                ZB=0;
+                ZB_pe=0;
                 
                 %Random Projection Matrix (Rademacher)
                 ons = (rand(1,NT) > tolProb);
@@ -258,21 +240,27 @@ if K==0
        end
                 
    end
+  
+   
    %Assign step
-   if strcmp(clustering_level,'obs')
-        Pii_movers=sparse(movers_index,1,Pii_movers,NT,1);
-        Bii_fe=sparse(movers_index,1,Bii_fe_movers,NT,1);
-        Pii_stayers=sparse(stayers_index,1,Tinv(~movers),NT,1);
-        Pii=Pii_movers+Pii_stayers;
-        if do_cov==1
-            Bii_cov=sparse(movers_index,1,Bii_cov_movers,NT,1);
-        end
-        if do_pe==1
-            Bii_pe=sparse(movers_index,1,Bii_pe_movers,NT,1);
-            stayers=~movers;
-            for t=2:maxT %T=1 have Pii=1 so need to be dropped.
-            sel=stayers.*(T==t);
+   Pii_movers=sparse(match_id_movers,1,Pii_movers,Nmatches,1);
+   Pii_stayers=sparse(stayers_matches_sel,1,Tinv(sel_stayers),Nmatches,1);
+   Pii=Pii_movers+Pii_stayers;
+   
+   Bii_fe=sparse(match_id_movers,1,Bii_fe_movers,Nmatches,1);
+   
+   if do_cov == 1
+        Bii_cov=sparse(match_id_movers,1,Bii_cov_movers,Nmatches,1);
+   end
+   
+   if do_pe  == 1
+        Bii_pe=sparse(match_id_movers,1,Bii_pe_movers,Nmatches,1);
+        stayers=~movers;
+         for t=2:maxT %T=1 have Pii=1 so need to be dropped.
+            sel=(gcs==1).*stayers.*(T==t);
+            sel=sel>0;
             index_sel=find(sel);
+            match_sel_aux=match_id(sel);
             first=index_sel(1);
             Xuse=X(first,:);
             [xtilde, flag]= pcg(xx,Xuse',tol,numIterations,Lchol);
@@ -280,33 +268,48 @@ if K==0
             aux_left=xtilde(1:N);
             COV=cov(X(:,1:N)*aux_left,X(:,1:N)*aux_right);
             Bii_pe_stayers=COV(1,2)*(NT-1);
-            Bii_pe_stayers=sparse(index_sel,1,Bii_pe_stayers,NT,1);
+            Bii_pe_stayers=sparse(match_sel_aux,1,Bii_pe_stayers,Nmatches,1);
             Bii_pe=Bii_pe+Bii_pe_stayers;
-            end
-        end
+         end    
    end
-
-    
+   
 end
 
 %Create the matrices.
 rows=elist(:,1);
 column=elist(:,2);
+index_cluster=elist(:,3);
+
+if K == 0 
+    Pii=Pii(index_cluster);
+    Bii_fe=Bii_fe(index_cluster);
+    if do_cov==1
+        Bii_cov=Bii_cov(index_cluster);
+    end
+    if do_pe==1
+        Bii_pe=Bii_pe(index_cluster);
+    end
+end
+
 %Lambda P
 Lambda_P=sparse(rows,column,Pii,NT,NT);
 Lambda_P=Lambda_P+triu(Lambda_P,1)'; %make it symmetric.
+
 %Lambda B var(fe)
 Lambda_B_fe=sparse(rows,column,Bii_fe,NT,NT);
 Lambda_B_fe=Lambda_B_fe+triu(Lambda_B_fe,1)'; %make it symmetric.
+
 %Lambda B cov(fe,pe)
 if do_cov==1
-Lambda_B_cov=sparse(rows,column,Bii_cov,NT,NT);
-Lambda_B_cov=Lambda_B_cov+triu(Lambda_B_cov,1)';
+    Lambda_B_cov=sparse(rows,column,Bii_cov,NT,NT);
+    Lambda_B_cov=Lambda_B_cov+triu(Lambda_B_cov,1)';
 end
+
 %Lambda B, var(pe)
 if do_pe==1
-Lambda_B_pe=sparse(rows,column,Bii_pe,NT,NT);
-Lambda_B_pe=Lambda_B_pe+triu(Lambda_B_pe,1)'; %make it symmetric.
+    Lambda_B_pe=sparse(rows,column,Bii_pe,NT,NT);
+    Lambda_B_pe=Lambda_B_pe+triu(Lambda_B_pe,1)'; %make it symmetric.
 end
+
 end
 

@@ -93,12 +93,15 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %                    when estimating (Bii,Pii). Smaller values of epsilon implies 
 %                    less bias but more computation time.
 %
+% 2.05: Made additional improvements for computation of (Bii,Pii) in "eff_res" by looking
+%		at unique matches.
 %
-%       Note: The algorithm introduced with this new release only applies to
+%       Note: The algorithm introduced with from release 2.0 only applies to
 %       the case when there are no controls in the model or the controls 
 %       have been residualized in a prior step so that the design matrix 
-%       corresponds to a Laplacian matrix.                  
-%% DESCRIPTION OF THE INPUTS
+%       corresponds to a Laplacian matrix.     
+%-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-             
+%% 					DESCRIPTION OF THE INPUTS
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-                   
                         %-MANDATORY INPUTS
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
@@ -270,7 +273,7 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 
 %controls: vector of extra controls in the leave out connected set.
 
-%Pii: statistical leverage associated with two way model.
+%Pii: (diagonal) statistical leverage associated with two way model.
 
 %Check Log File for additional results reported by the code. 
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-
@@ -282,8 +285,9 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- 
 %The code saves the following files:
 
-%One .mat file after step 3  in codes/mat/ with all matrices in memory.
-%One .mat file after completing the code in codes/mat/ with all matrices in memory.
+%One .mat file after step 3  with all matrices in memory.
+%One .mat file after completing the code with all matrices in memory.
+%One .mat file containing the relevant leave-out leverages.
 %A   .csv file with location and name specified by the user.
 
 %The .csv saves the following variables belonging 
@@ -427,6 +431,21 @@ if nargout>=3
 end
 
 
+%Read possible inconsistencies
+if ~strcmp(leave_out_level,'obs') && restrict_movers == 0
+s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
+disp(s)
+disp(s)
+disp('WARNING!!!!!!!!!!!!!!!')
+disp('Variance of Person Effects not identified for stayers when leaving more than a single observation out.')
+disp('The code will omit all output concerning the variance of person effects.')
+disp('Consider setting "restrict_movers=1" if user is interested in the variance of person effects.')
+s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
+disp(s)
+disp(s)
+n_of_parameters=2;
+end
+
 %Listing options
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
@@ -549,6 +568,8 @@ s=['R2: ' num2str(R2)];
 disp(s);
 s=['Adj.R2: ' num2str(adjR2)];
 disp(s);
+s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
+disp(s)
 %Do some cleaning of matrices in memory
 clear xx xy L xb pe fe ahat ghat F D S Lchol
 
@@ -561,10 +582,11 @@ end
 clear X b r
 
 %Call CMG routine if there are no controls from the model
-if no_controls==1
+if no_controls == 1
+warning('off', 'all') 
 cd codes;    
 path(path,'CMG'); %this contains the main LeaveOut Routines.
-MakeCMG
+MakeCMG;
 cd ..
 end
 
@@ -623,22 +645,6 @@ controls=controls(sel,:);
 firmid=n;
 [~,~,n]=unique(id);
 id=n; 
-
-
-%%%Resort data if running leave one out on matches
-if strcmp(leave_out_level,'matches')
-[~,~,match_id]=unique([id firmid],'rows');  
-[~,IX]=sort(match_id);
-y=y(IX);
-firmid=firmid(IX);
-id=id(IX);
-id_old=id_old(IX);
-firmid_old=firmid_old(IX);
-controls=controls(IX,:);
-match_id=match_id(IX);
-end
-
-
 
 %Important Auxiliaries
 gcs = [NaN; id(1:end-1)];
@@ -705,7 +711,8 @@ disp(s)
 %decomposition parameter, using the function 'eff_res'. 
 
 
-%% STEP 3A: Indexes needed to construct Bii, Pii 
+%% STEP 3A: Indexes needed to construct Bii, Pii
+[~,~,match_id]=unique([id firmid],'rows'); 
 if strcmp(leave_out_level,'obs')
 index=(1:NT)';    
 clustering_var=index;
@@ -713,10 +720,7 @@ end
 if strcmp(leave_out_level,'matches')
 clustering_var=match_id;
 end
-elist=index_constr(clustering_var,id);
-
-disp('checking, must report 1')
-mean(elist(:,1)<=elist(:,2))
+elist=index_constr(clustering_var,id,match_id);
 
 %% STEP 3B: Build Design
 S=speye(J-1);
@@ -731,6 +735,7 @@ end
 if no_controls==1
 X=[D,-F];
 xx=X'*X;
+disp('Building preconditioner for Laplacian Matrix...')
 Lchol = cmg_sdd(xx); %preconditioner for Laplacian matrices.
 end
 
@@ -862,8 +867,6 @@ end
 
 
 %% STEP 5.1: AKM (PLUG-IN)
-disp('Running AKM...')
-tic
 xy=X'*y;
 b=pcg(xx,xy,1e-10,1000,Lchol,Lchol');
 ahat=b(1:N);
@@ -883,8 +886,21 @@ sigma_alpha_psi_AKM=COV(1,2);
 
 %% STEP 5.2: Leave One Out Estimation.
 I_Lambda_P=(speye(NT,NT)-Lambda_P);
+eta_h=I_Lambda_P\eta; %Leave one out residual
+msg = lastwarn ; 
+if ~isempty(strfind(msg, 'singular')) 
+            	s=['******************************************'];
+                disp(s);
+                disp(s); 
+				disp('Warning: OLS coefficient not always identified when leaving a particular set of observation out as specified by "leave_out_level"')
+				disp('One example where this occurs is when the user asks to run leave out on matches without restricting the analysis to movers only.')
+				s=['******************************************'];
+                disp(s);
+                disp(s); 
+				
+end
 L_P=ichol(I_Lambda_P,struct('type','ict','droptol',1e-2,'diagcomp',2));
-[eta_h, flag]=pcg(I_Lambda_P,eta,1e-5,1000,L_P,L_P'); %leave-out residuals
+
 
 %Preallocate vectors with results
 theta=zeros(n_of_parameters,1);
@@ -1032,10 +1048,14 @@ end
 
 
 %% STEP 6: REPORTING
+s=['-*-*-*-*-*-*-*-*-*-*-*-*'];
+disp(s);
+disp(s);
 s=['Results: Leave One Out Largest Connected Set'];
 disp(s);
 s=['-*-*-*-*-*-*-*-*-*-*-*-*'];
-disp(s)
+disp(s);
+disp(s);
 s=['mean wage: ' num2str(mean(y))];
 disp(s)
 s=['variance of wage: ' num2str(var(y))];
@@ -1234,13 +1254,16 @@ if do_SE==1
         end
     end
 end
-%Save File.
+%Save Outputs.
 s=[filename '_completed'];
 save(s)
+s=[filename '_Lambda_P'];
+save(s,'Lambda_P')
+
 
 %Export csv with data from leave out connected set
 Pii=full(diag(Lambda_P));
-out=[y,firmid,id,firmid_old,id_old,controls,Pii];
+out=[y,firmid,id,firmid_old,id_old,Pii,controls];
 s=[filename '.csv'];
 dlmwrite(s, out, 'delimiter', '\t', 'precision', 16); 
 end
