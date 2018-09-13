@@ -1,6 +1,6 @@
 # Brief Description
 
-This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth - using Matlab. See the m-file `example.m` whichs provides a simple example on how one would compute leave out estimates on a small test dataset.
+This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth - using Matlab. See the m-file `example.m` which provides a simple example on how one would compute leave out estimates on a small test dataset.
 
 With the introduction of random projections techniques in version 2.0, it is possible to run leave out estimation of variance components on very large datasets. To give an idea, for a dataset containing 5 million person year observations, 1.3 million person effects, 90K firm effects the code takes approximately 20 minutes to compute the relevant leave out matrices on a hpc system with 32 cores assigned.  
 
