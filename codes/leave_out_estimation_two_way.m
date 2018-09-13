@@ -99,7 +99,7 @@ if do_SE == 1
     if DO_R1==1
     aux_SIM2=zeros(NSIM,1);
     end
-
+	pctrunonall warning('off', 'all')" 
     parfor s=1:NSIM
            v=randn(NT,1).*sqrt(sigma_predict);
            aux=X'*v;

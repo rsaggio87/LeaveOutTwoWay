@@ -1,13 +1,13 @@
-function elist=index_constr(clustering_var,id)
+function elist=index_constr(clustering_var,id,match_id)
 NT=length(clustering_var);
 count=ones(length(clustering_var),1);
-gcs = cell2mat(accumarray(clustering_var,count,[],@(x){cumsum(x)}));
+gcs = cell2mat(accumarray(id,count,[],@(x){cumsum(x)}));
 maxD=max(gcs);
 index=(1:NT)';
 list_final=[];
 
 for t=1:maxD
-    list_base=[clustering_var(gcs==t) index(gcs==t) id(gcs==t)];
+    list_base=[clustering_var(gcs==t) index(gcs==t) match_id(gcs==t)];
     LIST_BASE = array2table(list_base,...
     'VariableNames',{'id_cluster','row_count','id'});
         for tt=t:maxD
