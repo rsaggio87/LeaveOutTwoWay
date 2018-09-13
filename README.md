@@ -1,10 +1,10 @@
 # Brief Description
 
-This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth - using Matlab. See the m-file `example.m` which provides a simple example on how one would compute leave out estimates on a small test dataset.
+This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth - using Matlab. 
 
 With the introduction of random projections techniques in version 2.0, it is possible to run leave out estimation of variance components on large datasets. To give an idea, for a dataset containing 5 million person year observations, 1.3 million person effects, 90K firm effects the code takes approximately 20 minutes to compute the relevant leave out matrices on a hpc system with 32 cores assigned.  
 
-With the release of version 2.1, it is also possible to run inference on linear contrasts of regression coefficients that accounts for (i) many regressors asymptotics (ii) heteroskedasticity (iii) serial correlation within cluster. See the function `codes/lincom_KSS` and `example_testing` for a set of different scenarios where one would be interested in using the function "lincom_KSS".
+With the release of version 2.1, it is also possible to run inference on linear contrasts of regression coefficients that accounts for (i) many regressors asymptotics (ii) heteroskedasticity (iii) serial correlation within cluster. 
 
 # Current Release: Version 2.1
 
@@ -15,7 +15,7 @@ model and obtained the associated, say, worker and firm fixed effects. In a seco
 the firm effects onto a bunch of observable characteristics. "lincom_KSS" provides the valid standard errors associated with this
 regression.
 
-See the documentation inside the function "lincom_KSS" for further details.
+See the function `codes/lincom_KSS` and `example_testing` for a set of different scenarios where one would be interested in using the function "lincom_KSS".
  
 # History of Updates
 
