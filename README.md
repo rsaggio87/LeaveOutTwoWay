@@ -15,7 +15,9 @@ The typical use case for "lincom_KSS" is when the user is interested in projecti
 See the function `codes/lincom_KSS` and `example_testing` for a set of different scenarios where one would be interested in using the function "lincom_KSS".
  
 # History of Updates
-
+ 
+ * Version 2.1.1: Fixed small bug `leave_out_estimation_two_way' (eliminated the command `pctrunonall').
+ 
  * Version 2.0.1: Fixed Bug where code could not run because it could not locate the function `leave_out_estimation_two_way'.
 
  * Version 2.0: Added option to estimate the stastistical leverages, Pii, and what we define as Bii in KSS using Random Projections methods that build on the Johnson Lindestrauss Lemma - See Appendix B of KSS.
