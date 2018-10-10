@@ -8,11 +8,11 @@ With the release of version 2.1, it is now possible to conduct inference on line
 
 # Current Release: Version 2.1
 
-With "lincom_KSS", users can now conduct inference on linear combinations of regression coefficients, see Proposition 1 and Remark 9 of KSS.
+With `lincom_KSS`, users can now conduct inference on linear combinations of regression coefficients, see Proposition 1 and Remark 9 of KSS.
 
-The typical use case for "lincom_KSS" is when the user is interested in projecting a set of estimated fixed effects onto a set of observable characteristics. "lincom_KSS" provides asymptotically valid standard errors for those projection coefficients. The procedure also returns the p-value on a joint test that the projection coefficients are all zero.
+The typical use case for `lincom_KSS` is when the user is interested in projecting a set of estimated fixed effects onto a set of observable characteristics. `lincom_KSS` provides asymptotically valid standard errors for those projection coefficients. The procedure also returns the p-value on a joint test that the projection coefficients are all zero.
 
-See the function `codes/lincom_KSS` and `example_testing` for a set of different scenarios where one would be interested in using the function "lincom_KSS".
+See the function `codes/lincom_KSS` and `example_testing` for a set of different scenarios where one would be interested in using the function `lincom_KSS`.
  
 # History of Updates
  
