@@ -16,7 +16,7 @@ See the function `codes/lincom_KSS` and `example_testing` for a set of different
  
 # History of Updates
  
- * Version 2.1.1: Fixed small bug `leave_out_estimation_two_way' (eliminated `pctrunonall').
+ * Version 2.1.1: Fixed small bug `leave_out_estimation_two_way` (eliminated command `pctrunonall`).
  
  * Version 2.0.1: Fixed Bug where code could not run because it could not locate the function `leave_out_estimation_two_way'.
 
