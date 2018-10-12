@@ -1,6 +1,6 @@
 # Brief Description
 
-This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and SÃ¸lvsten (2018) - KSS henceforth - using Matlab. 
+This repository computes Leave Out estimates of variance components in two fixed effects models as described in Kline, Saggio and Sølvsten (2018) - KSS henceforth - using Matlab. 
 
 With the introduction of random projections techniques in version 2.0, it is possible to run leave out estimation of variance components on large datasets. To give an idea, for a dataset containing 5 million person year observations, 1.3 million person effects, 90K firm effects the code takes approximately 20 minutes to compute the relevant leave out matrices on a hpc system with 32 cores assigned.  
 
@@ -15,6 +15,8 @@ The typical use case for "lincom_KSS" is when the user is interested in projecti
 See the function `codes/lincom_KSS` and `example_testing` for a set of different scenarios where one would be interested in using the function "lincom_KSS".
  
 # History of Updates
+
+ * Version 2.15: The step where we partial out the effects of extra controls is now computed on leave out largest connected set. Fixed a typo in computation of the standard errors. Improved warning system of the code in cases in which  1-Pii is approximately 0. Matlab BGL now included in the main directory.			
 
  * Version 2.0.1: Fixed Bug where code could not run because it could not locate the function `leave_out_estimation_two_way'.
 

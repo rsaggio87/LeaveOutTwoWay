@@ -96,10 +96,9 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha,SE_sigma2_psi,SE_sigma_psi_alp
 % 2.05: Made additional improvements for computation of (Bii,Pii) in "eff_res" by looking
 %		at unique matches.
 %
-%       Note: The algorithm introduced with from release 2.0 only applies to
-%       the case when there are no controls in the model or the controls 
-%       have been residualized in a prior step so that the design matrix 
-%       corresponds to a Laplacian matrix.     
+% 2.15: Residualize step now computed on leave out largest connected set.
+%       Fixed a typo in computation of the standard errors. Improved warning
+%       system of the code in case  1-Pii is approximately 0.
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-             
 %% 					DESCRIPTION OF THE INPUTS
 %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%- %-%-%-                   
@@ -444,6 +443,22 @@ s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
 disp(s)
 n_of_parameters=2;
+sigma2_alpha=NaN;
+SE_sigma2_alpha=NaN;
+end
+
+if ~strcmp(leave_out_level,'obs') && no_controls == 0 && resid_controls == 0
+s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
+disp(s)
+disp(s)
+disp('WARNING!!!!!!!!!!!!!!!')
+disp('To speed-up computation Leave out on matches will be perfomed in 2 steps. ')
+disp('In the first step we residualize the controls')
+disp('In the second step we calculate (Bii,Pii) for a model that controls for worker and firm characteristics')
+s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
+disp(s)
+disp(s)
+resid_controls=1;
 end
 
 %Listing options
@@ -574,21 +589,6 @@ disp(s)
 clear xx xy L xb pe fe ahat ghat F D S Lchol
 
 
-%%Deresidualized outcome variable (allows the leave one out methodology to run faster)
-if resid_controls==1
-y=y-X(:,N+J:end)*b(N+J:end);
-no_controls=1;
-end
-clear X b r
-
-%Call CMG routine if there are no controls from the model
-if no_controls == 1
-warning('off', 'all') 
-cd codes;    
-path(path,'CMG'); %this contains the main LeaveOut Routines.
-MakeCMG;
-cd ..
-end
 
 %% STEP 2: LEAVE ONE OUT CONNECTED SET
 %Here we compute the leave out connected set as defined in Appendix B. 
@@ -667,12 +667,6 @@ D=sparse(1:NT,id',1);
 N=size(D,2);
 F=sparse(1:NT,firmid',1);
 J=size(F,2);
-if no_controls==0
-K=size(controls,2);
-end
-if no_controls==1
-K=0;
-end
 clear id_mover
 %Summarize
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
@@ -694,6 +688,28 @@ disp(s);
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
 
+%%Deresidualized outcome variable (now this step is conducted in the leave out connected set)
+if resid_controls == 1
+   S=speye(J-1);
+   S=[S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
+   X=[D,F*S,controls];
+   xx=X'*X;
+   Lchol=ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
+   xy=X'*y;
+   b=pcg(xx,xy,1e-10,1000,Lchol,Lchol');
+   y=y-X(:,N+J:end)*b(N+J:end);
+   no_controls=1; 
+end
+
+if no_controls==0
+   K=size(controls,2);
+end
+
+if no_controls==1
+    K=0;
+end
+
+
 %% STEP 3: COMPUTATION OF (Pii,Bii)
 %The code proceeds as follows: 
 
@@ -712,7 +728,7 @@ disp(s)
 
 
 %% STEP 3A: Indexes needed to construct Bii, Pii
-[~,~,match_id]=unique([id firmid],'rows'); 
+[~,~,match_id]=unique([id firmid],'rows','stable');
 if strcmp(leave_out_level,'obs')
 index=(1:NT)';    
 clustering_var=index;
@@ -720,6 +736,7 @@ end
 if strcmp(leave_out_level,'matches')
 clustering_var=match_id;
 end
+%Important auxiliary to run leave out
 elist=index_constr(clustering_var,id,match_id);
 
 %% STEP 3B: Build Design
@@ -744,15 +761,15 @@ tic
 disp('Calculating Leave Out Matrices...')
 
 if n_of_parameters==1
-    [Lambda_P, Lambda_B_fe]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T,type_of_algorithm,id,firmid,epsilon);
+    [Lambda_P, Lambda_B_fe]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T,type_of_algorithm,id,firmid,match_id,epsilon);
 end
 
 if n_of_parameters==2
-    [Lambda_P, Lambda_B_fe,Lambda_B_cov]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T,type_of_algorithm,id,firmid,epsilon);
+    [Lambda_P, Lambda_B_fe,Lambda_B_cov]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T,type_of_algorithm,id,firmid,match_id,epsilon);
 end
 
 if n_of_parameters==3
-    [Lambda_P, Lambda_B_fe,Lambda_B_cov,Lambda_B_pe]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T,type_of_algorithm,id,firmid,epsilon);
+    [Lambda_P, Lambda_B_fe,Lambda_B_cov,Lambda_B_pe]=eff_res(X,xx,Lchol,N,J,K,elist,leave_out_level,movers,T,type_of_algorithm,id,firmid,match_id,epsilon);
 end
 
 clear elist index clustering_var

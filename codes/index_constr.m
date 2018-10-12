@@ -17,7 +17,7 @@ for t=1:maxD
         merge=outerjoin(LIST_BASE,LIST_SEL);
         merge = table2array(merge);
         merge=merge(~any(isnan(merge),2),:); %not merged cases are such that a worker does not have future observations. 
-        merge=[merge(:,2) merge(:,5) merge(:,3)]; %row, col
+        merge=[merge(:,2) merge(:,5) merge(:,3) merge(:,1)]; %row, col
         list_final=[list_final;merge];
         end        
 end
