@@ -1,4 +1,4 @@
-function [Lambda_P, Lambda_B_fe, Lambda_B_cov, Lambda_B_pe] = eff_res(X,xx,Lchol,N,J,K,elist,clustering_level,movers,T,type_algorithm,id,firmid,epsilon,tolProb)
+function [Lambda_P, Lambda_B_fe, Lambda_B_cov, Lambda_B_pe] = eff_res(X,xx,Lchol,N,J,K,elist,clustering_level,movers,T,type_algorithm,id,firmid,match_id,epsilon,tolProb)
 %This function calculates, using parallel coding, (Pii,Bii) for a general 
 %two way fixed effects model. The code is likely to be slow on large
 %datasets.
@@ -17,11 +17,11 @@ if nargout<=3
     do_pe=0;
 end
 
-if nargin<=13
+if nargin<=14
     tolProb=0.5;
     epsilon=0.01;
 end
-if nargin<=14
+if nargin<=15
     tolProb=0.5;
 end
 
@@ -50,7 +50,6 @@ tol=1e-6; %tol for pcg
 
 %Special case of Laplacian design matrix    
 if K == 0
-    [~,~,match_id]=unique([id firmid],'rows');
     Nmatches=max(match_id);
     match_id_movers=match_id(movers);
     firmid_movers=firmid(movers);
@@ -258,6 +257,8 @@ if K==0
         stayers=~movers;
          for t=2:maxT %T=1 have Pii=1 so need to be dropped.
             sel=(gcs==1).*stayers.*(T==t);
+            N_sel=sum(sel);
+            if N_sel > 0
             sel=sel>0;
             index_sel=find(sel);
             match_sel_aux=match_id(sel);
@@ -270,6 +271,7 @@ if K==0
             Bii_pe_stayers=COV(1,2)*(NT-1);
             Bii_pe_stayers=sparse(match_sel_aux,1,Bii_pe_stayers,Nmatches,1);
             Bii_pe=Bii_pe+Bii_pe_stayers;
+            end
          end    
    end
    

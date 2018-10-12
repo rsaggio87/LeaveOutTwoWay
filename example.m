@@ -8,8 +8,14 @@
 
 %Note: cd is LeaveOutTwoWay                   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-path(path,'~/matlab_bgl/'); %note: matlab BGL obtained from http://www.mathworks.com/matlabcentral/fileexchange/10922
+path(path,'matlab_bgl/'); %note: matlab BGL obtained from http://www.mathworks.com/matlabcentral/fileexchange/10922
 path(path,'codes'); %this contains the main LeaveOut Routines.
+%Install CMG Routine: downloaded from here: http://www.cs.cmu.edu/~jkoutis/cmg.html
+warning('off', 'all') 
+cd codes;    
+path(path,'CMG'); %this contains the main LeaveOut Routines.
+MakeCMG;
+cd ..
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                   %PARALLEL ENVIRONMENT
                   
@@ -18,8 +24,7 @@ path(path,'codes'); %this contains the main LeaveOut Routines.
 %      estimation has been carried out.                  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 try
-delete(gcp('nocreate'))
-pool=parpool(32,'IdleTimeout', Inf);
+pool=parpool(40,'IdleTimeout', Inf);
 %pool=parpool(str2num(getenv('SLURM_CPUS_PER_TASK')),'IdleTimeout', Inf);
 %pool = parpool('dcs', 64);
 end
@@ -67,7 +72,7 @@ andrews_estimates=0;
 eigen_diagno=0;
 restrict_movers=0;
 resid_controls=0;
-controls=[]; %equivalent to no controls
+controls=[];
 do_SE=0;
 subsample_llr_fit=0;
 type_of_algorithm='exact';

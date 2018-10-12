@@ -105,13 +105,13 @@ if do_SE == 1
            [coeff, flag]=pcg(xx,aux,1e-5,1000,Lchol,Lchol'); 
            aux=v-X*coeff;
            if strcmp(type_quadratic_form,'fe')    
-           subtract=var(X(:,N+1:J-1)*coeff(N+1:J-1))*(NT-1); % This is v'Bv, premultiply by NT to avoid double multiplication wrt last line.
+           subtract=var(X(:,N+1:N+J-1)*coeff(N+1:N+J-1))*(NT-1); % This is v'Bv, premultiply by NT to avoid double multiplication wrt last line.
            end
            if strcmp(type_quadratic_form,'pe')
            subtract=var(X(:,1:N)*coeff(1:N))*(NT-1); % This is v'Bv, premultiply by NT to avoid double multiplication wrt last line.
            end
            if strcmp(type_quadratic_form,'cov')
-           subtract=cov(X(:,1:N)*coeff(1:N),X(:,N+1:J-1)*coeff(N+1:J-1))*(NT-1); % This is v'Bv, premultiply by NT to avoid double multiplication wrt last line.
+           subtract=cov(X(:,1:N)*coeff(1:N),X(:,N+1:N+J-1)*coeff(N+1:N+J-1))*(NT-1); % This is v'Bv, premultiply by NT to avoid double multiplication wrt last line.
            subtract=subtract(1,2);
            end
            [aux, flag]=pcg(I_Lambda_P,aux,1e-10,1000,L_P,L_P');
