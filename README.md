@@ -3,7 +3,7 @@
 This Matlab package implements the leave out correction of 
 [Kline, Saggio and Soelvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf) for estimating variance components in two-way fixed effects models. 
  
-See this [vignette](doc/VIGNETTE.pdf) for a description of the package.
+See this [vignette](doc/VIGNETTE.pdf) for a description of the package. Available as a notebook here [vignette](doc/Leave Out Estimation of Variance Components in Two-Way Models using MATLAB.ipynb)
 
 ## Julia Version
 
