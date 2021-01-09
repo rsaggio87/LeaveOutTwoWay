@@ -26,7 +26,8 @@ lagfirmid(sel)=n(N+1:end);
 [ids,m,n]=unique(id);
 id=n;
 
-%initial descriptive stats
+%initial descriptive stats 
+if 0 == 1
 s=['Original Dataset:'];
 disp(s)
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
@@ -48,6 +49,7 @@ s=['Finding connected set...'];
 disp(s)
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
+end
 A=sparse(lagfirmid(sel),firmid(sel),1); %adjacency matrix
 %make it square
 [m,n]=size(A);
@@ -58,16 +60,17 @@ if m<n
     A=[A;zeros(n-m,n)];
 end
 A=max(A,A'); %connections are undirected
-Adj_matrix=A;
-
-[sindex, sz]=components(A); %get connected sets
+%[sindex, sz]=components(A); %old code using BGL.
+[sindex,sz] = conncomp(graph(A));
+sz=sz';
+sindex=sindex';
 idx=find(sz==max(sz)); %find largest set
-s=['# of firms: ' int2str(length(A))];
-disp(s);
-s=['# connected sets:' int2str(length(sz))];
-disp(s);
-s=['Largest connected set contains ' int2str(max(sz)) ' firms'];
-disp(s);
+%s=['# of firms: ' int2str(length(A))];
+%disp(s);
+%s=['# connected sets:' int2str(length(sz))];
+%disp(s);
+%s=['Largest connected set contains ' int2str(max(sz)) ' firms'];
+%disp(s);
 
 firmlst=find(sindex==idx); %firms in connected set
 sel=ismember(firmid,firmlst);
