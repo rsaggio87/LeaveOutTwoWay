@@ -7,7 +7,7 @@ See this [vignette](doc/VIGNETTE.pdf) for a description of the package.
 
 ## Julia Version
 
-The Julia version along with an executable that performs the leave out correction computed here can be 
+The Julia version of the package can be 
 found [here](https://github.com/HighDimensionalEconLab/VarianceComponentsHDFE.jl). 
 
 ## Summary of Changes
