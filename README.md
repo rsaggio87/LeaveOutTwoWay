@@ -5,10 +5,10 @@ This Matlab package implements the leave out correction from
  
 See this [Vignette](doc/VIGNETTE.pdf) for the description of the package.
 
-## Julia and Executable
+## Julia Version
 
 The Julia version along with an executable that performs the leave out correction computed here can be 
-found [here](https://github.com/HighDimensionalEconLab/VarianceComponentsHDFE.jl) 
+found [here](https://github.com/HighDimensionalEconLab/VarianceComponentsHDFE.jl). 
 
 ## Summary of Changes
 
