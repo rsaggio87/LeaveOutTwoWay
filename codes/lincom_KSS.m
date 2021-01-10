@@ -130,7 +130,9 @@ wy                  = Transform*beta;
 zz                  = Z'*Z;
 numerator           = Z\wy;
 sigma_i             = sparse((1:n)',1:n,sigma_i,n,n);
+sigma_i_naive       = sparse((1:n)',1:n,(y-X*beta).^2,n,n);
 denominator         = zeros(r,1);
+denominator_naive   = zeros(r,1);
 for q=1:r
     v=sparse(q,1,1,r,1);
     v=zz\v;
@@ -139,6 +141,7 @@ for q=1:r
     [right flag]=pcg(xx,v,1e-5,1000,Lchol,Lchol');
     left=right';    
     denominator(q)=left*(X'*sigma_i*X)*right;
+    denominator_naive(q)=left*(X'*sigma_i_naive*X)*right;
 end    
 test_statistic=numerator./(sqrt(denominator));
 
@@ -155,9 +158,11 @@ if got_labels == 0
     if q <= r    
     s=['Coefficient on - Column Number ' num2str(q-1) ' of Z: ' num2str(numerator(q))];
     disp(s)
-    s=['Standard Error on Coefficient on - Column Number ' num2str(q-1) ' of Z: ' num2str(sqrt(denominator(q)))];
+    s=['White Standard Error: ' num2str(sqrt(denominator_naive(q)))];
     disp(s)
-    s=['T-stat - for Column Number ' num2str(q-1) ' of Z: ' num2str(test_statistic(q))];
+    s=['KSS Standard Error: ' num2str(sqrt(denominator(q)))];
+    disp(s)
+    s=['T-stat: ' num2str(test_statistic(q))];
     disp(s)
     s=['******************************************'];
     disp(s);
@@ -170,7 +175,9 @@ if got_labels == 1
     tell_me=labels{q-1}; 
     s=['Coefficient on '  tell_me ':  ' num2str(numerator(q))];
     disp(s)
-    s=['Standard error:  ' num2str(sqrt(denominator(q)))];
+    s=['White Standard Error: ' num2str(sqrt(denominator_naive(q)))];
+    disp(s)
+    s=['KSS Standard error:  ' num2str(sqrt(denominator(q)))];
     disp(s)
     s=['T-stat: ' num2str(test_statistic(q))];
     disp(s)
