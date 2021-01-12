@@ -63,7 +63,7 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_KSS(y,id,firmid,c
     %This governs the # of simulations in the JLA algorithm to approximate 
     %(Bii,Pii).
     
-    %Default: log(#total fixed effect)
+    %Default: 200.
     
 %lincom_do: binary. 
 
@@ -291,12 +291,7 @@ end
 
 %Read # of FE
 if no_scale == 1
-    [~,~,nid]=unique(id);
-    N=max(nid);
-    [~,~,nid]=unique(firmid);
-    J=max(nid);
-    FE=N+J;
-    simulations_JLA=round(100*log(FE));
+    simulations_JLA=200; %default rule
 end
 
 if no_algo == 1
@@ -501,7 +496,7 @@ end
     X=PESO_MAT*X;% TO ACCOUNT FOR WEIGHTING (FGLS)
     y=PESO_MAT*y;%FGLS transformation
     xx=X'*X;
-    disp('Calculating (Pii,Bii)...')
+    disp('Calculating the statistical leverages of the AKM model...')
     [results,Lchol] = evalc('cmg_sdd(xx)'); %preconditioner for Laplacian matrices.   
 
 tic    
@@ -517,7 +512,7 @@ if n_of_parameters==3
     [Pii, Mii, correction_JLA, Bii_fe, Bii_cov, Bii_pe]=leverages(X_fe,X_pe,X,xx,Lchol,type_algorithm,simulations_JLA);
 end
 
-disp('Time spent computing (Pii,Bii)')
+disp('Done!')
 toc
 
 

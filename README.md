@@ -14,9 +14,12 @@ found [here](https://github.com/HighDimensionalEconLab/VarianceComponentsHDFE.jl
 
 These are the most significant changes introduced by this new version compared to previous one:
 * New documentation that describes in detail the functioning of `leave_out_KSS`.
-* Optimized random projection algorithm for calculation of the statistical leverages (code should be much faster now!) 
+* Optimized random projection algorithm for calculation of the statistical leverages.
 * Code no longer requires MATLAB BGL but runs automatically on MATLAB built-in network functions.
 * Requires MATLAB R2015b or higher. 
+
+## Replication Package
+The replication package of the Econometrica article can be found [here](https://www.dropbox.com/s/iaj3aap3ibfhup8/Replication%20ECTA.zip?dl=1). 
 
 
 

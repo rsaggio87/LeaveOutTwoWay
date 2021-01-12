@@ -158,7 +158,7 @@ if got_labels == 0
     if q <= r    
     s=['Coefficient on - Column Number ' num2str(q-1) ' of Z: ' num2str(numerator(q))];
     disp(s)
-    s=['White Standard Error: ' num2str(sqrt(denominator_naive(q)))];
+    s=['Robust "White" Standard Error: ' num2str(sqrt(denominator_naive(q)))];
     disp(s)
     s=['KSS Standard Error: ' num2str(sqrt(denominator(q)))];
     disp(s)
@@ -175,7 +175,7 @@ if got_labels == 1
     tell_me=labels{q-1}; 
     s=['Coefficient on '  tell_me ':  ' num2str(numerator(q))];
     disp(s)
-    s=['White Standard Error: ' num2str(sqrt(denominator_naive(q)))];
+    s=['Robust "White" Standard Error: ' num2str(sqrt(denominator_naive(q)))];
     disp(s)
     s=['KSS Standard error:  ' num2str(sqrt(denominator(q)))];
     disp(s)
