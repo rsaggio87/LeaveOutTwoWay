@@ -2,7 +2,7 @@
 
     \usepackage[breakable]{tcolorbox}
     \usepackage{parskip} % Stop auto-indenting (to mimic markdown behaviour)
-    
+    \usepackage{hyperref}
     \usepackage{iftex}
     \ifPDFTeX
     	\usepackage[T1]{fontenc}
@@ -156,8 +156,6 @@
     % Document parameters
     % Document title
     \title{Leave Out Estimation of Variance Components in Two-Way Models using MATLAB}
-    
-    
     
     
     
@@ -340,8 +338,6 @@
     }
     \makeatother
 
-\usepackage{hyperref}
-
     % Exact colors from NB
     \definecolor{incolor}{HTML}{303F9F}
     \definecolor{outcolor}{HTML}{D84315}
@@ -376,7 +372,7 @@
 
 \begin{document}
     
-    \maketitle
+        \maketitle
     
     
 
@@ -386,7 +382,8 @@ correction of \href{https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf}{Kline, 
 two-way fixed effects models.
 
     \tableofcontents
-\newpage
+    \newpage
+
     \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
 
@@ -593,7 +590,7 @@ of \(\mathbb{V}[\hat{\beta}]:\)
 \end{equation}
 
 Going back to the example of the variance of the firm effects, we can
-extract from \(\mathbb{V}^{HU}[\hat{\beta}]\) the corresponding squared
+extract from \(\hat{\mathbb{V}}[\hat{\beta}]\) the corresponding squared
 standard error of each firm effect, \(\mathbb{V}^{HU}[\hat{\psi}_{j}]\).
 We can then use the latter to bias correct the corresponding estimate of
 the variance of the firm effects as follows:
@@ -623,7 +620,7 @@ students and teachers, strata and treatment arms).
 \subsection{Setup}\label{setup}}
 
 We begin with some auxiliary lines of code that define the relevant
-paths, call the \href{http://www.cs.cmu.edu/jkoutis/cmg.html}{CMG package} developed by Yiannis Koutis and set-up the
+paths, call the  \href{http://www.cs.cmu.edu/jkoutis/cmg.html}{CMG package} package developed by Yiannis Koutis and set-up the
 parallel environment within MATLAB.
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
@@ -693,7 +690,7 @@ of the associated AKM model by simply calling
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 Running KSS Correction with the following options
 Leave Out Strategy: Leave match out
-Algorithm for Computation of Statistical Leverages: JLA with 1062 simulations.
+Algorithm for Computation of Statistical Leverages: JLA with 200 simulations.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 1
@@ -711,10 +708,10 @@ variance of wage: 0.1245
 SECTION 2
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-Calculating (Pii,Bii){\ldots}
+Calculating the statistical leverages of the AKM model{\ldots}
 Running JLA Algorithm{\ldots}
-Time spent computing (Pii,Bii)
-Elapsed time is 23.689412 seconds.
+Done!
+Elapsed time is 5.602229 seconds.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 3
@@ -728,10 +725,10 @@ Correlation of Firm, Person Effects: -0.08629
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 BIAS CORRECTED ESTIMATES
-Variance of Firm Effects: 0.010308
-Covariance of Firm and Person Effects: 0.0046808
-Variance of Person Effects: 0.085103
-Correlation of Firm, Person Effects: 0.15804
+Variance of Firm Effects: 0.010218
+Covariance of Firm and Person Effects: 0.0047795
+Variance of Person Effects: 0.085005
+Correlation of Firm, Person Effects: 0.16217
     \end{Verbatim}
 
     \hypertarget{interpreting-the-output}{%
@@ -787,7 +784,11 @@ using the option \texttt{filename} when calling
 code uses a variant of the random projection method, denoted as the
 Johnson-- Lindenstrauss Approximation (JLA henceforth) algorithm in KSS
 for its connection to the work of Johnson and Lindenstrauss (1984), see
-also Achlioptas (2003).
+also Achlioptas (2003). We now discuss briefly the main computational
+bottleneck of the procedure and the JLA algorithm.
+
+\hypertarget{computational-bottleneck}{%
+\subsection{Computational Bottleneck}\label{computational-bottleneck}}
 
 Recall from the discussion in Section 1 that the KSS leave-out bias
 correction procedure relies on leave-out estimates of \(\sigma^{2}_{i}\)
@@ -877,10 +878,10 @@ variance of wage: 0.16248
 SECTION 2
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-Calculating (Pii,Bii){\ldots}
+Calculating the statistical leverages of the AKM model{\ldots}
 Running JLA Algorithm{\ldots}
-Time spent computing (Pii,Bii)
-Elapsed time is 231.584528 seconds.
+Done!
+Elapsed time is 251.168051 seconds.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 3
@@ -894,16 +895,15 @@ Correlation of Firm, Person Effects: 0.14978
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 BIAS CORRECTED ESTIMATES
-Variance of Firm Effects: 0.030397
-Covariance of Firm and Person Effects: 0.01458
-Variance of Person Effects: 0.048874
-Correlation of Firm, Person Effects: 0.37827
+Variance of Firm Effects: 0.030371
+Covariance of Firm and Person Effects: 0.014639
+Variance of Person Effects: 0.048803
+Correlation of Firm, Person Effects: 0.38024
     \end{Verbatim}
 
     We can see from the output that the leave-out connected set has almost
 14 million person-year observations. The code is able to complete in
-less than 4 minutes (on a 2020 Macbook pro with 6 cores and 16GB of
-RAM).
+around 4 minutes (on a 2020 Macbook pro with 6 cores and 16GB of RAM).
 
 The computational appendix in KSS shows that the JLA algorithm can cut
 computation time by a factor of 100 while introducing an approximation
@@ -913,7 +913,7 @@ The current code uses an improved estimator of both \(P_{ii}\) and
 \(M_{ii}=1-P_{ii}\) which are both guaranteed to lie in \([0;1]\). These
 improved estimators are then combined to derive an unbiased JLA
 estimator of a given variance component provided that
-\(\frac{n}{p^{4}}=o(1)\), see this \href{https://www.dropbox.com/s/i28yvzae2tnp2tl/improved_JLA.pdf?dl=1}{this document} for details.
+\(\frac{n}{p^{4}}=o(1)\), see this \href{https://www.dropbox.com/s/i28yvzae2tnp2tl/improved_JLA.pdf?dl=1}{this document}
 
 One can check the stability of the estimates for different values of
 \texttt{simulations\_JLA}. For instance, if we double
@@ -951,10 +951,10 @@ variance of wage: 0.16248
 SECTION 2
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-Calculating (Pii,Bii){\ldots}
+Calculating the statistical leverages of the AKM model{\ldots}
 Running JLA Algorithm{\ldots}
-Time spent computing (Pii,Bii)
-Elapsed time is 434.590252 seconds.
+Done!
+Elapsed time is 458.093692 seconds.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 3
@@ -968,10 +968,10 @@ Correlation of Firm, Person Effects: 0.14978
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 BIAS CORRECTED ESTIMATES
-Variance of Firm Effects: 0.030395
+Variance of Firm Effects: 0.030382
 Covariance of Firm and Person Effects: 0.014598
-Variance of Person Effects: 0.048773
-Correlation of Firm, Person Effects: 0.37913
+Variance of Person Effects: 0.048738
+Correlation of Firm, Person Effects: 0.37937
     \end{Verbatim}
 
     We obtain virtually the same variance components as when
@@ -1034,10 +1034,10 @@ variance of wage: 0.1245
 SECTION 2
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-Calculating (Pii,Bii){\ldots}
+Calculating the statistical leverages of the AKM model{\ldots}
 Running Exact Algorithm{\ldots}
-Time spent computing (Pii,Bii)
-Elapsed time is 167.132283 seconds.
+Done!
+Elapsed time is 162.242224 seconds.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 3
@@ -1076,10 +1076,10 @@ variance of wage: 0.1245
 SECTION 2
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-Calculating (Pii,Bii){\ldots}
+Calculating the statistical leverages of the AKM model{\ldots}
 Running JLA Algorithm{\ldots}
-Time spent computing (Pii,Bii)
-Elapsed time is 2.432692 seconds.
+Done!
+Elapsed time is 2.434287 seconds.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 3
@@ -1093,10 +1093,10 @@ Correlation of Firm, Person Effects: -0.08629
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 BIAS CORRECTED ESTIMATES
-Variance of Firm Effects: 0.01007
-Covariance of Firm and Person Effects: 0.0048298
-Variance of Person Effects: 0.084915
-Correlation of Firm, Person Effects: 0.16517
+Variance of Firm Effects: 0.01044
+Covariance of Firm and Person Effects: 0.0044957
+Variance of Person Effects: 0.085326
+Correlation of Firm, Person Effects: 0.15063
     \end{Verbatim}
 
     The variance components estimated via JLA are extremely close to the
@@ -1140,7 +1140,7 @@ follows
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 Running KSS Correction with the following options
 Leave Out Strategy: Leave match out
-Algorithm for Computation of Statistical Leverages: JLA with 1062 simulations.
+Algorithm for Computation of Statistical Leverages: JLA with 200 simulations.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 1
@@ -1159,10 +1159,10 @@ SECTION 2
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 pcg converged at iteration 58 to a solution with relative residual 8.7e-11.
-Calculating (Pii,Bii){\ldots}
+Calculating the statistical leverages of the AKM model{\ldots}
 Running JLA Algorithm{\ldots}
-Time spent computing (Pii,Bii)
-Elapsed time is 20.300395 seconds.
+Done!
+Elapsed time is 4.271175 seconds.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 3
@@ -1176,10 +1176,10 @@ Correlation of Firm, Person Effects: -0.089031
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 BIAS CORRECTED ESTIMATES
-Variance of Firm Effects: 0.009752
-Covariance of Firm and Person Effects: 0.0046773
-Variance of Person Effects: 0.085602
-Correlation of Firm, Person Effects: 0.16188
+Variance of Firm Effects: 0.0097812
+Covariance of Firm and Person Effects: 0.0046239
+Variance of Person Effects: 0.08578
+Correlation of Firm, Person Effects: 0.15963
     \end{Verbatim}
 
     When controls are specified, the code proceeds by partialling them out.
@@ -1229,7 +1229,7 @@ observation out.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 Running KSS Correction with the following options
 Leave Out Strategy: Leave person-year observation out
-Algorithm for Computation of Statistical Leverages: JLA with 1062 simulations.
+Algorithm for Computation of Statistical Leverages: JLA with 200 simulations.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 1
@@ -1247,10 +1247,10 @@ variance of wage: 0.1245
 SECTION 2
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-Calculating (Pii,Bii){\ldots}
+Calculating the statistical leverages of the AKM model{\ldots}
 Running JLA Algorithm{\ldots}
-Time spent computing (Pii,Bii)
-Elapsed time is 20.986212 seconds.
+Done!
+Elapsed time is 4.700531 seconds.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 3
@@ -1264,10 +1264,10 @@ Correlation of Firm, Person Effects: -0.08629
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 BIAS CORRECTED ESTIMATES
-Variance of Firm Effects: 0.010327
-Covariance of Firm and Person Effects: 0.0045766
-Variance of Person Effects: 0.085267
-Correlation of Firm, Person Effects: 0.15423
+Variance of Firm Effects: 0.010306
+Covariance of Firm and Person Effects: 0.0046087
+Variance of Person Effects: 0.085253
+Correlation of Firm, Person Effects: 0.15548
     \end{Verbatim}
 
     When \(T=2\) (i.e the underlying matched employer-employee data spans
@@ -1423,7 +1423,7 @@ run the \texttt{lincom} option and using the region dummy as \(Z_{gt}\)
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 Running KSS Correction with the following options
 Leave Out Strategy: Leave match out
-Algorithm for Computation of Statistical Leverages: JLA with 1123 simulations.
+Algorithm for Computation of Statistical Leverages: JLA with 200 simulations.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 1
@@ -1441,10 +1441,10 @@ variance of wage: 0.14653
 SECTION 2
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-Calculating (Pii,Bii){\ldots}
+Calculating the statistical leverages of the AKM model{\ldots}
 Running JLA Algorithm{\ldots}
-Time spent computing (Pii,Bii)
-Elapsed time is 44.608516 seconds.
+Done!
+Elapsed time is 9.324213 seconds.
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 SECTION 3
@@ -1458,10 +1458,10 @@ Correlation of Firm, Person Effects: -0.15926
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 BIAS CORRECTED ESTIMATES
-Variance of Firm Effects: 0.044213
-Covariance of Firm and Person Effects: 0.0029136
-Variance of Person Effects: 0.078861
-Correlation of Firm, Person Effects: 0.049343
+Variance of Firm Effects: 0.044613
+Covariance of Firm and Person Effects: 0.0025688
+Variance of Person Effects: 0.079191
+Correlation of Firm, Person Effects: 0.043218
 Regressing the firm effects on observables{\ldots}
 pcg converged at iteration 115 to a solution with relative residual 8.6e-11.
 ******************************************
@@ -1470,9 +1470,9 @@ RESULTS ON LINCOM
 ******************************************
 ******************************************
 Coefficient on Region 2 Dummy:  0.25982
-White Standard Error: 0.050155
-KSS Standard error:  0.09534
-T-stat: 2.7252
+Robust "White" Standard Error: 0.050155
+KSS Standard error:  0.088374
+T-stat: 2.94
 ******************************************
     \end{Verbatim}
 

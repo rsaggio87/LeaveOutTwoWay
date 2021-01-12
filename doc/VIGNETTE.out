@@ -11,8 +11,9 @@
 \BOOKMARK [1][-]{section.3}{Interpreting the Output}{}% 11
 \BOOKMARK [1][-]{section.4}{What Does the Code Save?}{}% 12
 \BOOKMARK [1][-]{section.5}{Scaling to Large Datasets}{}% 13
-\BOOKMARK [2][-]{subsection.5.1}{The JLA Algorithm}{section.5}% 14
-\BOOKMARK [1][-]{section.6}{Adding Controls}{}% 15
-\BOOKMARK [1][-]{section.7}{Leaving out a Person-Year Observation vs. Leaving Out a Match}{}% 16
-\BOOKMARK [1][-]{section.8}{Variance of Person Effects when Leaving Out a Match}{}% 17
-\BOOKMARK [1][-]{section.9}{Regressing Firm Fixed Effects on Observables}{}% 18
+\BOOKMARK [2][-]{subsection.5.1}{Computational Bottleneck}{section.5}% 14
+\BOOKMARK [2][-]{subsection.5.2}{The JLA Algorithm}{section.5}% 15
+\BOOKMARK [1][-]{section.6}{Adding Controls}{}% 16
+\BOOKMARK [1][-]{section.7}{Leaving out a Person-Year Observation vs. Leaving Out a Match}{}% 17
+\BOOKMARK [1][-]{section.8}{Variance of Person Effects when Leaving Out a Match}{}% 18
+\BOOKMARK [1][-]{section.9}{Regressing Firm Fixed Effects on Observables}{}% 19

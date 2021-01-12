@@ -56,7 +56,7 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_KSS(y,id,firmid,c
 
     %In larger datasets, the user should always set type_algorithm='JLA'.
     
-    %Default: JLA if # of fixed effects in the original data is >10,000
+    %Default: JLA if # of observations in the original data is >10,000
     
 %simulations_JLA: a natural number.    
 
@@ -296,11 +296,11 @@ end
 
 if no_algo == 1
     
-    if FE>10000
+    if size(y,1)>10000
         type_algorithm='JLA';
     end
     
-    if FE<=10000
+    if size(y,1)<=10000
         type_algorithm='exact';     
     end
 
