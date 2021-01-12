@@ -3,6 +3,7 @@
     \usepackage[breakable]{tcolorbox}
     \usepackage{parskip} % Stop auto-indenting (to mimic markdown behaviour)
     \usepackage{hyperref}
+    \usepackage[authoryear]{natbib}
     \usepackage{iftex}
     \ifPDFTeX
     	\usepackage[T1]{fontenc}
@@ -10,6 +11,11 @@
     \else
     	\usepackage{fontspec}
     \fi
+    % Bibliography
+\usepackage[authoryear]{natbib}
+\bibliographystyle{chicago}
+%\setcitestyle{authoryear,open={(},close={)}}
+\usepackage{bibentry}
 
     % Basic figure setup, for now with no caption control since it's done
     % automatically by Pandoc (which extracts ![](path) syntax from Markdown).
@@ -75,8 +81,8 @@
     
     % Colors for the hyperref package
     \definecolor{urlcolor}{rgb}{0,.145,.698}
-    \definecolor{linkcolor}{rgb}{.71,0.21,0.01}
-    \definecolor{citecolor}{rgb}{.12,.54,.11}
+    \definecolor{linkcolor}{rgb}{.36,.54,.66}
+    \definecolor{citecolor}{rgb}{.21,.54,.66}
 
     % ANSI colors
     \definecolor{ansi-black}{HTML}{3E424D}
@@ -155,7 +161,7 @@
     \renewcommand{\LaTeX}{\textrm{\Oldlatex}}
     % Document parameters
     % Document title
-    \title{Leave Out Estimation of Variance Components in Two-Way Models using MATLAB}
+    \title{Leave Out Estimation of Variance Components in Two-Way Fixed Effects Models using MATLAB}
     
     
     
@@ -378,7 +384,7 @@
 
     
     This notebook describes the MATLAB package that implements the leave-out
-correction of \href{https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf}{Kline, Saggio and Sølvsten (2020)}  -- KSS henceforth -- for
+correction of \cite*{kline2020leave} -- KSS henceforth -- for
 two-way fixed effects models.
 
     \tableofcontents
@@ -389,7 +395,7 @@ two-way fixed effects models.
 
 Economists often study settings where units possess two or more group
 memberships, some of which can change over time. A prominent example
-comes from \href{https://www.uh.edu/~adkugler/Abowdetal.pdf}{Abowd, Kramarz, and Margolis (1999)} (henceforth AKM) who
+comes from \cite{abowd1999high} (henceforth AKM) who
 proposed a panel model of log wage determination that is additive in
 worker and firm fixed effects.
 
@@ -445,8 +451,7 @@ using the leave-out bias correction approach proposed by KSS.
 \subsection{The KSS Correction}\label{the-kss-correction}}
 
 We now provide some general intuition about the KSS leave-out
-methodology. A more formal discussion can be found in the  \href{https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf}{ECTA article}.
-
+methodology. A more formal discussion can be found in KSS.
 \hypertarget{the-plug-in-estimator}{%
 \subsubsection{The Plug-in Estimator}\label{the-plug-in-estimator}}
 
@@ -542,7 +547,7 @@ where \(\sigma^{2}_{i}=Var(\varepsilon_{i})\).
 
 One might be tempted to provide an estimate of \(\mathbb{V}[\hat{\beta}]\)
 using heteroskedasticity \emph{consistent} (``HC'' or robust), standard
-errors. Standard (\href{https://www.jstor.org/stable/1912934#metadata_info_tab_contents}{White, 1980}) HC standard-errors are calculated using a plug-in
+errors. Standard \cite{white1980heteroskedasticity} HC standard-errors are calculated using a plug-in
 estimate of \(\sigma^{2}_{i}\) based on
 
 \begin{equation}
@@ -557,7 +562,7 @@ so that the HC based estimate of \(\mathbb{V}[\hat{\beta}]\) is given by
 
 However, HC standard errors based on \(\tilde{\sigma}^{2}_{i}\) are
 inconsistent in any high dimensional model where the number of
-parameters is proportional to the sample size (\href{Cattaneo, Newey and Jansson (2018)}{Cattaneo, Newey and Jansson, 2018}). This problems arises in worker-firm fixed effects model  as we often have a firm effect that is estimated using less than
+parameters is proportional to the sample size \citep{cattaneo2017inference}. This problems arises in worker-firm fixed effects model  as we often have a firm effect that is estimated using less than
 5 observations or ``moves'' of workers across employers.
 
 \hypertarget{the-leave-out-correction}{%
@@ -609,14 +614,14 @@ models using MATLAB and the function \texttt{leave\_out\_KSS}. We
 continue to work with a simple example based on an AKM model. In what
 follows, we use the words ``workers'' and ``firms'' when describing the
 procedure for simplicity but the the function \texttt{leave\_out\_KSS}
-can be applied to any two-way models (e.g.~patients and doctors,
+can be applied to any two-way fixed effects model (e.g.~patients and doctors,
 students and teachers, strata and treatment arms).
 
 \hypertarget{setup}{%
 \subsection{Setup}\label{setup}}
 
 We begin with some auxiliary lines of code that define the relevant
-paths, call the  \href{http://www.cs.cmu.edu/jkoutis/cmg.html}{CMG package} package developed by Yiannis Koutis and set-up the
+paths, call the \href{http://www.cs.cmu.edu/jkoutis/cmg.html}{CMG package} package developed by Yiannis Koutis and set-up the
 parallel environment within MATLAB.
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
@@ -736,7 +741,7 @@ three sections.
 \textbf{Section 1}: Here we provide info on leave-out connected set.
 This is the largest connected set of firms that remains connected after
 removing any worker from the associated graph, see Lemma 1 and the
-Computational Appendix of Kline, Saggio and Sølvsten (2020) for details.
+Computational Appendix of KSS for details.
 The code provides some summary statistics (e.g.~\# of movers, \# of
 firms, mean and variance of the outcome, etc) for the leave-out
 connected set.
@@ -779,8 +784,8 @@ using the option \texttt{filename} when calling
 \texttt{leave\_out\_KSS} can be used on extremely large datasets. The
 code uses a variant of the random projection method, denoted as the
 Johnson-- Lindenstrauss Approximation (JLA henceforth) algorithm in KSS
-for its connection to the work of Johnson and Lindenstrauss (1984), see
-also Achlioptas (2003). We now discuss briefly the main computational
+for its connection to the work of \cite{johnson1984extensions}, see
+also \cite{achlioptas2001database}. We now discuss briefly the main computational
 bottleneck of the procedure and the JLA algorithm.
 
 \hypertarget{computational-bottleneck}{%
@@ -908,7 +913,7 @@ The current code uses an improved estimator of both \(P_{ii}\) and
 \(M_{ii}=1-P_{ii}\) which are both guaranteed to lie in \([0,1]\). These
 improved estimators are then combined to derive an asymptotically unbiased JLA
 estimator of a given variance component provided that
-\(\frac{n}{p^{4}}=o(1)\), see this \href{https://www.dropbox.com/s/i28yvzae2tnp2tl/improved_JLA.pdf?dl=1}{this document}
+\(\frac{n}{p^{4}}=o(1)\), see \href{https://www.dropbox.com/s/i28yvzae2tnp2tl/improved_JLA.pdf?dl=1}{this document}.
 
 One can check the stability of the estimates for different values of
 \texttt{simulations\_JLA}. For instance, if we double
@@ -972,7 +977,7 @@ Correlation of Firm, Person Effects: 0.37937
     We obtain virtually the same variance components as when
 \texttt{simulations\_JLA}=50 while significantly increasing the
 computational time! If the user does not specify a value for
-\texttt{simulations\_JLA},the code defaults to
+\texttt{simulations\_JLA}, the code defaults to
 \texttt{simulations\_JLA}=200.
 
 We conclude this section by noting that the user can also calculate an
@@ -1178,7 +1183,7 @@ Correlation of Firm, Person Effects: 0.15963
     \end{Verbatim}
 
     When controls are specified, the code proceeds by partialling them out.
-That is, it first estimates the AKM model in the leave-out connected set
+That is, it first estimates by OLS the AKM model in the leave-out connected set
 
 \begin{equation}
 y_{gt}=\alpha_{g}+\psi_{j(g,t)}+w_{gt}'\delta+\varepsilon_{gt}
@@ -1275,7 +1280,7 @@ robust to any arbitrary correlation between \(\varepsilon_{g2}\) and
 \section{Variance of Person Effects when Leaving Out a
 Match}\label{sec:var_pe}}
 
-By leaving a match-out, we can bias correct for the variance of firm
+By leaving a match-out, we can bias correct the variance of firm
 effects and covariance of worker and firm effects while allowing for
 unrestricted hetoreskedasticity and serial correlation of the error term
 \(\varepsilon_{gt}\) within each worker-firm match.
@@ -1315,6 +1320,8 @@ There are several alternatives that the user can explore:
   sample by keeping any of the following pairs of stayer time periods:
   (1,4), (2,5), (1,5). One can choose from the available pairs randomly
   for each stayer with equal probability.
+ \item 
+  To minimize concerns regarding serial correlation, the user can drop all but the first and last wage observation of each stayer. Note that dropping stayer wage observations changes their weight in the variance components. Future versions of the code will allow the variance components to be defined in terms of weights other than the number of micro-observations.
 \end{enumerate}
 
     \hypertarget{regressing-firm-fixed-effects-on-observables}{%
@@ -1340,7 +1347,7 @@ on \(Z_{gt}\)
 \right)^{-1}Z_{gt}\hat{\psi}_{gt}
 \end{equation}
 
-KSS show that inference on \(\hat{\gamma}\) needs to be adjusted because the estimated firm fixed effects \(\hat{\psi}_{j(g,t)}\) are all correlated with one another.
+KSS show that inference on \(\hat{\gamma}\) needs to be adjusted because the estimated firm fixed effects $\{\hat{\psi}_{j}\}_{j=1}^{J}$ are correlated with one another.
 
 To see this, suppose that we have a simple AKM model with only two time
 periods, set \(w_{gt}=0\), and take first differences
@@ -1357,8 +1364,8 @@ vector containing the firm dummies. In this model,
 \hat{\psi}=\psi+\underbrace{\sum_{g=1}^{N}(\Delta f_{g}\Delta f_{g}')^{-1}\Delta f_{g}\varepsilon_{g}}_{\text{Correlated Noise}}
 \end{equation}
 
-Notice how the dependence in the vector of estimated firm fixed effects,
-\(\hat{\psi}\), is induced by the design
+Note how the dependence in the vector of estimated firm fixed effects,
+\(\hat{\psi}\), is induced by the regressor design
 \(\sum_{g=1}^{N}(\Delta f_{g}\Delta f_{g}')^{-1}\). As shown in
 Table 3 of KSS, ignoring this correlation can easily lead standard
 errors to be underestimated by an order of magnitude in practice.
@@ -1470,8 +1477,7 @@ coefficient is around 0.05 while the HU standard error derived in KSS is
 roughly twice as large (0.09).
 
 
-    % Add a bibliography block to the postdoc
+    \bibliography{lit}
     
-    
-    
+
 \end{document}

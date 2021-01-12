@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2019)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: VIGNETTE.aux
+The style file: chicago.bst
+Database file #1: lit.bib
+Warning--no number and no volume in white1980heteroskedasticity
+You've used 6 entries,
+            2861 wiz_defined-function locations,
+            656 strings with 5874 characters,
+and the built_in function-call counts, 4162 in all, are:
+= -- 355
+> -- 287
+< -- 0
++ -- 84
+- -- 94
+* -- 393
+:= -- 750
+add.period$ -- 18
+call.type$ -- 6
+change.case$ -- 43
+chr.to.int$ -- 6
+cite$ -- 7
+duplicate$ -- 107
+empty$ -- 262
+format.name$ -- 110
+if$ -- 770
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 6
+newline$ -- 33
+num.names$ -- 60
+pop$ -- 25
+preamble$ -- 1
+purify$ -- 79
+quote$ -- 0
+skip$ -- 108
+stack$ -- 0
+substring$ -- 262
+swap$ -- 35
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 120
+warning$ -- 1
+while$ -- 59
+width$ -- 0
+write$ -- 80
+(There was 1 warning)
