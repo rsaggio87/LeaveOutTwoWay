@@ -496,7 +496,7 @@ end
     X=PESO_MAT*X;% TO ACCOUNT FOR WEIGHTING (FGLS)
     y=PESO_MAT*y;%FGLS transformation
     xx=X'*X;
-    disp('Calculating the statistical leverages of the AKM model...')
+    disp('Calculating the statistical leverages...')
     [results,Lchol] = evalc('cmg_sdd(xx)'); %preconditioner for Laplacian matrices.   
 
 tic    
