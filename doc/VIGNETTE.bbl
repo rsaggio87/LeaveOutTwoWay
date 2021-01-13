@@ -33,6 +33,13 @@ Kline, P., R.~Saggio, and M.~S{\o}lvsten (2020).
 \newblock Leave-out estimation of variance components.
 \newblock {\em Econometrica\/}~{\em 88\/}(5), 1859--1898.
 
+\bibitem[\protect\citeauthoryear{MacKinnon and White}{MacKinnon and
+  White}{1985}]{mackinnon1985some}
+MacKinnon, J.~G. and H.~White (1985).
+\newblock Some heteroskedasticity-consistent covariance matrix estimators with
+  improved finite sample properties.
+\newblock {\em Journal of econometrics\/}~{\em 29\/}(3), 305--325.
+
 \bibitem[\protect\citeauthoryear{White}{White}{1980}]{white1980heteroskedasticity}
 White, H. (1980).
 \newblock A heteroskedasticity-consistent covariance matrix estimator and a

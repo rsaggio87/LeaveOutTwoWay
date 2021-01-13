@@ -560,18 +560,17 @@ so that the HC based estimate of \(\mathbb{V}[\hat{\beta}]\) is given by
 \tilde{\mathbb{{V}}}[\hat{\beta}]=\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}\sum_{i=1}^{n}\tilde{{\sigma}}^{2}_{i}x_{i}x_{i}'\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}.
 \end{equation}
 
-However, HC standard errors based on \(\tilde{\sigma}^{2}_{i}\) are
+However, HC standard errors based on \(\tilde{\sigma}^{2}_{i}\) are downward biased \citep{mackinnon1985some}. From an asymptotic perspective, HC standard errors are
 inconsistent in any high dimensional model where the number of
-parameters is proportional to the sample size \citep{cattaneo2017inference}. This problems arises in worker-firm fixed effects model  as we often have a firm effect that is estimated using less than
-5 observations or ``moves'' of workers across employers.
+parameters grows in proportion to the sample size \citep{cattaneo2017inference}. Such "many regressor" asymptotics are natural in the worker-firm fixed effects model  as we often have fewer than 5 worker moves on average per firm.
 
 \hypertarget{the-leave-out-correction}{%
 \subsubsection{The Leave Out
 Correction}\label{the-leave-out-correction}}
 
 KSS provide a heteroskedasticity-\emph{unbiased} (HU) estimate of the
-standard error of any coefficient obtained from a high-dimensional
-linear model.
+standard error of any coefficient obtained from a
+linear regression model.
 
 The KSS HU standard error estimate is based on a leave-out estimate of
 \(\sigma^{2}_{i}\):
@@ -805,7 +804,7 @@ model in equation (2) after leaving observation \(i\) out.
 
 Clearly, re-estimating \(\hat{\beta}_{-i}\) by leaving a particular
 observation \(i\) for \(n\) times, is infeasible computationally.
-Luckily, one can re-write \(\hat{\sigma}^{2}_{i}\) as
+Fortunately, one can re-write \(\hat{\sigma}^{2}_{i}\) as
 
 \begin{equation}
 \hat{\sigma}^{2}_{i}=y_{i}\frac{(y_{i}-x_{i}'\hat{\beta})}{1-P_{ii}}
@@ -819,7 +818,7 @@ above highlights that all that is needed for computation of
 higher.
 
 \hypertarget{the-jla-algorithm}{%
-\subsection{The JLA Algorithm}\label{the-jla-algorithm}}
+\subsection{Approximating the Statistical Leverages}\label{the-jla-algorithm}}
 
 The JLA algorithm introduced by KSS provides a stochastic approximation
 to \(\{P_{ii}\}_{i=1}^{n}\) using the random projection ideas developed
@@ -1323,7 +1322,7 @@ There are several alternatives that the user can explore:
   (1,4), (2,5), (1,5). One can choose from the available pairs randomly
   for each stayer with equal probability.
  \item 
-  To minimize concerns regarding serial correlation, the user can drop all but the first and last wage observation of each stayer. Note that dropping stayer wage observations changes their weight in the variance components. Future versions of the code will allow the variance components to be defined in terms of weights other than the number of micro-observations.
+  Drop interior wage observations for stayers:  To minimize concerns regarding serial correlation, the user can drop all but the first and last wage observation of each stayer. Note that dropping stayer wage observations reduces their weight in the variance components. Future versions of the code will allow the variance components to be defined in terms of weights other than the number of micro-observations.
 \end{enumerate}
 
     \hypertarget{regressing-firm-fixed-effects-on-observables}{%

@@ -6,13 +6,13 @@
 \contentsline {subsubsection}{\numberline {1.1.4}The Leave Out Correction}{4}{subsubsection.1.1.4}% 
 \contentsline {section}{\numberline {2}Computing the KSS Correction}{5}{section.2}% 
 \contentsline {subsection}{\numberline {2.1}Setup}{5}{subsection.2.1}% 
-\contentsline {subsection}{\numberline {2.2}Importing the Data}{5}{subsection.2.2}% 
+\contentsline {subsection}{\numberline {2.2}Importing the Data}{6}{subsection.2.2}% 
 \contentsline {subsection}{\numberline {2.3}Calling the Main Function}{6}{subsection.2.3}% 
 \contentsline {section}{\numberline {3}Interpreting the Output}{7}{section.3}% 
 \contentsline {section}{\numberline {4}What Does the Code Save?}{7}{section.4}% 
 \contentsline {section}{\numberline {5}Scaling to Large Datasets}{8}{section.5}% 
 \contentsline {subsection}{\numberline {5.1}Computational Bottleneck}{8}{subsection.5.1}% 
-\contentsline {subsection}{\numberline {5.2}The JLA Algorithm}{8}{subsection.5.2}% 
+\contentsline {subsection}{\numberline {5.2}Approximating the Statistical Leverages}{8}{subsection.5.2}% 
 \contentsline {section}{\numberline {6}Adding Controls}{14}{section.6}% 
 \contentsline {section}{\numberline {7}Leaving out a Person-Year Observation vs.\nobreakspace {}Leaving Out a Match}{15}{section.7}% 
 \contentsline {section}{\numberline {8}Variance of Person Effects when Leaving Out a Match}{17}{section.8}% 
