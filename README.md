@@ -15,7 +15,8 @@ page one can found an executable that permits estimating the leave-out correctio
 
 These are the most significant changes introduced by this new version compared to previous one:
 * New documentation that describes in detail the functioning of `leave_out_KSS`.
-* Optimized random projection algorithm for calculation of the statistical leverages.
+* By default, the code runs a leave-out correction by leaving a match out as opposed to leaving an observation out. See [vignette](doc/VIGNETTE.pdf) for details.
+* New, optimized, random projection algorithm for calculation of the statistical leverages.
 * Code no longer requires MATLAB BGL but runs automatically on MATLAB built-in network functions.
 * Requires MATLAB R2015b or higher. 
 
