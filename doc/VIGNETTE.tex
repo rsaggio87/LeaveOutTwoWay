@@ -735,7 +735,9 @@ Correlation of Firm, Person Effects: 0.16217
     \hypertarget{interpreting-the-output}{%
 \section{Interpreting the Output}\label{interpreting-the-output}}
 
-The code \texttt{leave\_out\_KSS} and associated output is composed by
+The code starts by printing its two key inputs: the algorithm used to compute the statistical leverages (exact vs. JLA) --- we explain this distinction in Section \ref{sec:JLA} --- and the level at which the leave-out correction is carried (observation vs. match) --- we explain this in more detail in Section \ref{sec:leave_out_level}. 
+
+The output printed by  \texttt{leave\_out\_KSS}  is composed by
 three sections.
 
 \textbf{Section 1}: Here we provide info on leave-out connected set.
@@ -780,7 +782,7 @@ using the option \texttt{filename} when calling
 
     \hypertarget{scaling-to-large-datasets}{%
 \section{Scaling to Large Datasets}\label{scaling-to-large-datasets}}
-
+\label{sec:JLA}
 \texttt{leave\_out\_KSS} can be used on extremely large datasets. The
 code uses a variant of the random projection method, denoted as the
 Johnson-- Lindenstrauss Approximation (JLA henceforth) algorithm in KSS
@@ -1195,9 +1197,9 @@ model where the outcome variable is now defined as
 residualized outcome on worker and firm indicators and report the
 associated (bias-corrected) variance components.
 
-    \hypertarget{leaving-out-a-person-year-observation-vs.-leaving-out-a-match}{%
 \section{Leaving out a Person-Year Observation vs.~Leaving Out a
-Match}\label{leaving-out-a-person-year-observation-vs.-leaving-out-a-match}}
+Match}
+\label{sec:leave_out_level}
 
 By default, the code reports leave-out corrections for the variance of
 firm effects and the covariance of firm and worker effects that are

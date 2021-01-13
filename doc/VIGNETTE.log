@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.5.8)  12 JAN 2021 11:53
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.5.8)  12 JAN 2021 20:24
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1141,35 +1141,35 @@ LaTeX Font Info:    Try loading font information for TS1+cmtt on input line 633
 File: ts1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 ) [5] [6]
 [7]
-Underfull \hbox (badness 4569) in paragraph at lines 827--832
+Underfull \hbox (badness 4569) in paragraph at lines 829--834
 []\T1/ppl/m/n/10.95 The num-ber of sim-u-la-tions un-der-ly-ing the JLA al-go-r
 ithm is gov-erned by the in-put
  []
 
-[8] [9] [10] [11] [12]
+[8] [9] [10] [11] [12] [13]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1132.
- [13] [14] [15] [16] [17]
-Underfull \hbox (badness 2261) in paragraph at lines 1387--1391
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1134.
+ [14] [15] [16] [17]
+Underfull \hbox (badness 2261) in paragraph at lines 1389--1393
 []\T1/ppl/m/n/10.95 The re-sult-ing co-ef-fi-cient (and stan-dard er-ror) can b
 e com-puted by call-ing the func-tion
  []
 
 [18] [19] (./VIGNETTE.bbl) [20]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1483.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1483.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1485.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1485.
  (./VIGNETTE.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1483.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1483.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1485.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1485.
 
 Package rerunfilecheck Info: File `VIGNETTE.out' has not changed.
 (rerunfilecheck)             Checksum: 64C0C7E252931E3E4FA324F22FB37EF1;1395.
  ) 
 Here is how much of TeX's memory you used:
- 21457 strings out of 492616
- 388414 string characters out of 6129482
- 486146 words of memory out of 5000000
- 24828 multiletter control sequences out of 15000+600000
+ 21464 strings out of 492616
+ 388461 string characters out of 6129482
+ 484194 words of memory out of 5000000
+ 24836 multiletter control sequences out of 15000+600000
  46898 words of font info for 126 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  54i,10n,73p,887b,605s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1188,10 +1188,10 @@ fonts/type1/public/cm-super/sftt1095.pfb></usr/local/texlive/2019/texmf-dist/fo
 nts/type1/urw/palatino/uplb8a.pfb></usr/local/texlive/2019/texmf-dist/fonts/typ
 e1/urw/palatino/uplr8a.pfb></usr/local/texlive/2019/texmf-dist/fonts/type1/urw/
 palatino/uplri8a.pfb>
-Output written on VIGNETTE.pdf (20 pages, 227046 bytes).
+Output written on VIGNETTE.pdf (20 pages, 228314 bytes).
 PDF statistics:
  341 PDF objects out of 1000 (max. 8388607)
  303 compressed objects within 4 object streams
- 91 named destinations out of 1000 (max. 500000)
+ 90 named destinations out of 1000 (max. 500000)
  165 words of extra memory for PDF output out of 10000 (max. 10000000)
 
