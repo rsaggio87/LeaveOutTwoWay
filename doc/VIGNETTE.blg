@@ -1,0 +1,52 @@
+This is BibTeX, Version 0.99d (TeX Live 2019)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: VIGNETTE.aux
+The style file: chicago.bst
+Database file #1: lit.bib
+Repeated entry---line 1205 of file lit.bib
+ : @article{mackinnon1985some
+ :                           ,
+I'm skipping whatever remains of this entry
+Warning--no number and no volume in white1980heteroskedasticity
+You've used 7 entries,
+            2861 wiz_defined-function locations,
+            663 strings with 6067 characters,
+and the built_in function-call counts, 4904 in all, are:
+= -- 423
+> -- 339
+< -- 0
++ -- 100
+- -- 114
+* -- 460
+:= -- 882
+add.period$ -- 21
+call.type$ -- 7
+change.case$ -- 50
+chr.to.int$ -- 7
+cite$ -- 8
+duplicate$ -- 125
+empty$ -- 306
+format.name$ -- 134
+if$ -- 907
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 7
+newline$ -- 38
+num.names$ -- 70
+pop$ -- 29
+preamble$ -- 1
+purify$ -- 92
+quote$ -- 0
+skip$ -- 130
+stack$ -- 0
+substring$ -- 307
+swap$ -- 41
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 140
+warning$ -- 1
+while$ -- 71
+width$ -- 0
+write$ -- 93
+(There was 1 error message)

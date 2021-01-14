@@ -59,7 +59,8 @@ while n_of_bad_workers>=1
     
 %Inspect the resulting Graph: find the workers that constitute an
 %articulation point
-    [artic_points, CC] = biconnected_components(G);
+    %[artic_points, CC] = biconnected_components(G); %old code using bgl
+    [~,artic_points] = biconncomp(graph(G));
     bad_workers=artic_points(artic_points<=n_movers);
     
 %Now get the right index for these workers
@@ -88,7 +89,10 @@ while n_of_bad_workers>=1
     
 %Largest connected set once removed bad workers
     A=build_adj(id,firmid); 
-    [sindex, sz]=components(A); %get connected sets
+    %[sindex, sz]=components(A); %get connected sets
+    [sindex,sz] = conncomp(graph(A));
+    sz=sz';
+    sindex=sindex';
     idx=find(sz==max(sz)); %find largest set
     firmlst=find(sindex==idx); %firms in connected set
     sel=ismember(firmid,firmlst);

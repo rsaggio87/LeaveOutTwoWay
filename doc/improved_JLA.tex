@@ -1,0 +1,202 @@
+\documentclass[letterpaper,12pt]{article}
+\usepackage{xr}
+\usepackage{rotating}
+\usepackage{lscape}
+%pagelayout
+\usepackage{rotating}
+\usepackage{graphicx}
+\usepackage{pgf}
+\usepackage{lscape}
+\usepackage{subfig}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry,setspace}
+\geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+
+
+%Tables and graphs
+\usepackage{siunitx,booktabs,caption,widetable,threeparttable}
+\usepackage{fullpage}
+\usepackage{tikz,siunitx,array,booktabs,csvsimple,graphicx,graphics,widetable,caption}
+\usetikzlibrary{arrows,	petri, topaths}
+\newenvironment{fignote}{\begin{quote}\scriptsize}{\vspace{-12pt}\end{quote}}
+\usepackage{chngcntr}
+
+% Bibliography
+\usepackage[authoryear]{natbib}
+\bibliographystyle{chicago}
+%\setcitestyle{authoryear,open={(},close={)}}
+\usepackage{bibentry}
+
+%\usepackage[colorlinks = true, linkcolor = blue, citecolor = blue, linktocpage=true]{hyperref}
+\usepackage{listings}
+\usepackage{epigraph}
+%\usepackage{url}
+
+
+
+%mathfunctions
+\usepackage{amsmath, amsthm, amssymb, bm, mathtools, amsfonts, subdepth}
+\mathtoolsset{showonlyrefs}
+
+%theorem environments
+\theoremstyle{remark}
+\newtheorem{rem}{Remark}
+
+\theoremstyle{definition}
+\newtheorem{example}{Example}
+\newtheorem{definition}{Definition}
+\newtheorem{innercustomthm}{Example}
+\newenvironment{customthm}[1]
+{\renewcommand\theinnercustomthm{#1}\innercustomthm}
+{\endinnercustomthm}
+
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}
+\newtheorem{assumption}{Assumption}
+\newtheorem{lem}{Lemma}
+\newtheorem{prop}{Proposition}
+
+\newtheorem{innercustomass}{Assumption}
+\newenvironment{customass}[1]
+{\renewcommand\theinnercustomass{#1}\innercustomass}
+{\endinnercustomass}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{res}{Result}[section]
+
+
+
+%notes
+\usepackage{fixme}
+
+
+
+\usepackage{graphicx,float}
+\usepackage{color}
+\usepackage{pdfpages}
+%\graphicspath{ . }
+
+
+
+%raffafunctions
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+%\usepackage[titletoc,toc,title]{appendix}
+\usepackage[title]{appendix}
+
+%mikkelfunctions
+%functions
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\newcommand\inverse{^{-1}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+
+%Super and subscipt.
+\newcommand{\superscript}[1]{\ensuremath{^{\textrm{#1}}}}
+\newcommand{\subscript}[1]{\ensuremath{_{\textrm{#1}}}}
+\renewcommand{\th}[0]{\superscript{th}}
+\newcommand{\prox}[0]{\text{prox}}
+
+%Stats
+%\DeclareMathOperator*{\argmax}{arg\,max\,}
+%\DeclareMathOperator*{\argmin}{arg\,min\,}
+\DeclareMathOperator*{\argzero}{arg\,zero\,}
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+\renewcommand{\E}{\mathbb{E}}
+\renewcommand{\Pr}{\mathbb{P}}
+
+
+\usepackage[colorlinks = true, allcolors = blue]{hyperref}
+\usepackage[reftex]{theoremref}
+\topmargin 0.0cm
+\oddsidemargin 0.2cm
+\textwidth 16cm 
+\textheight 21cm
+\footskip 1.0cm
+\begin{document}
+\baselineskip20pt
+
+\title{Improved JLA Estimates for Calculation of Leave Out Bias Correction of Variance Components}
+\author{Patrick Kline, Raffaele Saggio, Mikkel S\o lvsten}
+
+\date{\today}
+\maketitle
+
+This document describes computation of the terms $(P_{ii},M_{ii},\sigma_{i}^{2})$ as defined in \cite*{kline2020leave} --- KSS henceforth ---  using a variant of the JLA algorithm described in KSS.  
+
+There are two closely related ways to estimate $P_{ii} = x_i'S_{xx}\inverse x_i$ and $M_{ii} =1-P_{ii}$ using the random projection algorithm introduced by \cite{achlioptas2001database}. Let $q_1,\dots,q_p \in \R^n$ be independent Rademacher vectors with independent entries and construct
+\begin{align}
+	\hat P_{ii} = \frac{1}{p} \sum_{s=1}^p (x_i'S_{xx}\inverse X'q_s)^2
+	\quad \text{and} \quad
+	\hat M_{ii} = \frac{1}{p} \sum_{s=1}^p (q_{si} - x_i'S_{xx}\inverse X'q_s)^2
+\end{align}
+which are unbiased estimators of $P_{ii}$ and $M_{ii}$, respectively. The covariance structure of these two estimators is
+\begin{align}
+V(\hat P_{ii}) &= \frac{2}{p}\left(P_{ii}^2 - \sum_{j=1}^n P_{ij}^4\right), \
+V(\hat M_{ii}) = \frac{2}{p}\left(M_{ii}^2 - \sum_{j=1}^n M_{ij}^4\right), \\
+C(\hat P_{ii},\hat M_{ii}) &= \frac{2}{p}\left(0 - \sum_{j=1}^n P_{ij}^2 M_{ij}^2\right).
+\end{align}
+
+When estimating $M_{ii}$, the infeasible variance minimizing unbiased linear combination of these two estimators is
+\begin{align}
+\frac{P_{ii}}{M_{ii} + P_{ii}} \hat M_{ii} + \frac{M_{ii}}{M_{ii} + P_{ii}} (1-\hat P_{ii})
+\end{align}
+The feasible version that uses hats everywhere takes a very simple form and is give by
+\begin{align}\label{eq:kicksass}
+	\bar M_{ii} = \frac{\hat M_{ii}}{\hat M_{ii} + \hat P_{ii}}
+\end{align}
+
+\begin{rem}
+	Note that because $\hat M_{ii}$ and $\hat P_{ii}$ are both non-negative, we get an estimate that is guaranteed to lie inside $[0,1]$.
+	The corresponding estimator of $P_{ii}$ is $\bar P_{ii} = \frac{\hat P_{ii}}{\hat M_{ii} + \hat P_{ii}}$, so we are simply imposing on the estimators that they satisfy the constraint that $M_{ii} + P_{ii} =1$.	Furthermore, the asymptotic variance (as $p$ gets large) of the constrained estimator $\bar M_{ii}$ is 
+	\begin{align}
+		V_i = \frac{2}{p}\left( 2M_{ii}^2P_{ii}^2 - (M_{ii}-P_{ii})^2\sum_{j=1}^n P_{ij}^2 M_{ij}^2\right).
+	\end{align}
+	At the boundaries the new estimator has no variance improvement or loss relative to the best of $\hat M_{ii}$ and $\hat P_{ii}$, as it simply picks the best of the two. At the center of the support, $\hat M_{ii}$ and $\hat P_{ii}$ have equal variance and the new estimator improves on both as their correlation is different from $-1$. Finally, an inspection of the mean of $\bar M_{ii}$ reveals that it relies on shrinkage towards the middle of the support, i.e., the mean of $\bar M_{ii}$ (as $p$ gets large) is
+	\begin{align}
+		M_{ii} + B_{i}, \qquad B_i = \frac{2}{p}\left(P_{ii} - M_{ii}\right)\left( M_{ii}P_{ii} + 2\sum_{j=1}^n P_{ij}^2 M_{ij}^2\right).
+	\end{align} 
+\end{rem}
+
+
+
+The estimator highlighted in \eqref{eq:kicksass} avoids non-sensical leverage estimates outside of the support, and it reduces variance (thus it allows for fewer repetitions, $p$, in the JLA algorithm). Furthermore, it does not require extra matrix inversions, as both $\hat M_{ii}$ and $\hat P_{ii}$ can be constructed after one call to pcg per Rademacher vector.
+
+\subsection*{Non-linearity bias}
+
+The JLA approximation of $\hat{\sigma}^{2}_{i}=\dfrac{y_{i}(y_{i}-x_{i}'\hat{\beta})}{M_{ii}}$ is given by $\tilde{\sigma}^{2}_{i}=\dfrac{y_{i}(y_{i}-x_{i}'\hat{\beta})}{\bar{M}_{ii}}$. One can see that $\tilde{\sigma}^{2}_{i}$ has a mean (conditional on data) approximated to second order that is 
+\begin{align}
+	\hat \sigma_{i}^2 \left(1 + \frac{V_i}{M_{ii}^2} - \frac{B_i}{M_{ii}}\right).
+\end{align}
+We can construct an estimator of the bias using the same Rademacher draws that we use to construct $\hat M_{ii}$ and $\hat P_{ii}$ and define therefore the following estimator
+\begin{align}
+	\hat \sigma_{i,JLA}^2 = \frac{y_i (y_{i}-x_{i}'\hat{\beta})}{\bar M_{ii}}\left(1- \frac{\hat V_i}{\bar M_{ii}^2} + \frac{\hat B_i}{\bar M_{ii}}\right).
+\end{align}
+The main advantage of this correction relative to the original one proposed in KSS is that it removes the entire bias of order $p\inverse$ in the JLA point estimator.\footnote{In our experience, based on various simulations and empirical applications, we found that this non-linear bias to show up in small-scale applications where both $n$ and $p$ were relatively small.} We suspect that the next order bias is then of order $p^{-2}$, thus there is no bias of importance as long as $n/p^4 = o(1)$. 
+
+Define the following three second moment estimators
+\begin{align}
+m(P_{ii}^2)  &= \frac{1}{p} \sum_{s=1}^p (x_i'S_{xx}\inverse X'q_s)^4, \
+m(M_{ii}^2)  = \frac{1}{p} \sum_{s=1}^p (q_{si} - x_i'S_{xx}\inverse X'q_s)^4 \\
+m(P_{ii},M_{ii})  &= \frac{1}{p} \sum_{s=1}^p (x_i'S_{xx}\inverse X'q_s)^2(q_{si} - x_i'S_{xx}\inverse X'q_s)^2.
+\end{align}
+We can then define
+\begin{align}
+\hat V_i &= \frac{1}{p}\left(\bar M_{ii}^2 m(P_{ii}^2) + \bar P_{ii}^2 m(M_{ii}^2) - 2\bar P_{ii}\bar M_{ii} m(P_{ii},M_{ii})  \right) \\
+\hat B_i &= \frac{1}{p} \left(  \bar M_{ii} m(P_{ii}^2)  - \bar P_{ii} m(M_{ii}^2) + (\bar M_{ii}-\bar P_{ii}) m(P_{ii},M_{ii})   \right).
+\end{align}
+
+
+\bibliography{lit}
+
+
+\end{document}
