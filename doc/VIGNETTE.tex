@@ -161,7 +161,7 @@
     \renewcommand{\LaTeX}{\textrm{\Oldlatex}}
     % Document parameters
     % Document title
-    \title{Leave Out Estimation of Variance Components in Two-Way Fixed Effects Models using MATLAB}
+    \title{Leave-Out Estimation of Variance Components in Two-Way Fixed Effects Models Using MATLAB}
     
     
     
@@ -384,7 +384,7 @@
 
     
     This notebook describes the MATLAB package that implements the leave-out
-correction of \cite*{kline2020leave} -- KSS henceforth -- for
+correction of \cite*{kline2020leave} (henceforth KSS)  for
 two-way fixed effects models.
 
     \tableofcontents
@@ -400,10 +400,10 @@ proposed a panel model of log wage determination that is additive in
 worker and firm fixed effects.
 
 This so-called ``two-way'' fixed effects or ``AKM'' model takes the
-form:
+form
 
 \begin{equation}
-    y_{gt} =  \alpha_{{g}} + \psi_{j({g},t)} + w_{gt}'\delta +  \varepsilon_{gt}  \qquad({g}=1,\dots,N, \ t=1,\dots,T_{g} \ge 2)
+    y_{gt} =  \alpha_{{g}} + \psi_{j({g},t)} + w_{gt}'\delta +  \varepsilon_{gt}  \qquad({g}=1,\dots,N, \ t=1,\dots,T_{g} \ge 2),
 \end{equation}
 
 where the function
@@ -416,14 +416,14 @@ is a mean-independent time-varying error.
 We can rewrite the original AKM model as:
 
 \begin{equation}
-y_i =x_i^{\prime } \beta +\varepsilon_i \qquad i=1,...,n
+y_i =x_i^{\prime } \beta +\varepsilon_i \qquad i=1,...,n,
 \end{equation}
 
 where \(i\) indexes a particular person-year observation \((g,t)\),
-\(x_i\) is a vector that collects all the worker, firm dummies as well
+\(x_i\) is a vector that collects all the worker and firm dummies as well
 as the time-varying covariates \(w_{gt}\) so that
 \(\beta =(\alpha ,\psi ,\delta )'\) is a \(k\times 1\) vector that
-collects all the worker, firm fixed effects along with \(\delta\).
+collects all the worker and firm fixed effects along with \(\delta\).
 
 Interest in AKM models often centers on understanding how much of the
 variability in log wages is attributable to firms. It is common to
@@ -439,13 +439,13 @@ where
 The variance component \(\sigma_{\psi }^2\) measures the contribution of
 firm wage variability to inequality, while the covariance component
 \(\sigma_{\alpha ,\psi }\) measures the additional contribution of
-systematic sorting of high wage workers to high wage firms.
+systematic sorting of high-wage workers to high-wage firms.
 
 The function \texttt{leave\_out\_KSS} provides unbiased estimates of
 \(\sigma_{\psi }^2\) and \(\sigma_{\alpha ,\psi }\) as well as an
 estimate of
 \(\sigma_{\alpha }^2 =\frac{1}{n}\sum_{g=1}^N \sum_{t=1}^{T_g } {\left(\alpha_g -\bar{\alpha} \right)}^2\)
-using the leave-out bias correction approach proposed by KSS.
+using the leave-out bias-correction approach proposed by KSS.
 
 \hypertarget{the-kss-correction}{%
 \subsection{The KSS Correction}\label{the-kss-correction}}
@@ -455,16 +455,16 @@ methodology. A more formal discussion can be found in KSS.
 \hypertarget{the-plug-in-estimator}{%
 \subsubsection{The Plug-in Estimator}\label{the-plug-in-estimator}}
 
-Suppose the researcher is interested in the variance of firm effects,
+Suppose that the researcher is interested in the variance of firm effects,
 \(\sigma_{\psi }^2\). To simplify the exposition, we normalize the firm
-effects so that their firm-size weighted mean is equal to zero,
-i.e.~\(\bar{\psi}=0\) and re-write \(\sigma_{\psi }^2\) as
+effects so that their firm-size-weighted mean is equal to zero,
+i.e, ~\(\bar{\psi}=0\), and rewrite \(\sigma_{\psi }^2\) as
 
 \begin{equation}
 \sigma_{\psi }^2 =\sum_{j=1}^J s_{j}\psi^{2}_{j}
 \end{equation}
 
-where $s_{j}$ gives the employment share of firm $j$, $s_{j}=\dfrac{1}{n}\sum_{g=1}^{N}\sum_{t=1}^{T_{g}}\mathbf{1}\{j(g,t)=j\}$.
+where $s_{j}$ gives the employment share of firm $j$, i.e., $s_{j}=\dfrac{1}{n}\sum_{g=1}^{N}\sum_{t=1}^{T_{g}}\mathbf{1}\{j(g,t)=j\}$.
 
 It is customary to report ``plug-in'' estimates of a given variance
 component using the corresponding OLS estimate. For instance, the
@@ -486,14 +486,14 @@ The estimated firm effect, \(\hat{\psi}_{j}\), represents a noisy
 estimate of the true firm effect, \(\psi_{j}\). The presence of noise in
 \(\hat{\psi}_{j}\) is not an issue when one is interested in
 \(\psi_{j}\) as the OLS estimator \(\hat{\psi}_{j}\) is assumed to be
-unbiased in this context, i.e.~\(E[\hat{\psi}_{j}]=\psi_{j}\).
+unbiased in this context, i.e., ~\(E[\hat{\psi}_{j}]=\psi_{j}\).
 
-However, estimation error in \(\hat{\psi}_{j}\) is going to lead to
-biases when estimating \(\psi_{j}^{2}\) using its ``plug-in'' analogue
-\(\hat{\psi}_{j}^{2}\) since:
+However, the estimation error in \(\hat{\psi}_{j}\) is going to lead to
+biases if one is interested in estimating \(\psi_{j}^{2}\) using its ``plug-in'' analogue
+\(\hat{\psi}_{j}^{2}\) since
 
 \begin{equation}
-E[\hat{\psi}_{j}^{2}]=E[(\hat{\psi}_{j}-\psi_{j}+\psi_{j})^2]=\psi^{2}+\underbrace{\mathbb{V}[\hat{\psi}_{j}]}_{\text{Bias}}
+E[\hat{\psi}_{j}^{2}]=E[(\hat{\psi}_{j}-\psi_{j}+\psi_{j})^2]=\psi^{2}+\underbrace{\mathbb{V}[\hat{\psi}_{j}]}_{\text{Bias}},
 \end{equation}
 
 where \(\mathbb{V}[\hat{\psi}_{j}]\) is the squared standard error of
@@ -510,11 +510,11 @@ E[\tilde{\sigma}_{\psi}^2]=\sigma^{2}_{\psi}+\underbrace{\sum_{j=1}^{J}s_{j}{\ma
 \end{equation}
 
 \hypertarget{the-problem-with-standard-standard-errors-in-high-dimensional-models}{%
-\subsubsection{The Problem with ``Standard'' Standard Errors in High
+\subsubsection{The Problem with ``Standard'' Standard Errors in High-
 Dimensional
 Models}\label{the-problem-with-standard-standard-errors-in-high-dimensional-models}}
 
-The formula above shows that the bias of the plug-in estimator of the
+The above formula shows that the bias of the plug-in estimator of the
 variance of firm effects is
 
 \begin{equation}
@@ -523,14 +523,14 @@ E[\tilde{\sigma}_{\psi}^2]-\sigma^{2}_{\psi}=\sum_{j=1}^{J}s_{j}{\mathbb{V}[\hat
 
 Therefore, all that is required for a bias correction is an estimate of
 the (squared) standard error of each firm effect,
-\({\mathbb{V}[\hat{\psi}_{j}]}\). Similarly, if our interest is on the
+\({\mathbb{V}[\hat{\psi}_{j}]}\). Similarly, if we are interested on the
 variance of person effects, then we would need the standard error on
 each of the person effects, \({\mathbb{V}[\hat{\alpha}_{i}]}\). If we
 are interested in the covariance of worker and firm effects, then we
 would need the covariances in sampling errors between each
 \(\hat{\alpha}_{i}\) and \(\hat{\psi}_{j(i,t)}\).
 
-The discussion above highlights that an estimate of the sampling
+The above discussion highlights that an estimate of the sampling
 variability of the OLS coefficient vector
 \(\hat{\beta}=(\hat{\alpha},\hat{\psi},\hat{\delta})\) is required in
 order to derive an unbiased estimate of the variance components of the
@@ -540,35 +540,35 @@ Recall that the sampling variability in \(\hat{\beta}\), assuming
 independence across observations, is given by
 
 \begin{equation}
-{\mathbb{{V}}}[\hat{\beta}]=\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}\sum_{i=1}^{n}{\sigma}^{2}_{i}x_{i}x_{i}'\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}.
+{\mathbb{{V}}}[\hat{\beta}]=\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}\sum_{i=1}^{n}{\sigma}^{2}_{i}x_{i}x_{i}'\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1},
 \end{equation}
 
 where \(\sigma^{2}_{i}=Var(\varepsilon_{i})\).
 
 One might be tempted to provide an estimate of \(\mathbb{V}[\hat{\beta}]\)
-using heteroskedasticity \emph{consistent} (``HC'' or robust), standard
+using heteroskedasticity \emph{consistent} (``HC'') or robust standard
 errors. Standard \cite{white1980heteroskedasticity} HC standard-errors are calculated using a plug-in
 estimate of \(\sigma^{2}_{i}\) based on
 
 \begin{equation}
-\tilde{\sigma}^{2}_{i}=(y_{i}-x_{i}'\hat{\beta})^2.
+\tilde{\sigma}^{2}_{i}=(y_{i}-x_{i}'\hat{\beta})^2,
 \end{equation}
 
-so that the HC based estimate of \(\mathbb{V}[\hat{\beta}]\) is given by
+where the HC-based estimate of \(\mathbb{V}[\hat{\beta}]\) is given by
 
 \begin{equation}
 \tilde{\mathbb{{V}}}[\hat{\beta}]=\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}\sum_{i=1}^{n}\tilde{{\sigma}}^{2}_{i}x_{i}x_{i}'\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}.
 \end{equation}
 
 However, HC standard errors based on \(\tilde{\sigma}^{2}_{i}\) are downward biased \citep{mackinnon1985some}. From an asymptotic perspective, HC standard errors are
-inconsistent in any high dimensional model where the number of
+inconsistent in any high-dimensional model where the number of
 parameters grows in proportion to the sample size \citep{cattaneo2017inference}. Such "many regressor" asymptotics are natural in the worker-firm fixed effects model  as we often have fewer than 5 worker moves on average per firm.
 
 \hypertarget{the-leave-out-correction}{%
-\subsubsection{The Leave Out
+\subsubsection{The Leave-Out
 Correction}\label{the-leave-out-correction}}
 
-KSS provide a heteroskedasticity-\emph{unbiased} (HU) estimate of the
+KSS provides a heteroskedasticity-\emph{unbiased} (HU) estimate of the
 standard error of any coefficient obtained from a
 linear regression model.
 
@@ -576,14 +576,14 @@ The KSS HU standard error estimate is based on a leave-out estimate of
 \(\sigma^{2}_{i}\):
 
 \begin{equation}
-\hat{\sigma}^{2}_{i}=y_{i}(y_{i}-x_{i}'\hat{\beta}_{-i}).
+\hat{\sigma}^{2}_{i}=y_{i}(y_{i}-x_{i}'\hat{\beta}_{-i}),
 \end{equation}
 
 where \(\hat{\beta}_{-i}\) is the OLS estimate of \(\beta\) from
-equation (2) after leaving observation \(i\) out.
+equation (2) when observation \(i\) is left out.
 
 KSS then replaces \(\sigma^{2}_{i}\) in \(\mathbb{V}[\hat{\beta}]\) with
-its unbiased estimate \(\hat{\sigma}^{2}_{i}\) to derive a HU estimate
+its unbiased estimate \(\hat{\sigma}^{2}_{i}\) to derive an HU estimate
 of \(\mathbb{V}[\hat{\beta}]:\)
 
 \begin{equation}
@@ -593,17 +593,15 @@ of \(\mathbb{V}[\hat{\beta}]:\)
 Going back to the example of the variance of the firm effects, we can
 extract from \(\hat{\mathbb{V}}[\hat{\beta}]\) the corresponding squared
 standard error of each firm effect, \(\hat{\mathbb{V}}[\hat{\psi}_{j}]\).
-We can then use the latter to bias correct the corresponding estimate of
+We can then use it to bias-correct the corresponding estimate of
 the variance of the firm effects as follows:
 
 \begin{equation}
 \hat{\sigma}^{2}_{\psi}=\tilde{\sigma}^{2}_{\psi}-\sum_{j=1}^{J}s_{j}{\mathbb{V}[\hat{\psi}_{j}]}.
 \end{equation}
 
-The MATLAB function \texttt{leave\_out\_KSS} is going to print the bias
-corrected variance of firm effects, \(\hat{\sigma}^{2}_{\psi}\), as well
-as the bias-corrected covariance of worker and firm effects and variance
-of person effects.  \texttt{leave\_out\_KSS} also provide the correct standard errors --- based on \(\hat{\mathbb{V}}[\hat{\beta}]\)  as opposed to \(\tilde{\mathbb{V}}[\hat{\beta}]\) --- when regressing the firm effects on some observable characteristics, see Section \ref{sec:lincom}.
+The MATLAB function \texttt{leave\_out\_KSS} is going to print the bias-corrected variance of firm effects, \(\hat{\sigma}^{2}_{\psi}\), the bias-corrected covariance of worker and firm effects and variance
+of person effects.  \texttt{leave\_out\_KSS} also provides the correct standard errors --- based on \(\hat{\mathbb{V}}[\hat{\beta}]\)  as opposed to \(\tilde{\mathbb{V}}[\hat{\beta}]\) --- when one regresses the firm effects on some observable characteristics; see Section \ref{sec:lincom}.
 \hypertarget{computing-the-kss-correction}{%
 \section{Computing the KSS
 Correction}\label{computing-the-kss-correction}}
@@ -612,8 +610,8 @@ We now demonstrate how one can implement the KSS correction in two-way
 models using MATLAB and the function \texttt{leave\_out\_KSS}. We
 continue to work with a simple example based on an AKM model. In what
 follows, we use the words ``workers'' and ``firms'' when describing the
-procedure for simplicity but the the function \texttt{leave\_out\_KSS}
-can be applied to any two-way fixed effects model (e.g.~patients and doctors,
+procedure but the function \texttt{leave\_out\_KSS}
+can in fact be applied to any two-way fixed effects model (e.g.,~patients and doctors,
 students and teachers, strata and treatment arms).
 
 \hypertarget{setup}{%
@@ -648,14 +646,14 @@ Connected to the parallel pool (number of workers: 6).
     \hypertarget{importing-the-data}{%
 \subsection{Importing the Data}\label{importing-the-data}}
 
-The Github Repo contains a matched employer-employee testing data where
+The GitHub Repo contains a matched employer-employee testing data where
 we observe the identity of the worker, the identity of the firm
 employing a given worker, the year in which the match is observed
-(either 1999 or 2001) and the associated log wage.
+(either 1999 or 2001), and the associated log wage.
 
-\emph{Important!:} the original data must be sorted by individual
+\emph{Important!} The original data must be sorted by individual
 identifiers (id). For instance, one can see that the testing data is
-sorted by individual identifiers (and year, using
+sorted by individual identifiers (and by year, using
 \texttt{xtset\ id\ year} in Stata)
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
@@ -736,27 +734,27 @@ Correlation of Firm, Person Effects: 0.16217
 
 The code starts by printing its two key inputs: the algorithm used to compute the statistical leverages (exact vs. JLA) --- we explain this distinction in Section \ref{sec:JLA} --- and the level at which the leave-out correction is carried (observation vs. match) --- we explain this in more detail in Section \ref{sec:leave_out_level}. 
 
-The output printed by  \texttt{leave\_out\_KSS}  is composed by
+The output printed by  \texttt{leave\_out\_KSS}  is composed of
 three sections.
 
-\textbf{Section 1}: Here we provide info on leave-out connected set.
+\textbf{Section 1}: Here we provide info on the leave-out connected set.
 This is the largest connected set of firms that remains connected after
-removing any worker from the associated graph, see Lemma 1 and the
+any worker from the associated graph is removed, see Lemma 1 and the
 Computational Appendix of KSS for details.
-The code provides some summary statistics (e.g.~\# of movers, \# of
-firms, mean and variance of the outcome, etc) for the leave-out
+The code provides some summary statistics (e.g. number of movers, number of
+firms, mean and variance of the outcome, etc.) of the leave-out
 connected set.
 
 \textbf{Section 2}: After printing the summary statistics, the code
-computes the statistical leverages of the design, denoted as \(P_{ii}\).
+computes the statistical leverages of the design, denoted by \(P_{ii}\).
 Computation of \(\{P_{ii}\}_{i=1}^{n}\) represents the main
 computational bottleneck of the routine.
 
-\textbf{Section 3}: The code then enters its third, and final, stage
+\textbf{Section 3}: The code then enters its third, and final stage,
 where the main results are printed. The code starts by reporting the ---
 biased --- estimates of the variance components that result from the
 ``plug-in'' approach of treating OLS estimates as measured without
-error. Finally, the code prints the bias corrected variance of firm
+error. Finally, the code prints the bias-corrected variance of firm
 effects and the covariance of worker and firm effects.
 
     \hypertarget{what-does-the-code-save}{%
@@ -764,14 +762,14 @@ effects and the covariance of worker and firm effects.
 
 \texttt{leave\_out\_KSS} saves three scalars: the variance of firm
 effects (\texttt{sigma2\_psi} in {[}4{]}), the covariance of worker and
-firm effects (\texttt{sigma\_psi\_alpha}) and the variance of person
+firm effects (\texttt{sigma\_psi\_alpha}), and the variance of person
 effects (\texttt{sigma2\_alpha}).
 
 \texttt{leave\_out\_KSS} also saves on disk one .csv file. This .csv
 contains information on the leave-out connected set. This file has 4
 columns. First column reports the outcome variable, second and third
 columns the worker and the firm identifiers (as originally inputted by
-the user). The fourth column reports the statistical leverages of the
+the user) and the fourth column reports the statistical leverages of the
 regression design. If the code is reporting a leave-out correction at the
 match-level, the .csv will be collapsed at the match level. By default,
 the .csv file is going to be saved in the main directory under the name
@@ -783,9 +781,9 @@ using the option \texttt{filename} when calling
 \section{Scaling to Large Datasets}\label{scaling-to-large-datasets}}
 \label{sec:JLA}
 \texttt{leave\_out\_KSS} can be used on extremely large datasets. The
-code uses a variant of the random projection method, denoted as the
-Johnson-- Lindenstrauss Approximation (JLA henceforth) algorithm in KSS
-for its connection to the work of \cite{johnson1984extensions}, see
+code uses a variant of the random projection method, known as the
+Johnson-- Lindenstrauss approximation (JLA) algorithm in KSS
+for its connection to the work of \cite{johnson1984extensions}; see
 also \cite{achlioptas2001database}. We now discuss briefly the main computational
 bottleneck of the procedure and the JLA algorithm.
 
@@ -793,28 +791,28 @@ bottleneck of the procedure and the JLA algorithm.
 \subsection{Computational Bottleneck}\label{computational-bottleneck}}
 
 Recall from the discussion in Section 1 that the KSS leave-out bias
-correction procedure relies on leave-out estimates of \(\sigma^{2}_{i}\)
+correction procedure relies on leave-out estimates of \(\sigma^{2}_{i}\),
 
 \begin{equation}
-\hat{\sigma}^{2}_{i}=y_{i}(y_{i}-x_{i}'\hat{\beta}_{-i})
+\hat{\sigma}^{2}_{i}=y_{i}(y_{i}-x_{i}'\hat{\beta}_{-i}),
 \end{equation}
 
 where \(\hat{\beta}_{-i}\) is the OLS estimate of \(\beta\) from the AKM
 model in equation (2) after leaving observation \(i\) out.
 
-Clearly, re-estimating \(\hat{\beta}_{-i}\) by leaving a particular
+Clearly, reestimating \(\hat{\beta}_{-i}\) by leaving a particular
 observation \(i\) for \(n\) times, is infeasible computationally.
-Fortunately, one can re-write \(\hat{\sigma}^{2}_{i}\) as
+Fortunately, one can rewrite \(\hat{\sigma}^{2}_{i}\) as
 
 \begin{equation}
-\hat{\sigma}^{2}_{i}=y_{i}\frac{(y_{i}-x_{i}'\hat{\beta})}{1-P_{ii}}
+\hat{\sigma}^{2}_{i}=y_{i}\frac{(y_{i}-x_{i}'\hat{\beta})}{1-P_{ii}},
 \end{equation}
 
 where \(P_{ii}\) measures the influence or leverage of observation
-\(i\), i.e.~\(P_{ii} =x_i^{\prime } S_{xx}^{-1} x_i\). The expression
-above highlights that all that is needed for computation of
+\(i\), i.e., ~\(P_{ii} =x_i^{\prime } S_{xx}^{-1} x_i\). The above expression
+highlights that all that is needed for computation of
 \(\hat{\sigma}^{2}_{i}\) are the \(n\) statistical leverages
-\(\{P_{ii}\}_{i=1}^{n}\). However, exact computation of \(P_{ii}\) may remain prohibitive when \(n\) is in order of tens of millions or
+\(\{P_{ii}\}_{i=1}^{n}\). However, exact computation of \(P_{ii}\) may remain prohibitive when \(n\) is in the order of tens of millions or
 higher.
 
 \hypertarget{the-jla-algorithm}{%
@@ -822,20 +820,20 @@ higher.
 
 The JLA algorithm introduced by KSS provides a stochastic approximation
 to \(\{P_{ii}\}_{i=1}^{n}\) using the random projection ideas developed
-by Johnson and Lindenstrauss (1984). We defer the reader to the
+by Johnson and Lindenstrauss (1984). We refer the reader to the
 \href{https://www.dropbox.com/s/ycvls8pbtxewj06/DataComputationAppendix.pdf?dl=1}{Computational Appendix of KSS} for further details.
 
 The number of simulations underlying the JLA algorithm is governed by
-the input \texttt{simulations\_JLA} (which is denoted as \(p\) in the
+the input \texttt{simulations\_JLA} (which is denoted by \(p\) in the
 computational appendix). Intuitively, more simulations imply a
-higher accuracy -- but higher computation time --- when estimating
+higher accuracy -- but also higher computation time --- when estimating
 \(\lbrace P_{ii} ,B_{ii} \rbrace_{i=1}^n\).
 
-\textbf{Note:} The user might want to pre-specify a random number
+\textbf{Note:} The user might want to prespecify a random-number
 generator seed to ensure replicability when calling the function
 \texttt{leave\_out\_KSS}.
 
-We now demonstrate the performance of the code on a large dataset
+We now demonstrate the performance of the code on a large dataset.
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{4}{\boxspacing}
@@ -904,19 +902,19 @@ Correlation of Firm, Person Effects: 0.38024
 
     We can see from the output that the leave-out connected set has almost
 14 million person-year observations. The code is able to complete in
-around 4 minutes (on a 2020 Macbook pro with 6 cores and 16GB of RAM).
+around 4 minutes (on a 2020 Macbook Pro with 6 cores and 16GB of RAM).
 
 The computational appendix in KSS shows that the JLA algorithm can cut
 computation time by a factor of 100 while introducing an approximation
 error of roughly \(10^{-4}\).
 
 The current code uses an improved estimator of both \(P_{ii}\) and
-\(M_{ii}=1-P_{ii}\) which are both guaranteed to lie in \([0,1]\). These
+\(M_{ii}=1-P_{ii}\), which are both guaranteed to lie in \([0,1]\). These
 improved estimators are then combined to derive an asymptotically unbiased JLA
 estimator of a given variance component provided that
-\(\frac{n}{p^{4}}=o(1)\), see \href{https://www.dropbox.com/s/i28yvzae2tnp2tl/improved_JLA.pdf?dl=1}{this document}.
+\(\frac{n}{p^{4}}=o(1)\); see \href{https://www.dropbox.com/s/i28yvzae2tnp2tl/improved_JLA.pdf?dl=1}{this document} for further details..
 
-One can check the stability of the estimates for different values of
+We can check the stability of the estimates for different values of
 \texttt{simulations\_JLA}. For instance, if we double
 \texttt{simulations\_JLA} from 50 to 100 and run the code again on the
 same data:
@@ -985,10 +983,10 @@ We conclude this section by noting that the user can also calculate an
 exact version of \(\lbrace P_{ii} \rbrace_{i=1}^n\). This can be done by
 setting the option \texttt{type\_of\_algorithm} to \texttt{exact}.
 
-\textbf{Warning:} Calling the option \texttt{exact} in large datasets
-can be very time consuming! We now load again the original, smaller,
-testing data and then compare the exact and JLA based estimates of the
-variance components
+\textbf{Warning!} Calling the option \texttt{exact} in large datasets
+can be very time-consuming! We now load again the original, smaller,
+testing data and then compare the exact and JLA-based estimates of the
+variance components,
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{6}{\boxspacing}
@@ -1100,10 +1098,10 @@ Variance of Person Effects: 0.085326
 Correlation of Firm, Person Effects: 0.15063
     \end{Verbatim}
 
-    The variance components estimated via JLA are extremely close to the
+    The variance components estimated using JLA are extremely close to the
 \texttt{exact} estimates but only take a fraction of the time to compute. If
-the input data has more than 10,000 obs, the code defaults to using the
-JLA algorithm unless the user specifies type\_of\_algorithm to
+the input data has more than 10,000 observations, the code defaults to using the
+JLA algorithm unless the user specifies type\_of\_algorithm as
 ``exact''.
 
     \hypertarget{adding-controls}{%
@@ -1113,7 +1111,7 @@ We have demonstrated the functioning of \texttt{leave\_out\_KSS} using a
 simple AKM model with no controls (\(w_{gt}=0\)). It is easy to add a
 matrix of controls to the routine. Suppose for instance that we want to
 add year fixed effects to the original AKM model. This can be done as
-follows
+follows.
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{7}{\boxspacing}
@@ -1196,23 +1194,23 @@ model where the outcome variable is now defined as
 residualized outcome on worker and firm indicators and report the
 associated (bias-corrected) variance components.
 
-\section{Leaving out a Person-Year Observation vs.~Leaving Out a
+\section{Leaving Out a Person-Year Observation vs.~Leaving Out a
 Match}
 \label{sec:leave_out_level}
 
 By default, the code reports leave-out corrections for the variance of
 firm effects and the covariance of firm and worker effects that are
 robust to unrestricted heteroskedasticity and serial correlation of the
-error term within a given match (unique combination of worker and firm
-identifier), see Remark 3 of KSS. Intuitively, leaving out matches is analogous to "clustering" the standard error estimates on match. We discuss the interpretation of the
-leave-out corrected variance of person effects when leaving a match out
-in Section \ref{sec:var_pe}.
+error term within a given match (defined as the unique combination of the worker and firm
+identifier); see Remark 3 of KSS. Intuitively, leaving out matches is analogous to "clustering" the standard error estimates at the match level. Section \ref{sec:var_pe} discusses the interpretation of the
+leave-out bias-corrected variance of person effects when leaving a match out
+
 
 The user can specify the function to run the KSS correction when leaving
 only an observation out using the option \texttt{leave\_out\_level}.
-When leaving a person-year observation out, the resulting KSS variance
-components are robust to unrestricted heteroskedasticity but not serial
-correlation within match. Below we demonstrate how to compute KSS
+When the user leaves a person-year observation out, the resulting KSS variance
+components are robust to unrestricted heteroskedasticity but not to serial
+correlation within a match. Below we demonstrate how to compute KSS-
 adjusted variance components when leaving a single (person-year)
 observation out.
 
@@ -1271,31 +1269,31 @@ Variance of Person Effects: 0.085253
 Correlation of Firm, Person Effects: 0.15548
     \end{Verbatim}
 
-    When \(T=2\) (i.e the underlying matched employer-employee data spans
-only two years), as in this example, it turns out that the KSS adjusted
-variance of firm effects and covariance of firm and worker effects is
+    When \(T=2\) (i.e., the underlying matched employer-employee data spans
+only two years), as in this example, it turns out that the KSS-adjusted
+variance of firm effects and covariance of firm and worker effects are
 robust to any arbitrary correlation between \(\varepsilon_{g2}\) and
 \(\varepsilon_{g1}\).
 
     \hypertarget{variance-of-person-effects-when-leaving-out-a-match}{%
-\section{Variance of Person Effects when Leaving Out a
+\section{Variance of Person Effects When Leaving Out a
 Match}\label{sec:var_pe}}
 
-By leaving a match-out, we can bias correct the variance of firm
-effects and covariance of worker and firm effects while allowing for
+By leaving a match-out, we can bias-correct the variance of firm
+effects and the covariance of worker and firm effects while allowing for
 unrestricted hetoreskedasticity and serial correlation of the error term
 \(\varepsilon_{gt}\) within each worker-firm match.
 
 However, the person effects, \(\alpha_{g}\), of ``stayers'' --- workers
 that never leave a particular firm --- are not leave-match-out
-estimable. This implies that we cannot compute an unbiased estimate of
+estimable.\footnote{This is because leaving a match-out means leaving \textit{all} the observations associated with a stayer and therefore we cannot estimate her $\alpha_{g}$.} This implies that we cannot compute an unbiased estimate of
 \(\Omega_{g}=Var(\varepsilon_{g1},...,\varepsilon_{gT_{g}})\) for
 stayers. An estimate of \(\Omega_{g}\) for both stayers and movers is
-required in order to provide a bias correction for the variance of
-person effects, see Section 1 and Remark 3 in KSS.
+required in order to provide a bias-correction for the variance of
+person effects; see Section 1 and Remark 3 in KSS.
 
 The current implementation of the code estimates 
-$\Omega_{g}$ for stayers by leaving only a single observation out -- i.e., by assuming $\Omega_g$ is diagonal. This approach yields an upper bound estimate on
+$\Omega_{g}$ for stayers by leaving only a single observation out, that is, by assuming $\Omega_g$ is diagonal. This approach yields an upper bound estimate on
 the variance of person effects (computed across both stayers and
 movers).
 
@@ -1305,7 +1303,7 @@ There are several alternatives that the user can explore:
 \def\labelenumi{\arabic{enumi}.}
 \item
   Estimate a variance decomposition in a sample of movers only: For
-  movers, it is possible to estimate a leave-out bias corrected variance
+  movers, it is possible to estimate a leave-out bias-corrected variance
   of person effects that is robust to both unrestricted
   heteroskedasticity and serial correlation in the error term of the AKM
   model within a given match. Therefore, one can provide an unbiased
@@ -1314,15 +1312,15 @@ There are several alternatives that the user can explore:
   \texttt{leave\_out\_KSS} a movers-only sample.
 \item
   Drop adjacent wage observations for stayers: Under the assumption that
-  the errors are serially independent after m periods, it suffices to
-  keep every \(mth\) stayer observation and apply the leave person-year
-  out estimator. For example, if \(m=2\) and we have a balanced panel
+  the errors are serially independent after $m$ periods, it suffices to
+  keep every $m$th stayer observation and apply the 
+  estimator after leaving a person-year observation out. For example, if \(m=2\) and we have a balanced panel
   with \(T=5\), we can restore independence of the errors in the stayer
   sample by keeping any of the following pairs of stayer time periods:
-  (1,4), (2,5), (1,5). One can choose from the available pairs randomly
+  (1,4), (2,5), (1,5). One can choose randomly from the available pairs
   for each stayer with equal probability.
  \item 
-  Drop interior wage observations for stayers:  To minimize concerns regarding serial correlation, the user can drop all but the first and last wage observation of each stayer. Note that dropping stayer wage observations reduces their weight in the variance components. Future versions of the code will allow the variance components to be defined in terms of weights other than the number of micro-observations.
+  Drop interior wage observations for stayers:  To minimize concerns regarding serial correlation, the user can drop all but the first and last wage observations of each stayer. Note that dropping stayer wage observations reduces their weight in the variance components. Future versions of the code will allow the variance components to be defined in terms of weights other than the number of micro-observations.
 \end{enumerate}
 
     \hypertarget{regressing-firm-fixed-effects-on-observables}{%
@@ -1330,22 +1328,22 @@ There are several alternatives that the user can explore:
 Observables}\label{regressing-firm-fixed-effects-on-observables}}
 \label{sec:lincom}
 It is common in empirical applications to regress the fixed effects
-estimated from the two-way model on some observables characteristics.
-Using the AKM model again as our leading example, suppose we are
+estimated from the two-way model on some observable characteristics.
+Using the AKM model again as our leading example, suppose that we are
 interested in the linear projection of the firm effects \(\psi_{gt}\)
-on some observables \(Z_{gt}\):
+on some observables \(Z_{gt}\)
 
 \begin{equation}
-\psi_{j(g,t)}=Z_{gt}'\gamma+e_{gt}
+\psi_{j(g,t)}=Z_{gt}'\gamma+e_{gt}.
 \end{equation}
 
-Typical practice is to estimate \(\gamma\) using a simple regression
+The standard practice is to estimate \(\gamma\) using a simple regression
 where the estimated firm effects, \(\hat{\psi}_{j(g,t)}\), are regressed
 on \(Z_{gt}\)
 
 \begin{equation}
-\hat{\gamma}=\left(\sum_{g,t}Z_{gt}Z_{gt}'.
-\right)^{-1}Z_{gt}\hat{\psi}_{gt}
+\hat{\gamma}=\left(\sum_{g,t}Z_{gt}Z_{gt}'
+\right)^{-1}Z_{gt}\hat{\psi}_{gt}.
 \end{equation}
 
 KSS show that inference on \(\hat{\gamma}\) needs to be adjusted because the estimated firm fixed effects $\{\hat{\psi}_{j}\}_{j=1}^{J}$ are correlated with one another.
@@ -1354,7 +1352,7 @@ To see this, suppose that we have a simple AKM model with only two time
 periods, set \(w_{gt}=0\), and take first differences
 \(\Delta y_{g}\equiv y_{g2}-y_{g1}\) to eliminate the worker fixed
 effects so that the AKM model becomes \begin{equation}
-\Delta y_{g}=\Delta f_{g}'\psi+\varepsilon_{g}
+\Delta y_{g}=\Delta f_{g}'\psi+\varepsilon_{g},
 \end{equation}
 
 where \(\Delta f_{g}=f_{g,2}-f_{g,1}\) and
@@ -1362,17 +1360,17 @@ where \(\Delta f_{g}=f_{g,2}-f_{g,1}\) and
 vector containing the firm dummies. In this model,
 
 \begin{equation}
-\hat{\psi}=\psi+\underbrace{\sum_{g=1}^{N}(\Delta f_{g}\Delta f_{g}')^{-1}\Delta f_{g}\varepsilon_{g}}_{\text{Correlated Noise}}
+\hat{\psi}=\psi+\underbrace{\sum_{g=1}^{N}(\Delta f_{g}\Delta f_{g}')^{-1}\Delta f_{g}\varepsilon_{g}}_{\text{Correlated Noise}}.
 \end{equation}
 
 Note how the dependence in the vector of estimated firm fixed effects,
 \(\hat{\psi}\), is induced by the regressor design
 \(\sum_{g=1}^{N}(\Delta f_{g}\Delta f_{g}')^{-1}\). As shown in
-Table 3 of KSS, ignoring this correlation can easily lead standard
-errors to be underestimated by an order of magnitude in practice.
+Table 3 of KSS, ignoring this correlation can easily lead to underestimating standard
+errors by an order of magnitude in practice.
 
 The package provides the HU standard errors on \(\hat{\gamma}\)
-using the function \texttt{lincom\_KSS} which is designed to emulate the Stata
+using the function \texttt{lincom\_KSS}, which is designed to emulate the Stata
 function \href{https://www.stata.com/manuals13/rlincom.pdf}{lincom} and therefore works as a post-estimation
 command. We demonstrate the functioning of \texttt{lincom\_KSS} with an
 example.
@@ -1381,7 +1379,7 @@ In this example, we are interested in testing whether the difference in
 person-year weighted mean firm effects between region 1 and region 2 is
 statistically different from zero. This amounts to running a regression
 where the dependent variable is the vector of estimated firm effects and
-the set of observables, \(Z_{gt}\) , here is represented by a constant
+the set of observables, \(Z_{gt}\) , is here represented by a constant
 and a dummy for whether the firm of worker \(g\) in year \(t\) belongs
 to region 2.
 
@@ -1470,7 +1468,7 @@ T-stat: 2.94
 ******************************************
     \end{Verbatim}
 
-    We can see from the output above (make sure to scroll until the end)
+    We can see from the above output  (make sure to scroll until the end)
 that the difference in person-year weighted mean firm effects between
 the two regions is equal to 0.26. The traditional
 HC or ``robust'' standard errors on this

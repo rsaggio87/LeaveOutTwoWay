@@ -24,7 +24,7 @@ function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_KSS(y,id,firmid,c
 %% NON-MANDATORY INPUTS    
 %leave_out_level: string variable that takes two values:
 
-    %'obs': perform leave-out by leaving a person-year observation out.
+    %'obs': perform leave-out by leaving a person-year observation out (default)
 
     %'matches': perform leave-out by leaving an entire person-firm match out.
     
@@ -446,15 +446,11 @@ if no_controls == 0
    S=[S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
    X=[D,F*S,controls];
    xx=X'*X;
+   Lchol=ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
    xy=X'*y;
-   try
-        Lchol=ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
-        b=pcg(xx,xy,1e-10,1000,Lchol,Lchol');
-   catch
-        warning('incomplete chol failed. Running brute force pcg.')
-        b=pcg(xx,xy,1e-10,1000);
-   end
+   b=pcg(xx,xy,1e-10,1000,Lchol,Lchol');
    y=y-X(:,N+J:end)*b(N+J:end); %variance decomposition will be based on this residualized outcome.
+   no_controls=1;
 end
 
 
@@ -533,14 +529,9 @@ S                   = [S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix
 X                   = [D,F*S]; %back to grounded Laplacian. 
 X                   = PESO_MAT*X;% TO ACCOUNT FOR WEIGHTING (FGLS)
 xx                  = X'*X;
+Lchol               = ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
 xy                  = X'*y;
-   try
-        Lchol=ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
-        [b flag]    = pcg(xx,xy,1e-10,1000,Lchol,Lchol');
-   catch
-        warning('incomplete chol failed. Running brute force pcg')
-        [b flag]    = pcg(xx,xy,1e-10,1000);
-   end
+[b flag]            = pcg(xx,xy,1e-10,1000,Lchol,Lchol');
 eta                 = y-X*b;
 eta_h				= eta./Mii; %Leave one out residual
 sigma_i				= (y-mean(y)).*eta_h; %KSS estimate of individual variance.
