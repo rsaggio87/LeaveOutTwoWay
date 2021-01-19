@@ -447,11 +447,10 @@ if no_controls == 0
    X=[D,F*S,controls];
    xx=X'*X;
    xy=X'*y;
-   try
-        Lchol=ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
+   Lchol=lchol_iter(xx);
+   if size(Lchol,1) > 0 % if one of the -ichol()- evaluations succeeded, then use preconditioner
         b=pcg(xx,xy,1e-10,1000,Lchol,Lchol');
-   catch
-        warning('incomplete chol failed. Running brute force pcg.')
+   else % else, run brute-force conjugate-gradient method
         b=pcg(xx,xy,1e-10,1000);
    end
    y=y-X(:,N+J:end)*b(N+J:end); %variance decomposition will be based on this residualized outcome.
@@ -534,13 +533,12 @@ X                   = [D,F*S]; %back to grounded Laplacian.
 X                   = PESO_MAT*X;% TO ACCOUNT FOR WEIGHTING (FGLS)
 xx                  = X'*X;
 xy                  = X'*y;
-   try
-        Lchol=ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
-        [b flag]    = pcg(xx,xy,1e-10,1000,Lchol,Lchol');
-   catch
-        warning('incomplete chol failed. Running brute force pcg')
-        [b flag]    = pcg(xx,xy,1e-10,1000);
-   end
+Lchol               = lchol_iter(xx);
+if size(Lchol,1) > 0 % if one of the -ichol()- evaluations succeeded, then use preconditioner
+        b           = pcg(xx,xy,1e-10,1000,Lchol,Lchol');
+else 
+        b           = pcg(xx,xy,1e-10,1000);
+end
 eta                 = y-X*b;
 eta_h				= eta./Mii; %Leave one out residual
 sigma_i				= (y-mean(y)).*eta_h; %KSS estimate of individual variance.
