@@ -1,7 +1,7 @@
 # LeaveOutTwoWay
 
 This Matlab package implements the leave out correction of 
-[Kline, Saggio and Soelvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf) for estimating variance components in two-way fixed effects models. It also permits to conduct inference on coefficients obtained from a second stage regression where the estimated fixed effects are regressed on some observable characteristics. 
+[Kline, Saggio and Soelvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf) for estimating variance components in two-way fixed effects models. It can also report asymptotically valid standard errors on coefficients obtained from a second stage regression where the estimated fixed effects are regressed on some observable characteristics. 
  
 See this [vignette](doc/VIGNETTE.pdf) for a description of the package.
 
