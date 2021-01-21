@@ -2,8 +2,8 @@
 \contentsline {subsection}{\numberline {1.1}The KSS Correction}{2}{subsection.1.1}% 
 \contentsline {subsubsection}{\numberline {1.1.1}The Plug-in Estimator}{2}{subsubsection.1.1.1}% 
 \contentsline {subsubsection}{\numberline {1.1.2}The Bias in the Plug-in Estimator}{3}{subsubsection.1.1.2}% 
-\contentsline {subsubsection}{\numberline {1.1.3}The Problem with ``Standard'' Standard Errors in High Dimensional Models}{3}{subsubsection.1.1.3}% 
-\contentsline {subsubsection}{\numberline {1.1.4}The Leave Out Correction}{4}{subsubsection.1.1.4}% 
+\contentsline {subsubsection}{\numberline {1.1.3}The Problem with ``Standard'' Standard Errors in High- Dimensional Models}{3}{subsubsection.1.1.3}% 
+\contentsline {subsubsection}{\numberline {1.1.4}The Leave-Out Correction}{4}{subsubsection.1.1.4}% 
 \contentsline {section}{\numberline {2}Computing the KSS Correction}{5}{section.2}% 
 \contentsline {subsection}{\numberline {2.1}Setup}{5}{subsection.2.1}% 
 \contentsline {subsection}{\numberline {2.2}Importing the Data}{6}{subsection.2.2}% 
@@ -14,6 +14,6 @@
 \contentsline {subsection}{\numberline {5.1}Computational Bottleneck}{8}{subsection.5.1}% 
 \contentsline {subsection}{\numberline {5.2}Approximating the Statistical Leverages}{8}{subsection.5.2}% 
 \contentsline {section}{\numberline {6}Adding Controls}{14}{section.6}% 
-\contentsline {section}{\numberline {7}Leaving out a Person-Year Observation vs.\nobreakspace {}Leaving Out a Match}{15}{section.7}% 
-\contentsline {section}{\numberline {8}Variance of Person Effects when Leaving Out a Match}{17}{section.8}% 
-\contentsline {section}{\numberline {9}Regressing Firm Fixed Effects on Observables}{17}{section.9}% 
+\contentsline {section}{\numberline {7}Leaving Out a Person-Year Observation vs.\nobreakspace {}Leaving Out a Match}{15}{section.7}% 
+\contentsline {section}{\numberline {8}Variance of Person Effects When Leaving Out a Match}{17}{section.8}% 
+\contentsline {section}{\numberline {9}Regressing Firm Fixed Effects on Observables}{18}{section.9}% 

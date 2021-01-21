@@ -1,22 +1,22 @@
 # LeaveOutTwoWay
 
 This Matlab package implements the leave out correction of 
-[Kline, Saggio and Soelvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf) for estimating variance components in two-way fixed effects models. 
+[Kline, Saggio and Soelvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf) for estimating variance components in two-way fixed effects models. It also permits to conduct inference on coefficients obtained from a second stage regression where the estimated fixed effects are regressed on some observable characteristics. 
  
 See this [vignette](doc/VIGNETTE.pdf) for a description of the package.
 
 ## Julia Version
 
 The Julia version of the package can be 
-found [here](https://github.com/HighDimensionalEconLab/VarianceComponentsHDFE.jl). At the same
-page one can found an executable that permits estimating the leave-out correction even if the user does not have MATLAB or JULIA. 
+found [here](https://github.com/HighDimensionalEconLab/VarianceComponentsHDFE.jl). On the same
+page, one can find an executable that permits estimation of the leave-out correction even if the user does not have MATLAB or JULIA. 
 
 ## Summary of Changes
 
-These are the most significant changes introduced by this new version compared to previous one:
+These are the most significant changes introduced with this new version
 * New documentation that describes in detail the functioning of `leave_out_KSS`.
 * By default, the code runs a leave-out correction by leaving a match out as opposed to leaving an observation out. See [vignette](doc/VIGNETTE.pdf) for details.
-* New, optimized, random projection algorithm for calculation of the statistical leverages.
+* New, optimized, random projection algorithm for calculation of the statistical leverages which scale extremely well to large datasets.
 * Code no longer requires MATLAB BGL but runs automatically on MATLAB built-in network functions.
 * Requires MATLAB R2015b or higher. 
 
