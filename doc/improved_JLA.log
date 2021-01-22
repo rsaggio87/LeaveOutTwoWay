@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.5.8)  5 JAN 2021 12:08
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.5.8)  21 JAN 2021 16:32
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1345,7 +1345,7 @@ Package rerunfilecheck Info: File `improved_JLA.out' has not changed.
 Here is how much of TeX's memory you used:
  35767 strings out of 492616
  690418 string characters out of 6129482
- 726881 words of memory out of 5000000
+ 725881 words of memory out of 5000000
  39167 multiletter control sequences out of 15000+600000
  551222 words of font info for 95 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1365,7 +1365,7 @@ e/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive
 /2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2
 019/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/local/texlive/20
 19/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on improved_JLA.pdf (3 pages, 153418 bytes).
+Output written on improved_JLA.pdf (3 pages, 153124 bytes).
 PDF statistics:
  100 PDF objects out of 1000 (max. 8388607)
  79 compressed objects within 1 object stream
