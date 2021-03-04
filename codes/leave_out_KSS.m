@@ -449,9 +449,9 @@ if no_controls == 0
    xy=X'*y;
    Lchol=lchol_iter(xx);
    if size(Lchol,1) > 0 % if one of the -ichol()- evaluations succeeded, then use preconditioner
-        b=pcg(xx,xy,1e-10,1000,Lchol,Lchol');
-   else % else, run brute-force conjugate-gradient method
-        b=pcg(xx,xy,1e-10,1000);
+            b           = pcg(xx,xy,1e-10,1000,Lchol,Lchol');
+   else 
+            b           = pcg(xx,xy,1e-10,1000);
    end
    y=y-X(:,N+J:end)*b(N+J:end); %variance decomposition will be based on this residualized outcome.
 end
@@ -533,13 +533,7 @@ X                   = [D,F*S]; %back to grounded Laplacian.
 X                   = PESO_MAT*X;% TO ACCOUNT FOR WEIGHTING (FGLS)
 xx                  = X'*X;
 xy                  = X'*y;
-Lchol               = [];
-try
-Lchol               = ichol(xx,struct('type','ict','droptol',1e-2,'diagcomp',.1));
-end
-if size(Lchol,1) == 0 %% if initial config did not work, try this.
-Lchol=lchol_iter(xx);
-end
+Lchol               = lchol_iter(xx);
 if size(Lchol,1) > 0 % if one of the -ichol()- evaluations succeeded, then use preconditioner
         b           = pcg(xx,xy,1e-10,1000,Lchol,Lchol');
 else 
