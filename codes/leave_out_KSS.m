@@ -449,9 +449,9 @@ if no_controls == 0
    xy=X'*y;
    Lchol=lchol_iter(xx);
    if size(Lchol,1) > 0 % if one of the -ichol()- evaluations succeeded, then use preconditioner
-        b=pcg(xx,xy,1e-10,1000,Lchol,Lchol');
-   else % else, run brute-force conjugate-gradient method
-        b=pcg(xx,xy,1e-10,1000);
+            b           = pcg(xx,xy,1e-10,1000,Lchol,Lchol');
+   else 
+            b           = pcg(xx,xy,1e-10,1000);
    end
    y=y-X(:,N+J:end)*b(N+J:end); %variance decomposition will be based on this residualized outcome.
 end
@@ -635,4 +635,3 @@ if no_labels == 1
 end
 end
 end
-

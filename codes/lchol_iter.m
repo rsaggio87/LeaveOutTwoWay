@@ -1,6 +1,7 @@
 function Lchol=lchol_iter(xx)
     
 %Credits to Chris Moser: https://github.com/rsaggio87/LeaveOutTwoWay/issues/17
+    droptol=1e-2;
     diagcomp_linear_n = 1;
     diagcomp_linear_step = .1;
     diagcomp_linear_list = diagcomp_linear_step.*(1:diagcomp_linear_n);
@@ -16,8 +17,8 @@ function Lchol=lchol_iter(xx)
     for diagcomp = diagcomp_list
         try
             Lchol=ichol(xx,struct('type','ict','droptol',droptol,'diagcomp',diagcomp));
-            fprintf('\n')
-            disp(['NOTE: function -ichol()- with diagcomp = ' num2str(diagcomp) ' succeeded!'])
+            %fprintf('\n')
+            %disp(['NOTE: function -ichol()- with diagcomp = ' num2str(diagcomp) ' succeeded!'])
             break % exit for loop after successful evaluation of -ichol()-
         catch
             disp(['USER WARNING: function -ichol()- with diagcomp = ' num2str(diagcomp) ' failed!'])
