@@ -330,6 +330,10 @@ end
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
 end
+if n_of_parameters > 1
+    warning('This code is designed to just report the unweighted variance of the firm effects')
+    n_of_parameters=1;   
+end
 
 %% STEP 1: FIND CONNECTED SET
 %As first step in our analysis, we run estimation of a standard AKM model
@@ -490,8 +494,9 @@ end
     J=size(F,2);
     
 %Weighting Matrices
-	X_fe=[sparse(NT,N) X(:,N+1:end)];
-    X_fe=repelem(X_fe,peso,1); %weight by lenght of the spell
+	%X_fe=[sparse(NT,N) X(:,N+1:end)];
+    %X_fe=repelem(X_fe,peso,1); %weight by lenght of the spell
+    X_fe=[sparse(J,N) speye(J)];
     X_pe=[X(:,1:N) sparse(NT,J)];
     X_pe=repelem(X_pe,peso,1); %weight by lenght of the spell
     PESO_MAT=sparse(1:NT,(1:NT)',peso.^0.5,NT,NT);
@@ -523,10 +528,10 @@ toc
 %We use the statistical leverages, Pii, and the Bii associated with a given
 %variance component to bias correct these quantities using the KSS approach
 
-X_fe                = [sparse(NT,N) F];
-X_fe                = repelem(X_fe,peso,1); %weight by lenght of the spell
-X_pe                = [D sparse(NT,J)];
-X_pe                = repelem(X_pe,peso,1); %weight by lenght of the spell
+%X_fe                = [sparse(NT,N) F];
+%X_fe                = repelem(X_fe,peso,1); %weight by lenght of the spell
+%X_pe                = [D sparse(NT,J)];
+%X_pe                = repelem(X_pe,peso,1); %weight by lenght of the spell
 S                   = speye(J-1);
 S                   = [S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
 X                   = [D,F*S]; %back to grounded Laplacian. 

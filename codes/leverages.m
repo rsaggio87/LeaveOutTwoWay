@@ -130,6 +130,7 @@ X_pe 	=  parallel.pool.Constant(X_pe);
         Z_fe		= X_c.Value*Z;				
 	    Bii_fe		= Bii_fe+(Z_fe.*Z_fe);	
         
+        if do_cov == 1
 	    %Bii for Variance of Person Effects
         [Z flag]	= pcg(xx_c.Value,(ons*(X_pe.Value))',tol,numIterations,Lchol_c.Value);
         Z_pe		= X_c.Value*Z;				
@@ -138,6 +139,7 @@ X_pe 	=  parallel.pool.Constant(X_pe);
 	    %Bii for CoVariance of Person,Firm Effects
         Z_cov		= (Z_pe.*Z_fe);			
 	    Bii_cov		= Bii_cov+Z_cov;
+        end
         end
         
 %A potential issue when estimating Pii with the JLA is that it is possible 
