@@ -368,7 +368,7 @@ disp(s);
 disp('SECTION 1')
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
-[results,y,firmid,id,id_old,firmid_old,controls] = evalc('pruning_unbal_v3(y,firmid,id,id_old,firmid_old,controls)');
+[y,firmid,id,id_old,firmid_old,controls] = pruning_unbal_v3(y,firmid,id,id_old,firmid_old,controls);
 
 
 %%%Drop stayers with a single person year observation

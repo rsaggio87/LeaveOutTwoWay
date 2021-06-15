@@ -29,7 +29,7 @@ end
 n_of_bad_workers=1;
 while n_of_bad_workers>=1
 
-    %Largest connected set
+%Largest connected set once removed bad workers
     A=build_adj(id,firmid); 
     %[sindex, sz]=components(A); %get connected sets
     [sindex,sz] = conncomp(graph(A));
@@ -52,43 +52,6 @@ while n_of_bad_workers>=1
     firmid=n;
     [~,~,n]=unique(id);
     id=n;    
-    
-    
-    %Check for leave out connectevity
-    NT=size(id,1);
-    bad_obs=zeros(NT,1);
-    rows=(1:NT)';
-    parfor ii=1:NT
-    sel=rows~=ii;
-    id_sel=id(sel);
-    [~,~,id_sel]=unique(id_sel);
-    firmid_sel=firmid(sel);
-    [~,~,firmid_sel]=unique(firmid_sel);
-    A=build_adj(id_sel,firmid_sel);
-    [sindex] = conncomp(graph(A)); 
-    n_components=unique(sindex);
-    bad_obs(ii)=(n_components>1);
-    end
-    disp('# of observations that when removed would disconnect the graph')
-    sum(bad_obs)
-    n_of_bad_workers=sum(bad_obs);
-    
-    %reset
-    sel=~bad_obs;
-    y=y(sel);
-    firmid=firmid(sel);
-    id=id(sel);
-    firmid_old=firmid_old(sel);
-    id_old=id_old(sel);
-    controls=controls(sel,:);
-    prov_indicator=prov_indicator(sel,:);
-    
-    %Resetting ids one last time.
-    [~,~,n]=unique(firmid);
-    firmid=n;
-    [~,~,n]=unique(id);
-    id=n;  
-      
 end
 end
 
