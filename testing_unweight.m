@@ -22,4 +22,4 @@ y=data(:,3); % outcome variable
 clear data
 mean(y)
 %% Run. Works only for variance of firm effects.
-[sigma2_psi] = leave_out_KSS(y,id,firmid,[],'obs');
+[sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_KSS(y,id,firmid,[],'obs','exact');
