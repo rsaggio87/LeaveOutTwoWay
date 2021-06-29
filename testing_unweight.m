@@ -14,12 +14,12 @@ path(path,'codes'); %this contains the main LeaveOut Routines. path(path,'CMG');
 %pool=parpool(nw,'IdleTimeout', Inf); %all cores will be assigned to Matlab
 
 %% Import data.
-namesrc='data/jtitle_firm.csv'; %path to original testing data 
+namesrc='data/black_soc3_firm.csv'; %path to original testing data 
 data=importdata(namesrc); %import data
 id=data(:,1); %worker identifiers
 firmid=data(:,2); %firm identifiers
 y=data(:,3); % outcome variable
+
 clear data
-mean(y)
 %% Run. Works only for variance of firm effects.
 [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_KSS(y,id,firmid,[],'obs','exact');

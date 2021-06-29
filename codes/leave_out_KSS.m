@@ -491,11 +491,11 @@ end
     J=size(F,2);
     
 %Weighting Matrices
-	%X_fe=[sparse(NT,N) X(:,N+1:end)];
-    %X_fe=repelem(X_fe,peso,1); %weight by lenght of the spell
-    X_fe=[sparse(J,N) speye(J)];
-    X_pe=[inv(F'*F)*F'*X(:,1:N) sparse(J,J)];
-    %X_pe=repelem(X_pe,peso,1); %weight by lenght of the spell
+	X_fe=[sparse(NT,N) X(:,N+1:end)];
+    X_fe=repelem(X_fe,peso,1); %weight by lenght of the spell
+    X_fe=[sparse(NT,N) X(:,N+1:end)];
+    X_pe=[F*(inv(F'*F)*F'*X(:,1:N)) sparse(NT,J)];
+    X_pe=repelem(X_pe,peso,1); %weight by lenght of the spell
     PESO_MAT=sparse(1:NT,(1:NT)',peso.^0.5,NT,NT);
     y_untransformed=y;
     X=PESO_MAT*X;% TO ACCOUNT FOR WEIGHTING (FGLS)
@@ -548,7 +548,11 @@ sigma_i				= sigma_i.*correction_JLA; %to adjust for non-linear bias induced by 
 
 X_fe                = X_fe(:,1:end-1);
 X_pe                = X_pe(:,1:end-1);
+corr                = sigma_i.*Bii_pe;
 
+out=[full(1-Mii),eta_h,full(Bii_pe),full(Bii_fe),corr];
+s=['diagno.csv'];
+dlmwrite(s, full(out), 'delimiter', '\t', 'precision', 16);
 
 
 if strcmp(leave_out_level,'matches')
@@ -575,6 +579,10 @@ if  n_of_parameters==3
     [sigma_2_alpha_AKM, sigma2_alpha]       = kss_quadratic_form(sigma_i,X_pe,X_pe,b,Bii_pe);
 end
 
+    pee=b(1:N);
+    pee=X(:,1:N)*pee;
+    pee=accumarray(firmid,pee,[],@(x)mean(x));
+    var(pee)
 
 %% STEP 6: PRINTING RESULTS
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
