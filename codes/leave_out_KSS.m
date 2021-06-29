@@ -493,7 +493,7 @@ end
 %Weighting Matrices
 	X_fe=[sparse(NT,N) X(:,N+1:end)];
     X_fe=repelem(X_fe,peso,1); %weight by lenght of the spell
-    X_fe=[sparse(NT,N) X(:,N+1:end)];
+    %X_fe=[sparse(NT,N) X(:,N+1:end)];
     X_pe=[F*(inv(F'*F)*F'*X(:,1:N)) sparse(NT,J)];
     X_pe=repelem(X_pe,peso,1); %weight by lenght of the spell
     PESO_MAT=sparse(1:NT,(1:NT)',peso.^0.5,NT,NT);
