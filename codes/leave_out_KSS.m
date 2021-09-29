@@ -472,9 +472,6 @@ if strcmp(leave_out_level,'matches')
    id_old               = accumarray(match_id,id_old,[],@(x)mean(x));
    firmid_old           = accumarray(match_id,firmid_old,[],@(x)mean(x));
    y					= accumarray(match_id,y,[],@(x)mean(x)); 
-   if lincom_do==1
-   Z					= accumarray(match_id,Z,[],@(x)mean(x));
-   end
 end
 
 %% STEP 4: COMPUTATION OF (Pii,Bii)
@@ -624,7 +621,6 @@ s=[filename '.csv'];
 dlmwrite(s, out, 'delimiter', '\t', 'precision', 16);
 %% STEP 8: LINCOM
 if lincom_do == 1 
-    Z                   = repelem(Z,peso,1);
     Transform           = X_fe; %regress the firm effects (+ regression is person-year weighted)
     disp('Regressing the firm effects on observables...')
 if no_labels == 0
