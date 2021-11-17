@@ -482,9 +482,11 @@ end
     NT=size(y,1);
     D=sparse(1:NT,id',1);
     F=sparse(1:NT,firmid',1);
-    X=[D,-F]; %shaped in a pure Laplacian format.
+    S=speye(J-1);
+    S=[S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
+    X=[D,F*S];
     N=size(D,2);
-    J=size(F,2);
+    J=N-size(X,2);
     
 %Weighting Matrices
 	X_fe=[sparse(NT,N) X(:,N+1:end)];
@@ -497,7 +499,7 @@ end
     y=PESO_MAT*y;%FGLS transformation
     xx=X'*X;
     disp('Calculating the statistical leverages...')
-    [results,Lchol] = evalc('cmg_sdd(xx)'); %preconditioner for Laplacian matrices.   
+    Lchol= lchol_iter(xx);  
 
 tic    
 if n_of_parameters==1
