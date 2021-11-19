@@ -486,7 +486,6 @@ end
     S=[S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
     X=[D,F*S];
     N=size(D,2);
-    J=N-size(X,2);
     
 %Weighting Matrices
 	X_fe=[sparse(NT,N) X(:,N+1:end)];
