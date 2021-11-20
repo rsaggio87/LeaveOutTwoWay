@@ -42,7 +42,7 @@ tol=1e-6; %tol for pcg
 %Objects for parfor 
 xx_c 	=  parallel.pool.Constant(xx);
 X_c 	=  parallel.pool.Constant(X);
-Lchol_c =  parallel.pool.Constant(@() Lchol);
+Lchol_c =  parallel.pool.Constant(Lchol);
 X_fe 	=  parallel.pool.Constant(X_fe);
 X_pe 	=  parallel.pool.Constant(X_pe);
     
@@ -50,8 +50,8 @@ X_pe 	=  parallel.pool.Constant(X_pe);
  if strcmp(type_algorithm,'exact')
         disp('Running Exact Algorithm...')
         parfor i=1:NT     
-        [xtilde, flag]= pcg(xx_c.Value,X_c.Value(i,:)',tol,numIterations,Lchol_c.Value);
-
+        [xtilde, flag]= pcg(xx_c.Value,X_c.Value(i,:)',tol,numIterations,Lchol_c.Value,Lchol_c.Value');
+        
         %Statistical Leverage
         Pii(i)=X_c.Value(i,:)*xtilde;
 
@@ -101,7 +101,7 @@ X_pe 	=  parallel.pool.Constant(X_pe);
 		%ons 		= ons./sqrt(scale);
 		
 		%Get me the row
-		[Z, flag]	= pcg(xx_c.Value,(ons*(X_c.Value))',tol,numIterations,Lchol_c.Value);
+		[Z, flag]	= pcg(xx_c.Value,(ons*(X_c.Value))',tol,numIterations,Lchol_c.Value,Lchol_c.Value');
 		Z		 	= X_c.Value*Z;
 		
 		%Collect (construct augmented estimator that combines Mii,Pii)
@@ -126,12 +126,12 @@ X_pe 	=  parallel.pool.Constant(X_pe);
 		ons			= ons-mean(ons);
 
         %Bii for Variance of Firm Effects
-        [Z flag]	= pcg(xx_c.Value,(ons*(X_fe.Value))',tol,numIterations,Lchol_c.Value);
+        [Z flag]	= pcg(xx_c.Value,(ons*(X_fe.Value))',tol,numIterations,Lchol_c.Value,Lchol_c.Value');
         Z_fe		= X_c.Value*Z;				
 	    Bii_fe		= Bii_fe+(Z_fe.*Z_fe);	
         
 	    %Bii for Variance of Person Effects
-        [Z flag]	= pcg(xx_c.Value,(ons*(X_pe.Value))',tol,numIterations,Lchol_c.Value);
+        [Z flag]	= pcg(xx_c.Value,(ons*(X_pe.Value))',tol,numIterations,Lchol_c.Value,Lchol_c.Value');
         Z_pe		= X_c.Value*Z;				
 	    Bii_pe		= Bii_pe+(Z_pe.*Z_pe);
 	    

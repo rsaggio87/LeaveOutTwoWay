@@ -483,14 +483,15 @@ end
     D=sparse(1:NT,id',1);
     F=sparse(1:NT,firmid',1);
     S=speye(J-1);
-    S=[S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
-    X=[D,F*S];
+    S=[S;sparse(-zeros(1,J-1))];
+    X=[D,F*S]; %shaped in a pure Laplacian format.
     N=size(D,2);
+    J=size(F,2);
     
 %Weighting Matrices
 	X_fe=[sparse(NT,N) X(:,N+1:end)];
     X_fe=repelem(X_fe,peso,1); %weight by lenght of the spell
-    X_pe=[X(:,1:N) sparse(NT,J)];
+    X_pe=[X(:,1:N) sparse(NT,J-1)];
     X_pe=repelem(X_pe,peso,1); %weight by lenght of the spell
     PESO_MAT=sparse(1:NT,(1:NT)',peso.^0.5,NT,NT);
     y_untransformed=y;
@@ -498,9 +499,8 @@ end
     y=PESO_MAT*y;%FGLS transformation
     xx=X'*X;
     disp('Calculating the statistical leverages...')
-    Lchol= lchol_iter(xx);  
-
-tic    
+    Lchol               = lchol_iter(xx); %preconditioner for Laplacian matrices.   
+     tic    
 if n_of_parameters==1
     [Pii, Mii, correction_JLA, Bii_fe]=leverages(X_fe,X_pe,X,xx,Lchol,type_algorithm,simulations_JLA);
 end
