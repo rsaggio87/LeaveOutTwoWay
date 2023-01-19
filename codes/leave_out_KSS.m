@@ -1,4 +1,4 @@
-function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_KSS(y,id,firmid,controls,leave_out_level,type_algorithm,simulations_JLA,lincom_do,Z_lincom,labels_lincom,filename)
+function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_KSS(y,id,firmid,controls,leave_out_level,type_algorithm,simulations_JLA,lincom_do,Z_lincom,labels_lincom,filename,union_status,type_decom)
 %% Author: Raffaele Saggio
 %Email: rsaggio@mail.ubc.ca
 
@@ -344,7 +344,11 @@ lagfirmid(gcs==1)=NaN; %%first obs for each worker
 %Find connected_set
 if lincom_do==1
 K=size(controls,2);
-controls=[controls Z_lincom];
+controls=[controls Z_lincom union_status];
+end
+if lincom_do==0
+K=size(controls,2);
+controls=[controls union_status];
 end
 [y,id,firmid,id_old,firmid_old,controls] = connected_set(y,id,firmid,lagfirmid,controls);
 
@@ -377,7 +381,8 @@ id=id(sel,:);
 id_old=id_old(sel,:);
 firmid_old=firmid_old(sel,:);
 controls=controls(sel,:);
-
+union_status=controls(:,end);
+controls=controls(:,1:end-1);
 %Resetting ids one last time.
 [~,~,n]=unique(firmid);
 firmid=n;
@@ -407,22 +412,40 @@ F=sparse(1:NT,firmid',1);
 J=size(F,2);
 var_den=var(y);
 clear id_mover
+%If the model includes controls, we're going to estimate the coefficients
+%of those controls and partial them out as follows
+if lincom_do==1
+   Z=controls(:,K+1:end-1);
+   controls=controls(:,1:K); 
+end
 %Summarize
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
-s=['Info on the leave one out connected set:'];
+if type_decom == 0
+s=['Info on the leave one out connected set (Non-Union Jobs):'];
 disp(s);
+end
+if type_decom == 1
+s=['Info on the leave one out connected set (Union Jobs):'];
+disp(s);
+end
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
-s=['mean wage: ' num2str(mean(y))];
+sel = union_status == type_decom;
+s=['mean wage: ' num2str(mean(y(sel)))];
 disp(s)
-s=['variance of wage: ' num2str(var(y))];
+s=['variance of wage: ' num2str(var(y(sel)))];
+var_den = var(y(sel));
 disp(s)
-s=['# of Movers: ' num2str(Nmovers)];
+id_sel = id(sel);
+[~,~,id_sel]=unique(id_sel);
+s=['# of Workers: ' num2str(max(id_sel))];
 disp(s);
-s=['# of Firms: ' num2str(max(firmid))];
+id_sel = firmid(sel);
+[~,~,id_sel]=unique(id_sel);
+s=['# of Firms: ' num2str(max(id_sel))];
 disp(s);
-s=['# of Person Year Observations: ' num2str(size(y,1))];
+s=['# of Person Year Observations: ' num2str(sum(sel))];
 disp(s);
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
@@ -433,12 +456,6 @@ disp('SECTION 2')
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
 disp(s);
-%If the model includes controls, we're going to estimate the coefficients
-%of those controls and partial them out as follows
-if lincom_do==1
-   Z=controls(:,K+1:end);
-   controls=controls(:,1:K); 
-end
 
 %Residualize
 if no_controls == 0
@@ -471,7 +488,7 @@ if strcmp(leave_out_level,'matches')
    firmid			    = accumarray(match_id,firmid,[],@(x)mean(x));
    id_old               = accumarray(match_id,id_old,[],@(x)mean(x));
    firmid_old           = accumarray(match_id,firmid_old,[],@(x)mean(x));
-   y					= accumarray(match_id,y,[],@(x)mean(x)); 
+   y					= accumarray(match_id,y,[],@(x)mean(x));
 end
 
 %% STEP 4: COMPUTATION OF (Pii,Bii)
@@ -491,8 +508,11 @@ end
 %Weighting Matrices
 	X_fe=[sparse(NT,N) X(:,N+1:end)];
     X_fe=repelem(X_fe,peso,1); %weight by lenght of the spell
+    sel = union_status == type_decom;
+    X_fe=X_fe(sel,:);
     X_pe=[X(:,1:N) sparse(NT,J-1)];
     X_pe=repelem(X_pe,peso,1); %weight by lenght of the spell
+    X_pe=X_pe(sel,:);
     PESO_MAT=sparse(1:NT,(1:NT)',peso.^0.5,NT,NT);
     y_untransformed=y;
     X=PESO_MAT*X;% TO ACCOUNT FOR WEIGHTING (FGLS)
@@ -523,8 +543,10 @@ toc
 
 X_fe                = [sparse(NT,N) F];
 X_fe                = repelem(X_fe,peso,1); %weight by lenght of the spell
+X_fe                = X_fe(sel,:);
 X_pe                = [D sparse(NT,J)];
 X_pe                = repelem(X_pe,peso,1); %weight by lenght of the spell
+X_pe                = X_pe(sel,:);
 S                   = speye(J-1);
 S                   = [S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
 X                   = [D,F*S]; %back to grounded Laplacian. 
@@ -576,7 +598,14 @@ end
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
 disp(s);
-disp('SECTION 3')
+if type_decom == 1
+s=['Variance Decomposition for Union Jobs:'];
+disp(s);
+end
+if type_decom == 0
+s=['Variance Decomposition for Non-Union Jobs:'];
+disp(s);
+end
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
 disp(s);
