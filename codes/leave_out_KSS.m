@@ -1,310 +1,4 @@
-function [sigma2_psi,sigma_psi_alpha,sigma2_alpha] = leave_out_KSS(y,id,firmid,controls,leave_out_level,type_algorithm,simulations_JLA,lincom_do,Z_lincom,labels_lincom,filename,union_status,type_decom)
-%% Author: Raffaele Saggio
-%Email: rsaggio@mail.ubc.ca
-
-%% DESCRIPTION
-%This function computes the bias-corrected components in a two-way model as
-%described in Kline, Saggio and Soelvsten (2020, ECTA -- KSS Henceforth).
-
-%This function can be applied to any two-way fixed effects model
-%(student-teachers, patient-doctors, etc). We use AKM jargon (workers, firms) 
-%when describing the code.
-
-%% WARNING!
-%This function only works properly if the user has properly sorted the data
-%by id-year (e.g. xtset id year in Stata).
-
-%% MANDATORY INPUTS
-%y: outcome. Dimensions: N* x 1; N*= # of person-year observations.
-%--
-%id: worker indicators. Dimensions: N* x 1
-%--
-%firmid: firm indicators. Dimensions: N* x 1
-
-%% NON-MANDATORY INPUTS    
-%leave_out_level: string variable that takes two values:
-
-    %'obs': perform leave-out by leaving a person-year observation out.
-
-    %'matches': perform leave-out by leaving an entire person-firm match out.
-    
-    %Default: `matches'.
-
-%controls:
-    %Matrix of controls with dimensions: N* x P. This matrix of controls must
-    %be appropriately defined by the user ex-ante. For instance, if the user 
-    %wants to include time effects then the user should include in the matrix 
-    %'controls' the set of dummy variables associated to a particular year
-    %effect, making sure to avoid potential collinearity issues. 
-    
-    %These controls are going to be partialled out as follows. Let the
-    %model be
-    
-    %y=D*alpha + F*psi + X*b + e
-
-    %The code is going to estimate the above model, get an estimate of b
-    %compute then ynew=y-Xb and run a variance decomposition on 
-    
-    %ynew=D*alpha + F*psi
-    
-%type_algorithm: This takes two values: "exact" or "JLA".                    
-
-    %   "exact": performs exact computation of (Bii,Pii). 
-
-    %   "JLA": perform random projection methods to approximate (Bii,Pii) as 
-    %   detailed in the Computational Appendix of KSS. 
-
-    %In larger datasets, the user should always set type_algorithm='JLA'.
-    
-    %Default: JLA if # of observations in the original data is >10,000
-    
-%simulations_JLA: a natural number.    
-
-    %This governs the # of simulations in the JLA algorithm to approximate 
-    %(Bii,Pii).
-    
-    %Default: 200.
-    
-%lincom_do: binary. 
-
-    %If =1, the code regresses the firm effects on the set of covariates
-    %specied by Z_lincom and report the correct t-statistic
-    %associated with this regression.
-    
-    %Default: 0
-    
- %Z_lincom: matrix of regressors with dimension N* x r.
- 
-    %Matrix of observables to be used when projecting the firm effects into
-    %observables.
- 
- %labels_lincom: string
- 
-    %vector of dimension rx1 that provides a label for each of 
-    %the columns in Z_lincom.
-    
-%filename: string. 
-    %Where saved results should be stored and named. Use name like 
-    %"leave_out_results" and not "leave_out_results.csv" %Default is 'leave_out_estimates';
-
-%% OUTPUTS
-    
-%sigma2_psi:      Variance of the firm effects.
-
-%sigma_psi_alpha: Covariance of the firm, person effects.
-
-%sigma2_alpha:    Variance of the person effects. 
-%                 When leaving a match-out, this parameter is only
-%                 identified among movers, i.e. individuals that moved b/w
-%                 firms across periods. The log file is going to report bounds
-%                 for this parameter + provide its estimate when leaving a
-%                 single observation out in the KSS procedure.
-%
-
-%The function  is also going to save on disk one .csv file and one .mat file. 
-%The .csv contains information on the leave-out connected set. 
-%First column reports the outcome variable, second and third columns the 
-%worker and the firm identifier. 
-%The fourth column reports the stastistical leverages. 
-%If the code is reporting a leave-out correction at the match-level, 
-%the .csv will be collapsed at the match level. 
-
-%% READ
-no_controls=0;
-no_algo=0;
-no_scale=0;
-no_labels=0;
-if nargin < 3
-    error('More arguments needed');
-end
-
-if nargin == 3
-    no_controls=1;
-    controls=ones(size(y,1),1);
-    leave_out_level='matches';
-    no_algo=1;
-    no_scale=1;
-    lincom_do=0;
-    no_labels=1;
-    filename='leave_out_estimates';
-end
-
-if nargin == 4   
-    leave_out_level='matches';
-    no_algo=1;
-    no_scale=1; 
-    lincom_do=0;
-    no_labels=1;
-    filename='leave_out_estimates';
-end
-
-if nargin == 5
-    no_algo=1;
-    no_scale=1;   
-    filename='leave_out_estimates';
-    lincom_do=0;
-    no_labels=1;
-    if size(leave_out_level,2)==0
-    leave_out_level='matches';
-    end
-end
-
-if nargin == 6    
-    no_scale=1;   
-    filename='leave_out_estimates'; 
-    if size(leave_out_level,2)==0
-    leave_out_level='matches';
-    end
-    if size(type_algorithm,2)==0
-    type_algorithm='JLA';
-    end
-    lincom_do=0;
-    no_labels=1;
-end
-
-if nargin == 7      
-    filename='leave_out_estimates';
-    if size(leave_out_level,2)==0
-    leave_out_level='matches';
-    end
-    if size(type_algorithm,2)==0
-    type_algorithm='JLA';
-    end
-    if size(simulations_JLA,2)==0
-    no_scale=1;
-    end
-    lincom_do=0;
-    no_labels=1;
-end
-
-if nargin == 8      
-    filename='leave_out_estimates';
-    if size(leave_out_level,2)==0
-    leave_out_level='matches';
-    end
-    if size(type_algorithm,2)==0
-    type_algorithm='JLA';
-    end
-    if size(simulations_JLA,2)==0
-    no_scale=1;
-    end
-    if size(lincom_do,2)==0
-    lincom_do=0;
-    end
-    if lincom_do==1 
-    disp('Warning: user wants to project the firm effects on some covariates Z but the user did not specify the set of covariates')    
-    lincom_do=0;
-    end
-    no_labels=1;
-end
-
-if nargin == 9      
-    filename='leave_out_estimates';
-    if size(leave_out_level,2)==0
-    leave_out_level='matches';
-    end
-    if size(type_algorithm,2)==0
-    type_algorithm='JLA';
-    end
-    if size(simulations_JLA,2)==0
-    no_scale=1;
-    end
-    if size(lincom_do,2)==0
-    lincom_do=0;
-    end
-    if lincom_do==1 && size(Z_lincom,2)==0 
-    disp('Warning: user wants to project the firm effects on some covariates Z but the user did not specify the set of covariates,no lincom results will be shown')    
-    lincom_do=0;
-    end
-    no_labels=1;
-    
-end
-
-if nargin == 10      
-    filename='leave_out_estimates';
-    if size(leave_out_level,2)==0
-    leave_out_level='matches';
-    end
-    if size(type_algorithm,2)==0
-    type_algorithm='JLA';
-    end
-    if size(simulations_JLA,2)==0
-    no_scale=1;
-    end
-    if size(lincom_do,2)==0
-    lincom_do=0;
-    end
-    if lincom_do==1 && size(Z_lincom,2)==0 
-    disp('Warning: user wants to project the firm effects on some covariates Z but the user did not specify the set of covariates,no lincom results will be shown')    
-    lincom_do=0;
-    end
-    if size(labels_lincom,2)==0
-    no_labels=1;
-    end
-    
-end
-
-if nargin == 11      
-    if size(leave_out_level,2)==0
-    leave_out_level='matches';
-    end
-    if size(type_algorithm,2)==0
-    type_algorithm='JLA';
-    end
-    if size(simulations_JLA,2)==0
-    no_scale=1;
-    end
-    if size(lincom_do,2)==0
-    lincom_do=0;
-    end
-    if lincom_do==1 && size(Z_lincom,2)==0 
-    disp('Warning: user wants to project the firm effects on some covariates Z but the user did not specify the set of covariates, no lincom results will be shown')    
-    lincom_do=0;
-    end
-    if size(labels_lincom,2)==0
-    no_labels=1;
-    end
-    
-end
-
-
-%Read empty controls
-if size(controls,2)==0
-    no_controls=1;
-    controls=ones(size(y,1),1);
-end
-
-%Read number of outputs
-if  nargout==1
-    n_of_parameters=1;
-end
-
-if nargout==2
-    n_of_parameters=2;
-end
-
-if nargout>=3
-    n_of_parameters=3;
-end
-
-
-
-%Read # of FE
-if no_scale == 1
-    simulations_JLA=200; %default rule
-end
-
-if no_algo == 1
-    
-    if size(y,1)>10000
-        type_algorithm='JLA';
-    end
-    
-    if size(y,1)<=10000
-        type_algorithm='exact';     
-    end
-
-end
+function tabella = leave_out_KSS(y,id,firmid,firmid_orig,controls,leave_out_level,type_algorithm,simulations_JLA,filename,union_status,type_decom)
 
 if 1 == 1
 %Listing options
@@ -330,7 +24,7 @@ end
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
 end
-
+n_of_parameters=3;
 %% STEP 1: FIND CONNECTED SET
 %As first step in our analysis, we run estimation of a standard AKM model
 %on the largest connected set
@@ -341,15 +35,11 @@ gcs = id~=gcs;
 lagfirmid=[NaN; firmid(1:end-1)];
 lagfirmid(gcs==1)=NaN; %%first obs for each worker
 
+
+
 %Find connected_set
-if lincom_do==1
 K=size(controls,2);
-controls=[controls Z_lincom union_status];
-end
-if lincom_do==0
-K=size(controls,2);
-controls=[controls union_status];
-end
+controls=[controls firmid_orig union_status];
 [y,id,firmid,id_old,firmid_old,controls] = connected_set(y,id,firmid,lagfirmid,controls);
 
 
@@ -382,7 +72,9 @@ id_old=id_old(sel,:);
 firmid_old=firmid_old(sel,:);
 controls=controls(sel,:);
 union_status=controls(:,end);
-controls=controls(:,1:end-1);
+firmid_orig=controls(:,end-1);
+controls=controls(:,1:end-2);
+
 %Resetting ids one last time.
 [~,~,n]=unique(firmid);
 firmid=n;
@@ -414,19 +106,19 @@ var_den=var(y);
 clear id_mover
 %If the model includes controls, we're going to estimate the coefficients
 %of those controls and partial them out as follows
-if lincom_do==1
-   Z=controls(:,K+1:end-1);
-   controls=controls(:,1:K); 
-end
 %Summarize
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
 if type_decom == 0
-s=['Info on the leave one out connected set (Non-Union Jobs):'];
+s=['Info on the leave one out connected set (Non-Union Jobs at Non-Union Firms):'];
 disp(s);
 end
 if type_decom == 1
-s=['Info on the leave one out connected set (Union Jobs):'];
+s=['Info on the leave one out connected set (Union Jobs at Union Firms):'];
+disp(s);
+end
+if type_decom == 2
+s=['Info on the leave one out connected set (Non-Union Jobs at Union Firms):'];
 disp(s);
 end
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
@@ -442,13 +134,21 @@ id_sel = id(sel);
 s=['# of Workers: ' num2str(max(id_sel))];
 disp(s);
 id_sel = firmid(sel);
-[~,~,id_sel]=unique(id_sel);
-s=['# of Firms: ' num2str(max(id_sel))];
+[~,~,firmid_sel]=unique(id_sel);
+s=['# of Firms: ' num2str(max(firmid_sel))];
 disp(s);
 s=['# of Person Year Observations: ' num2str(sum(sel))];
 disp(s);
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
+N_of_workers    = max(id_sel);
+N_of_firms      = max(firmid_sel);
+N_of_OBS        = sum(sel);
+mean_outcome    = mean(y(sel));
+var_outcome     = var_den;
+cs=[id_old firmid_old firmid_orig union_status y];
+cs=full(cs);
+
 %% STEP 3: Residualizing and Collapsing
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
@@ -456,9 +156,8 @@ disp('SECTION 2')
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
 disp(s);
-
+y_untransformed=y;
 %Residualize
-if no_controls == 0
    S=speye(J-1);
    S=[S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
    X=[D,F*S,controls];
@@ -471,7 +170,6 @@ if no_controls == 0
             b           = pcg(xx,xy,1e-10,1000);
    end
    y=y-X(:,N+J:end)*b(N+J:end); %variance decomposition will be based on this residualized outcome.
-end
 
 
 %Collapsing
@@ -489,6 +187,7 @@ if strcmp(leave_out_level,'matches')
    id_old               = accumarray(match_id,id_old,[],@(x)mean(x));
    firmid_old           = accumarray(match_id,firmid_old,[],@(x)mean(x));
    y					= accumarray(match_id,y,[],@(x)mean(x));
+   firmid_orig	        = accumarray(match_id,firmid_orig,[],@(x)mean(x));
 end
 
 %% STEP 4: COMPUTATION OF (Pii,Bii)
@@ -514,7 +213,6 @@ end
     X_pe=repelem(X_pe,peso,1); %weight by lenght of the spell
     X_pe=X_pe(sel,:);
     PESO_MAT=sparse(1:NT,(1:NT)',peso.^0.5,NT,NT);
-    y_untransformed=y;
     X=PESO_MAT*X;% TO ACCOUNT FOR WEIGHTING (FGLS)
     y=PESO_MAT*y;%FGLS transformation
     xx=X'*X;
@@ -532,6 +230,12 @@ end
 if n_of_parameters==3
     [Pii, Mii, correction_JLA, Bii_fe, Bii_cov, Bii_pe]=leverages(X_fe,X_pe,X,xx,Lchol,type_algorithm,simulations_JLA);
 end
+
+ %Matrices for dual connected firms
+ if  type_decom == 2
+    [X_union, X_non_union,n_double]                   = dual_connected_union(firmid,firmid_orig,peso,union_status,N);
+    [~, ~, ~, Bii_union, Bii_cov_union, Bii_non_union]= leverages(X_union,X_non_union,X,xx,Lchol,type_algorithm,simulations_JLA);
+ end
 
 disp('Done!')
 toc
@@ -566,8 +270,11 @@ sigma_i				= sigma_i.*correction_JLA; %to adjust for non-linear bias induced by 
 
 X_fe                = X_fe(:,1:end-1);
 X_pe                = X_pe(:,1:end-1);
-
-
+pe                  = b(1:N);
+pe                  = D*pe;
+fe                  = b(N+1:end);
+fe                  = [fe;0];
+fe                  = F*fe;
 
 if strcmp(leave_out_level,'matches')
     T               = accumarray(id,1);
@@ -592,18 +299,28 @@ if  n_of_parameters==3
     [sigma_alpha_psi_AKM, sigma_psi_alpha]  = kss_quadratic_form(sigma_i,X_fe,X_pe,b,Bii_cov);
     [sigma_2_alpha_AKM, sigma2_alpha]       = kss_quadratic_form(sigma_i,X_pe,X_pe,b,Bii_pe);
 end
+if  type_decom == 2
+    [~, var_firm_effects_dual_union]        = kss_quadratic_form(sigma_i,X_union,X_union,b,Bii_union);
+    [~, var_firm_effects_dual_non_union]    = kss_quadratic_form(sigma_i,X_non_union,X_non_union,b,Bii_non_union);
+    [~, cov_firm_effects_dual]              = kss_quadratic_form(sigma_i,X_union,X_non_union,b,Bii_cov_union);
+    all_for_this                            = cov_firm_effects_dual/(sqrt(var_firm_effects_dual_union)*sqrt(var_firm_effects_dual_non_union));
+end
 
 
 %% STEP 6: PRINTING RESULTS
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
 disp(s);
-if type_decom == 1
-s=['Variance Decomposition for Union Jobs:'];
+if type_decom == 0
+s=['Variance Decomposition (Non-Union Jobs at Non-Union Firms):'];
 disp(s);
 end
-if type_decom == 0
-s=['Variance Decomposition for Non-Union Jobs:'];
+if type_decom == 1
+s=['Variance Decomposition (Union Jobs at Union Firms):'];
+disp(s);
+end
+if type_decom == 2
+s=['Variance Decomposition (Non-Union Jobs at Union Firms):'];
 disp(s);
 end
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
@@ -643,21 +360,23 @@ s=['Correlation of Firm, Person Effects: ' num2str(sigma_psi_alpha/(sqrt(sigma2_
 disp(s);
 s=['Fraction of Variance explained by Worker and Firm Effects: ' num2str((sigma2_psi+2*sigma_psi_alpha+sigma2_alpha)/var_den)];
 disp(s);
+R2=(sigma2_psi+2*sigma_psi_alpha+sigma2_alpha)/var_den;
 end
-%% STEP 7: SAVING OUTPUT
-%Export csv with data from leave out connected set
-out=[y_untransformed,id_old,firmid_old,full(Pii)];
-s=[filename '.csv'];
-dlmwrite(s, out, 'delimiter', '\t', 'precision', 16);
-%% STEP 8: LINCOM
-if lincom_do == 1 
-    Transform           = X_fe; %regress the firm effects (+ regression is person-year weighted)
-    disp('Regressing the firm effects on observables...')
-if no_labels == 0
-    [~]                 = lincom_KSS(y,X,Z,Transform,sigma_i,labels_lincom);
+%% STEP 7: SAVE OUTPUT
+%Export csv with data from leave out connected set with person, firm
+%effects and statistical leverages
+if type_decom == 0
+fe      = repelem(fe,peso,1); %wback to person-year space
+pe      = repelem(pe,peso,1); %wback to person-year space
+sigma_i = repelem(sigma_i,peso,1); %wback to person-year space
+cs      = [cs fe pe sigma_i];
+s=['data/' filename '.csv'];
+dlmwrite(s, cs, 'delimiter', '\t', 'precision', 16);
 end
-if no_labels == 1
-    [~]                 = lincom_KSS(y,X,Z,Transform,sigma_i);
+if type_decom == 2
+tabella = [N_of_workers; N_of_firms; N_of_OBS; n_double;-9;mean_outcome; var_outcome;-9;-9; sqrt(sigma2_psi); sqrt(sigma2_alpha);  sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)); all_for_this; -9;-9; sigma2_psi/var_den; sigma2_alpha/var_den; (2*sigma_psi_alpha)/var_den];
 end
+if type_decom < 2
+tabella = [N_of_workers; N_of_firms; N_of_OBS; -9;-9;mean_outcome; var_outcome;-9;-9; sqrt(sigma2_psi); sqrt(sigma2_alpha);  sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)); -9; -9;-9; sigma2_psi/var_den; sigma2_alpha/var_den; (2*sigma_psi_alpha)/var_den];
 end
 end
