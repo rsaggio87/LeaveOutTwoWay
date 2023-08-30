@@ -16,7 +16,7 @@ path(path,'codes'); %this contains the main LeaveOut Routines.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if 1 == 1
 %% read data
-namesrc='data/unions.csv'; %path to data
+namesrc='data/akm_pe_fe_kss_ready.csv'; %path to data
 data=importdata(namesrc); %import data
 id=data(:,1); %worker identifiers
 firmid=data(:,2); %firm identifiers (unrestricted interaction of firmid and union dummy)

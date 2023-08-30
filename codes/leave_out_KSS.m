@@ -169,6 +169,13 @@ disp(s);
    y=y-X(:,N+J:end)*b(N+J:end); %variance decomposition will be based on this residualized outcome.
    cs=[id_old firmid_old firmid_orig union_status y];
 
+
+  %Matrices for dual connected firms
+ if  type_decom == 2
+    [X_union, X_non_union,n_double]                   = dual_connected_union(firmid,firmid_orig,union_status,N);
+ end
+    
+   
 %Collapsing
 %If the user wants to run the KSS correction leaving a match out, we're
 %going to collapse the data down to match-means and weight this collapsed
@@ -231,9 +238,10 @@ end
 
  %Matrices for dual connected firms
  if  type_decom == 2
-    [X_union, X_non_union,n_double]                   = dual_connected_union(firmid,firmid_orig,peso,union_status,N);
     [~, ~, ~, Bii_union, Bii_cov_union, Bii_non_union]= leverages(X_union,X_non_union,X,xx,Lchol,type_algorithm,simulations_JLA);
  end
+
+
 
 disp('Done!')
 toc
