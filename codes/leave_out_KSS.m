@@ -146,8 +146,6 @@ N_of_firms      = max(firmid_sel);
 N_of_OBS        = sum(sel);
 mean_outcome    = mean(y(sel));
 var_outcome     = var_den;
-cs=[id_old firmid_old firmid_orig union_status y];
-cs=full(cs);
 
 %% STEP 3: Residualizing and Collapsing
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
@@ -156,7 +154,6 @@ disp('SECTION 2')
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
 disp(s);
-y_untransformed=y;
 %Residualize
    S=speye(J-1);
    S=[S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
@@ -170,7 +167,7 @@ y_untransformed=y;
             b           = pcg(xx,xy,1e-10,1000);
    end
    y=y-X(:,N+J:end)*b(N+J:end); %variance decomposition will be based on this residualized outcome.
-
+   cs=[id_old firmid_old firmid_orig union_status y];
 
 %Collapsing
 %If the user wants to run the KSS correction leaving a match out, we're
@@ -187,6 +184,7 @@ if strcmp(leave_out_level,'matches')
    id_old               = accumarray(match_id,id_old,[],@(x)mean(x));
    firmid_old           = accumarray(match_id,firmid_old,[],@(x)mean(x));
    y					= accumarray(match_id,y,[],@(x)mean(x));
+   y_untransformed      = y;
    firmid_orig	        = accumarray(match_id,firmid_orig,[],@(x)mean(x));
 end
 
@@ -362,20 +360,32 @@ s=['Fraction of Variance explained by Worker and Firm Effects: ' num2str((sigma2
 disp(s);
 R2=(sigma2_psi+2*sigma_psi_alpha+sigma2_alpha)/var_den;
 end
+
 %% STEP 7: SAVE OUTPUT
 %Export csv with data from leave out connected set with person, firm
 %effects and statistical leverages
 if type_decom == 0
+
 fe      = repelem(fe,peso,1); %wback to person-year space
 pe      = repelem(pe,peso,1); %wback to person-year space
-sigma_i = repelem(sigma_i,peso,1); %wback to person-year space
-cs      = [cs fe pe sigma_i];
+firmid  = repelem(firmid,peso,1); %wback to person-year space
+id      = repelem(id,peso,1);
+cs      = [cs fe pe id firmid];
+cs      = full(cs);
 s=['data/' filename '.csv'];
 dlmwrite(s, cs, 'delimiter', '\t', 'precision', 16);
+
+myMatrix = [sigma_i,y_untransformed,D,F*S];
+myMatrix = repelem(myMatrix,peso,1); 
+filename = ['data/designMatrix ' filename];
+save( filename, 'myMatrix' )
+
 end
+
 if type_decom == 2
 tabella = [N_of_workers; N_of_firms; N_of_OBS; n_double;-9;mean_outcome; var_outcome;-9;-9; sqrt(sigma2_psi); sqrt(sigma2_alpha);  sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)); all_for_this; -9;-9; sigma2_psi/var_den; sigma2_alpha/var_den; (2*sigma_psi_alpha)/var_den];
 end
+
 if type_decom < 2
 tabella = [N_of_workers; N_of_firms; N_of_OBS; -9;-9;mean_outcome; var_outcome;-9;-9; sqrt(sigma2_psi); sqrt(sigma2_alpha);  sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)); -9; -9;-9; sigma2_psi/var_den; sigma2_alpha/var_den; (2*sigma_psi_alpha)/var_den];
 end

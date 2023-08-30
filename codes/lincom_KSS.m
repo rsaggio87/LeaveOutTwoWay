@@ -146,6 +146,7 @@ end
 test_statistic=numerator./(sqrt(denominator));
 
 %% PART 3: REPORT
+if 0 == 1
 	s=['******************************************'];
     disp(s);
     disp(s);
@@ -185,9 +186,10 @@ if got_labels == 1
     disp(s)
     end   
 end
-test_statistic=test_statistic(2:end);
-linear_combination=numerator(2:end);
-SE_linear_combination_KSS=sqrt(denominator(2:end));
+end
+test_statistic=test_statistic(1:end);
+linear_combination=numerator(1:end);
+SE_linear_combination_KSS=sqrt(denominator(1:end));
 end
 
 

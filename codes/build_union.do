@@ -43,3 +43,11 @@ order id firmid_by_union firmid year y union_status age
 
 xtset id year
 export delimited using "/Users/raffaelesaggio/Dropbox/LeaveOutTwoWay/data/unions.csv", novarnames replace
+
+cap gen uno=1
+collapse uno, by(firmid)
+drop uno
+generate ind_dummies = runiformint(1, 20)
+generate net_surplus = rnormal()
+order firmid net_surplus ind_dummies
+export delimited using "/Users/raffaelesaggio/Dropbox/LeaveOutTwoWay/data/net_surplus_no_public.csv", novarnames replace
