@@ -10,14 +10,14 @@ $$
 y_{ij} =x_{ij}^{\prime } \beta +\varepsilon_{ij} \qquad j=1,...,J; \qquad i=1,...n_{j}; 
 $$
 
-where \(i\) indexes a particular observation which belongs to a cluster $j$ and we have $N= \sum_{j}M_{j}$ total observations; \(x_{ij}\) is a vector of regressors of dimension $K\times1$ and $y_{ij}$ is the outcome of interest. The error terms, $\varepsilon_{ij}$, are assumed to be heteroskedastic and potentially correlated across observations belonging to the same cluster $j$ with a block-diagonal variance-covariance matrix given by
+where $i$ indexes a particular observation which belongs to a cluster $j$ and we have $N= \sum_{j}M_{j}$ total observations; $x_{ij}$ is a vector of regressors of dimension $K\times1$ and $y_{ij}$ is the outcome of interest. The error terms, $\varepsilon_{ij}$, are assumed to be heteroskedastic and potentially correlated across observations belonging to the same cluster $j$ with a block-diagonal variance-covariance matrix given by
 
 $$
 \Omega=\left[\begin{array}{cccc}
-\mathbf{\Omega}_{1} & 0 & 0 & 0\\
-0 & \mathbf{\Omega}_{2} & 0 & 0\\
+\Omega_{1} & 0 & 0 & 0\\
+0 & \Omega_{2} & 0 & 0\\
 0 & 0 & \ddots & 0\\
-0 & 0 & 0 & \mathbf{\Omega}_{J}
+0 & 0 & 0 & \Omega_{J}
 \end{array}\right]
 $$
 
@@ -380,149 +380,4 @@ dlmwrite(s, out, 'delimiter', '\t', 'precision', 16); %% saving results in a  .c
 
 # Interpreting the Output
 
-The code `KSS_SE` prints the event-study coefficients (normalized relative to the year expansion of Medicaid) along with KSS standard errors, clustered at the state level. Below we print an event-study graph (using STATA) that overlays the KSS SEs along with typical cluster-robust standard errors based on White (1980)
-
-
-```matlab
-import stata_setup
-stata_setup.config("/Applications/STATA", "se")
-```
-
-    
-      ___  ____  ____  ____  ____ ®
-     /__    /   ____/   /   ____/      18.0
-    ___/   /   /___/   /   /___/       SE—Standard Edition
-    
-     Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
-                                       StataCorp
-                                       4905 Lakeway Drive
-                                       College Station, Texas 77845 USA
-                                       800-STATA-PC        https://www.stata.com
-                                       979-696-4600        stata@stata.com
-    
-    Stata license: Unlimited-user network, expiring 19 Aug 2024
-    Serial number: 401809301518
-      Licensed to: Raffaele Saggio
-                   UBC
-    
-    Notes:
-          1. Unicode is supported; see help unicode_advice.
-          2. Maximum number of variables is set to 5,000 but can be increased;
-              see help set_maxvar.
-
-
-
-```matlab
-%%stata
-cd "/Users/raffaelesaggio/Dropbox/LeaveOutTwoWay"
-import delimited "data/results_MEDICAID_MATLAB.csv",clear
-
-gen rows 		= _n
-rename v1 coeff_KSS
-rename v2 SE_KSS
-gen lower_KSS = coeff_KSS-1.96*SE_KSS
-gen upper_KSS = coeff_KSS+1.96*SE_KSS
-merge 1:1 rows using "data/results_MEDICAID", nogen
-sort x
-twoway (scatter coeff_ut x, mcolor(dknavy) lcolor(dknavy) msymbol(square) connect(direct) legend(label(1 "CI based on Cluster-Robust White SE"))) ///
-	   (rcap lower_ut upper_ut x, lcolor(dknavy) legend(label(2 ""))) /// 
-	   (scatter coeff_KSS x, mcolor(cranberry) lcolor(cranberry) msymbol(square) connect(direct) legend(label(3 "CI based on Cluster-Robust KSS SE"))) ///
-	   (rcap lower_KSS upper_KSS x, lcolor(cranberry) legend(label(4 ""))), /// 
-		xlabel(-6(1)4) ytitle("Effect on share of low-income childless adults with health insurance", size(small)) xtitle("Year Relative to Expansion of Medicaid") legend(order(1 3)) legend(ring(0) position(11) rows(2)) xline(-0.5, lcolor(red) lpattern(dash))  graphregion(color(white)) bgcolor(white) note("Graph shows the effect of Medicaid expansions on insurance coverage using a state-year panel from ACS" "Red CI based on KSS-SEs clustered at the state-level")
-
-keep coeff_KSS SE_KSS se_ut x
-rename coeff_KSS coeff
-rename se_ut SE_WHITE
-list
-save "data/final_TABLE_comparison_KSS",replace
-
-
-```
-
-    
-    . cd "/Users/raffaelesaggio/Dropbox/LeaveOutTwoWay"
-    /Users/raffaelesaggio/Dropbox/LeaveOutTwoWay
-    
-    . import delimited "data/results_MEDICAID_MATLAB.csv",clear
-    (encoding automatically selected: UTF-8)
-    (2 vars, 10 obs)
-    
-    . 
-    . gen rows                = _n
-    
-    . rename v1 coeff_KSS
-    
-    . rename v2 SE_KSS
-    
-    . gen lower_KSS = coeff_KSS-1.96*SE_KSS
-    
-    . gen upper_KSS = coeff_KSS+1.96*SE_KSS
-    
-    . merge 1:1 rows using "data/results_MEDICAID", nogen
-    
-        Result                      Number of obs
-        -----------------------------------------
-        Not matched                             0
-        Matched                                10  
-        -----------------------------------------
-    
-    . sort x
-    
-    . twoway (scatter coeff_ut x, mcolor(dknavy) lcolor(dknavy) msymbol(square) con
-    > nect(direct) legend(label(1 "CI based on Cluster-Robust White SE"))) ///
-    >            (rcap lower_ut upper_ut x, lcolor(dknavy) legend(label(2 ""))) ///
-    >  
-    >            (scatter coeff_KSS x, mcolor(cranberry) lcolor(cranberry) msymbol(
-    > square) connect(direct) legend(label(3 "CI based on Cluster-Robust KSS SE")))
-    >  ///
-    >            (rcap lower_KSS upper_KSS x, lcolor(cranberry) legend(label(4 ""))
-    > ), /// 
-    >                 xlabel(-6(1)4) ytitle("Effect on share of low-income childles
-    > s adults with health insurance", size(small)) xtitle("Year Relative to Expans
-    > ion of Medicaid") legend(order(1 3)) legend(ring(0) position(11) rows(2)) xli
-    > ne(-0.5, lcolor(red) lpattern(dash))  graphregion(color(white)) bgcolor(white
-    > ) note("Graph shows the effect of Medicaid expansions on insurance coverage u
-    > sing a state-year panel from ACS" "Red CI based on KSS-SEs clustered at the s
-    > tate-level")
-    
-    . 
-    . keep coeff_KSS SE_KSS se_ut x
-    
-    . rename coeff_KSS coeff
-    
-    . rename se_ut SE_WHITE
-    
-    . list
-    
-         +--------------------------------------+
-         |     coeff     SE_KSS   SE_WHITE    x |
-         |--------------------------------------|
-      1. | -.0034914   .0089091   .0082004   -6 |
-      2. | -.0108234   .0068348   .0069703   -5 |
-      3. |  -.008634   .0075653   .0057581   -4 |
-      4. | -.0049002   .0049889   .0053501   -3 |
-      5. | -.0065987   .0036725   .0038092   -2 |
-         |--------------------------------------|
-      6. |  .0445785   .0061763    .005667    0 |
-      7. |  .0643379   .0065041   .0072982    1 |
-      8. |  .0779544    .008109   .0082594    2 |
-      9. |  .0737635   .0104574   .0095947    3 |
-     10. |  .0752858   .0119674   .0108269    4 |
-         +--------------------------------------+
-    
-    . save "data/final_TABLE_comparison_KSS",replace
-    file data/final_TABLE_comparison_KSS.dta saved
-    
-    . 
-    . 
-
-
-
-    
-![svg](output_16_1.svg)
-    
-
-
-As shown in KSS, the standard errors printed by `KSS_SE`, are unbiased while "White" standard errors reported by standard packages (e.g. `reghdfe`)  are consistent but are typically biased in finite samples, especially when the number of clusters is small. 
-
-
+The code `KSS_SE` prints the event-study coefficients (normalized relative to the year expansion of Medicaid) along with KSS standard errors, clustered at the state level. As shown in KSS, the standard errors printed by `KSS_SE`, are unbiased while "White" standard errors reported by standard packages (e.g. `reghdfe`)  are consistent but are typically biased in finite samples, especially when the number of clusters is small. 
