@@ -14,10 +14,10 @@ where $i$ indexes a particular observation which belongs to a cluster $j$ and we
 
 $$
 \Omega=\left[\begin{array}{cccc}
-\Omega_{1} & 0 & 0 & 0\\
-0 & \Omega_{2} & 0 & 0\\
+\mathbf{\Omega}_{1} & 0 & 0 & 0\\
+0 & \mathbf{\Omega}_{2} & 0 & 0\\
 0 & 0 & \ddots & 0\\
-0 & 0 & 0 & \Omega_{J}
+0 & 0 & 0 & \mathbf{\Omega}_{J}
 \end{array}\right]
 $$
 
@@ -381,3 +381,7 @@ dlmwrite(s, out, 'delimiter', '\t', 'precision', 16); %% saving results in a  .c
 # Interpreting the Output
 
 The code `KSS_SE` prints the event-study coefficients (normalized relative to the year expansion of Medicaid) along with KSS standard errors, clustered at the state level. As shown in KSS, the standard errors printed by `KSS_SE`, are unbiased while "White" standard errors reported by standard packages (e.g. `reghdfe`)  are consistent but are typically biased in finite samples, especially when the number of clusters is small. 
+
+As shown in KSS, the standard errors printed by `KSS_SE`, are unbiased while "White" standard errors reported by standard packages (e.g. `reghdfe`)  are consistent but are typically biased in finite samples, especially when the number of clusters is small. 
+
+
