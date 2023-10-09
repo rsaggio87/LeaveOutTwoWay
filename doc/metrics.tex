@@ -159,7 +159,7 @@
     \renewcommand{\LaTeX}{\textrm{\Oldlatex}}
     % Document parameters
     % Document title
-    \title{Computing Cluster-Unbiased Standard Errors}
+    \title{Unbiased Leave-Out Clustered Standard Errors}
     \author{Raffaele Saggio}
     
     
@@ -409,10 +409,17 @@ variance-covariance matrix given by
 \end{array}\right]
 \]
 
-Cluster robust standard errors for the OLS estimator of \(\beta\),
-\(\hat{\beta}\), in most software packages (e.g \texttt{reghdfe}) is
-based on the following well-known formula
+The variance of the OLS estimator of \(\beta\),
+\(\hat{\beta}\), is  given by
 
+\[
+\mathbb{{{V}}}[\hat{\beta}]=\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1}\left[\sum_{j=1}^J\mathbf{x}_{j}'\Omega_{j}\mathbf{x}_{j}\right]\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1},
+\] 
+
+where $\mathbf{x}_{j}$ is a \(n_{j}\times K\) matrix that stacks the regressors \(x_{ij}\) for
+the observations belonging to cluster \(j\).
+
+Estimates of $\mathbb{{{V}}}[\hat{\beta}]$  in most software packages (e.g \texttt{reghdfe}) are given by
 \[
 \mathbb{{\tilde{V}}}[\hat{\beta}]=d\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1}\left[\sum_{j=1}^J\left(\sum_{i}^{n_{j}}x_{ij}\hat{e}_{ij}\right)\left(\sum_{i}^{n_{j}}x_{ij}\hat{e}_{ij}\right)'\right]\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1},
 \] where $d$ is some degrees of freedom adjustment and
@@ -425,18 +432,16 @@ KSS introduces an unbiased estimate of the variance of
 \] where \(\hat{\beta}_{-j}\) is the OLS estimate of \(\beta\) obtained
 after fitting (1) leaving cluster \(j\) out; \(\mathbf{y}_{j}\) is a
 \(n_{j}\times1\) vector that stacks the outcome variable \(y_{ij}\) for
-observations belonging in cluster \(j\); similarly, \(\mathbf{x}_{j}\)
-is a \(n_{j}\times K\) matrix that stacks the regressors \(x_{ij}\) for
-the observations belonging to cluster \(j\).
+observations belonging in cluster \(j\).
 
 Let \(\hat{\eta}_{ij}\), represent the leave-cluster out residual,
-i.e.~\(\hat{\eta}_{ij} \equiv y_{ij}-x_{ij}\hat{\beta}_{-j}\). KSS shows that the following is unbiased estimate of the sampling variability of \(\hat{\beta}\)
+i.e.~\(\hat{\eta}_{ij} \equiv y_{ij}-x_{ij}\hat{\beta}_{-j}\). KSS shows that the following is an unbiased estimate of $\mathbb{{{V}}}[\hat{\beta}]$
  \[
 {\mathbb{{\hat{V}}}}[\hat{\beta}]=\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1}\left[\sum_{j=1}^J\left(\sum_{i}^{n_{j}}x_{ij}y_{ij}\right)\left(\sum_{i}^{n_{j}}x_{ij}\hat{\eta}_{ij}\right)'\right]\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1},
 \]
 
 The software described in this vignette, \texttt{KSS\_SE}, 
-computes \({\mathbb{{\hat{V}}}}[\hat{\beta}]\). The readme in package illustrates how this function works in in an example where one is interested in estimating an
+computes \({\mathbb{{\hat{V}}}}[\hat{\beta}]\). The readme in this repository illustrates how this function works in in an example where one is interested in estimating an
 event-study design using a two-way fixed effects regression.
 
 \bibliography{lit}
