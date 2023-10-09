@@ -1,5 +1,4 @@
-function [y, D, clusterID, year, X] = create_DGP(wins_value,N_clusters,N_X,T);
-
+function [y, D, clusterID, year, X] = create_DGP(wins_value,N_clusters,N_X,T,seed_s)
 %% start by creating a balanced panel
 clusterID                           = (1:N_clusters)';
 clusterID                           = repelem(clusterID, T);
@@ -29,6 +28,7 @@ for k=min(time_rel_event):max(time_rel_event)
 end
 
 %% create additional controls
+rng(3815) %%fix seed to approximate the fixed X design considered in KSS
 X                                  = rand(size(treated,1),N_X);
 coeff_X                            = [rand(3,1); zeros(N_X-3,1)]; %only three coefficients diff from zero
 
@@ -53,6 +53,7 @@ e0                                 = randn(N_clusters,1);
 AR_coefficient                     = 0.9;
 sigma_WN                           = 0.0001;
 e                                  = [e0 zeros(N_clusters,T-1)];  % Initial value as a random number
+rng(seed_s) %%this is the part that gets redrawn in each MC draw.
 for t = 2:T
     e(:,t)                         = AR_coefficient * e(:,t-1) + sqrt(sigma_WN)*randn(N_clusters,1);
 end 
