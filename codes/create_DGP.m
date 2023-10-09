@@ -49,11 +49,11 @@ coeff                              = coeff + trend;
 %[(1:size(coeff,1))'-1-wins_value coeff-coeff(wins_value)]
 
 %% serially correlated error term
+rng(seed_s) %%this is the part that gets redrawn in each MC draw.
 e0                                 = randn(N_clusters,1);
 AR_coefficient                     = 0.9;
 sigma_WN                           = 0.0001;
 e                                  = [e0 zeros(N_clusters,T-1)];  % Initial value as a random number
-rng(seed_s) %%this is the part that gets redrawn in each MC draw.
 for t = 2:T
     e(:,t)                         = AR_coefficient * e(:,t-1) + sqrt(sigma_WN)*randn(N_clusters,1);
 end 
@@ -65,9 +65,9 @@ y                                  = D*coeff + X*coeff_X + X_T*coeff_time  + X_C
 %% normalize event-time dummies
 D(:,wins_value)                    = [];
 %% save output
-out                                = [y,treated,event_year,clusterID,year,X];
-s=['dgp_panel.csv'];
-dlmwrite(s, out, 'delimiter', '\t', 'precision', 16);
+%out                                = [y,treated,event_year,clusterID,year,X];
+%s=['dgp_panel.csv'];
+%dlmwrite(s, out, 'delimiter', '\t', 'precision', 16);
 
 
 

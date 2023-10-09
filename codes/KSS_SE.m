@@ -45,9 +45,8 @@ Lchol 				               = ichol(xx,struct('type','ict','droptol',1e-10,'diagcom
 catch
 nochol                             = 1;
 [coeff, flag]		               = pcg(xx,xy,tol,numIterations);
-end
-adj_REGHDFE                        = (Nobs-K-1)/(Nobs-N_cluster-(K-1)); %(N_cluster/(N_cluster-1))*(Nobs-1)/(Nobs-K) %
-res                                = sqrt(adj_REGHDFE)*(y-X*coeff); 
+end 
+res                                = (y-X*coeff); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %SECTION 3: LEAVE OUT RESIDUALS
@@ -126,6 +125,7 @@ end
 SE                                 = zeros(N_D,1);
 SE_naive                           = zeros(N_D,1);
 xx                                 = X'*X;
+adj_REGHDFE                        = (N_cluster/(N_cluster-1))*(Nobs-1)/(Nobs-K);
 for q=1:N_D
     v                              = sparse(q,1,1,K,1);
     if nochol == 0
@@ -138,7 +138,7 @@ for q=1:N_D
     V                              = left*meat*right;
     SE(q)                          = sqrt(V);
     V                              = left*meat_naive*right;
-    SE_naive(q)                    = sqrt(V);
+    SE_naive(q)                    = sqrt(adj_REGHDFE*V);
 
 end
 if got_labels == 1 
