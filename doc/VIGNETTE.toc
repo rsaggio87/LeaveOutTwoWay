@@ -1,19 +1,14 @@
 \contentsline {section}{\numberline {1}Introduction}{2}{section.1}% 
-\contentsline {subsection}{\numberline {1.1}The KSS Correction}{2}{subsection.1.1}% 
-\contentsline {subsubsection}{\numberline {1.1.1}The Plug-in Estimator}{2}{subsubsection.1.1.1}% 
-\contentsline {subsubsection}{\numberline {1.1.2}The Bias in the Plug-in Estimator}{3}{subsubsection.1.1.2}% 
-\contentsline {subsubsection}{\numberline {1.1.3}The Problem with ``Standard'' Standard Errors in High- Dimensional Models}{3}{subsubsection.1.1.3}% 
-\contentsline {subsubsection}{\numberline {1.1.4}The Leave-Out Correction}{4}{subsubsection.1.1.4}% 
-\contentsline {section}{\numberline {2}Computing the KSS Correction}{5}{section.2}% 
-\contentsline {subsection}{\numberline {2.1}Setup}{5}{subsection.2.1}% 
-\contentsline {subsection}{\numberline {2.2}Importing the Data}{6}{subsection.2.2}% 
-\contentsline {subsection}{\numberline {2.3}Calling the Main Function}{6}{subsection.2.3}% 
-\contentsline {section}{\numberline {3}Interpreting the Output}{7}{section.3}% 
+\contentsline {section}{\numberline {2}Computing KSS Cluster-Robust SEs}{3}{section.2}% 
+\contentsline {subsection}{\numberline {2.1}Building and Sending the Data To Matlab}{3}{subsection.2.1}% 
+\contentsline {subsection}{\numberline {2.2}Importing the Data in Matlab}{5}{subsection.2.2}% 
+\contentsline {subsection}{\numberline {2.3}Calling the Main Function}{5}{subsection.2.3}% 
+\contentsline {section}{\numberline {3}Interpreting the Output}{6}{section.3}% 
 \contentsline {section}{\numberline {4}What Does the Code Save?}{7}{section.4}% 
-\contentsline {section}{\numberline {5}Scaling to Large Datasets}{8}{section.5}% 
-\contentsline {subsection}{\numberline {5.1}Computational Bottleneck}{8}{subsection.5.1}% 
+\contentsline {section}{\numberline {5}Scaling to Large Datasets}{7}{section.5}% 
+\contentsline {subsection}{\numberline {5.1}Computational Bottleneck}{7}{subsection.5.1}% 
 \contentsline {subsection}{\numberline {5.2}Approximating the Statistical Leverages}{8}{subsection.5.2}% 
-\contentsline {section}{\numberline {6}Adding Controls}{14}{section.6}% 
+\contentsline {section}{\numberline {6}Adding Controls}{13}{section.6}% 
 \contentsline {section}{\numberline {7}Leaving Out a Person-Year Observation vs.\nobreakspace {}Leaving Out a Match}{15}{section.7}% 
-\contentsline {section}{\numberline {8}Variance of Person Effects When Leaving Out a Match}{17}{section.8}% 
-\contentsline {section}{\numberline {9}Regressing Firm Fixed Effects on Observables}{18}{section.9}% 
+\contentsline {section}{\numberline {8}Variance of Person Effects When Leaving Out a Match}{16}{section.8}% 
+\contentsline {section}{\numberline {9}Regressing Firm Fixed Effects on Observables}{17}{section.9}% 

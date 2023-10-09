@@ -3,6 +3,8 @@
     \usepackage[breakable]{tcolorbox}
     \usepackage{parskip} % Stop auto-indenting (to mimic markdown behaviour)
     \usepackage{hyperref}
+    \usepackage{listings}
+\usepackage{upquote}
     \usepackage[authoryear]{natbib}
     \usepackage{iftex}
     \ifPDFTeX
@@ -161,7 +163,7 @@
     \renewcommand{\LaTeX}{\textrm{\Oldlatex}}
     % Document parameters
     % Document title
-    \title{Leave-Out Estimation of Variance Components in Two-Way Fixed Effects Models Using MATLAB}
+    \title{Computing KSS Clustered SEs}
     
     
     
@@ -383,9 +385,8 @@
     
 
     
-    This notebook describes the MATLAB package that implements the leave-out
-correction of \cite*{kline2020leave} (henceforth KSS)  for
-two-way fixed effects models.
+    This vignette describes a MATLAB code that permits to compute the leave-out
+clustered SEs introduced by \cite*{kline2020leave} (henceforth KSS) in a linear regression model. 
 
     \tableofcontents
     \newpage
@@ -393,258 +394,153 @@ two-way fixed effects models.
     \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
 
-Economists often study settings where units possess two or more group
-memberships, some of which can change over time. A prominent example
-comes from \cite{abowd1999high} (henceforth AKM) who
-proposed a panel model of log wage determination that is additive in
-worker and firm fixed effects.
-
-This so-called ``two-way'' fixed effects or ``AKM'' model takes the
-form
+Consider a regression equation of the form
 
 \begin{equation}
-    y_{gt} =  \alpha_{{g}} + \psi_{j({g},t)} + w_{gt}'\delta +  \varepsilon_{gt}  \qquad({g}=1,\dots,N, \ t=1,\dots,T_{g} \ge 2),
+y_{ij} =x_{ij}^{\prime } \beta +\varepsilon_{ij} \qquad j=1,...,J; \qquad i=1,...n_{j}; 
 \end{equation}
 
-where the function
-\(j(\cdot ,\cdot ):\lbrace 1,\dots ,N\rbrace \times \lbrace 1,\dots ,\max_i T_g \rbrace \to \lbrace 1,\dots ,J\rbrace\)
-assigns a worker \(g\) and year \(t\) observation to one of \(J\) firms.
-Here \(\alpha_g\) is a person effect, \(\psi_{j(g,t)}\) is a firm
-effect, \(w_{gt}\) is a time-varying covariate, and \(\varepsilon_{gt}\)
-is a mean-independent time-varying error.
+where \(i\) indexes a particular observation which belongs to a cluster $j$ and we have $N= \sum_{j}M_{j}$ total observations; \(x_{ij}\) is a vector of regressors of dimension $K\times1$ and $y_{ij}$ is the outcome of interest. The error terms, $\varepsilon_{ij}$, are assumed to be heteroskedastic and potentially correlated across observations belonging to the same cluster $j$ with a block-diagonal variance-covariance matrix given by
 
-We can rewrite the original AKM model as:
+\begin{center}
+{\small{}$\Omega=\left[\begin{array}{cccc}
+\mathbf{\Omega}_{1} & 0 & 0 & 0\\
+0 & \mathbf{\Omega}_{2} & 0 & 0\\
+0 & 0 & \ddots & 0\\
+0 & 0 & 0 & \mathbf{\Omega}_{J}
+\end{array}\right]$}{\small\par}
+\par\end{center}
+
+
+Cluster robust standard errors for the OLS estimator of $\beta$, $\hat{\beta}$, in most software packages (e.g  \texttt{reghdfe}) is based on the following well-known formula
 
 \begin{equation}
-y_i =x_i^{\prime } \beta +\varepsilon_i \qquad i=1,...,n,
+{\mathbb{{\tilde{V}}}}[\hat{\beta}]=d\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1}\left[\sum_{j=1}^J\left(\sum_{i}^{n_{j}}x_{ij}\hat{e}_{ij}\right)\left(\sum_{i}^{n_{j}}x_{ij}\hat{e}_{ij}\right)'\right]\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1},
 \end{equation}
+where $d$ is some degrees of freedom adjustment and $\hat e_{ij}=y_{ij}-x_{ij}\hat{\beta}$ is the OLS residual.\footnote{For instance, \texttt{reghdfe} sets $d=\dfrac{J}{J-1}\dfrac{N}{N-K}$.}
 
-where \(i\) indexes a particular person-year observation \((g,t)\),
-\(x_i\) is a vector that collects all the worker and firm dummies as well
-as the time-varying covariates \(w_{gt}\) so that
-\(\beta =(\alpha ,\psi ,\delta )'\) is a \(k\times 1\) vector that
-collects all the worker and firm fixed effects along with \(\delta\).
-
-Interest in AKM models often centers on understanding how much of the
-variability in log wages is attributable to firms. It is common to
-summarize the firm contribution to wage inequality using the following
-two parameters:
-
+KSS introduces an unbiased estimate of the variance of $\mathbf{\Omega}_{j}$ given by 
 \begin{equation}
-\sigma_{\psi }^2 =\frac{1}{n}\sum_{g=1}^N \sum_{t=1}^{T_g } {\left(\psi_{j\left(g,t\right)} -\bar{\psi} \right)}^2 \qquad \text{and }\sigma_{\alpha ,\psi } =\frac{1}{n}\sum_{g=1}^N \sum_{t=1}^{T_g } \left(\psi_{j\left(g,t\right)} -\bar{\psi} \right)\alpha_g           
+    \hat{\mathbf{\Omega}}_{j}=\mathbf{y}_{j}(\mathbf{y}_{j}-\mathbf{x}_{j}\hat{\beta}_{-j})',
 \end{equation}
+where $\hat{\beta}_{-j}$ is the OLS estimate of $\beta$ obtained after fitting (1) leaving cluster $j$ out; $\mathbf{y}_{j}$ is a $n_{j}\times1$ vector that stacks the outcome variable $y_{ij}$ for observations belonging in cluster $j$; similarly, $\mathbf{x}_{j}$ is a $n_{j}\times K$ matrix that stacks the regressors $x_{ij}$ for the observations belonging to cluster $j$. 
 
-where
-\(\bar{\psi} =\frac{1}{n}\sum_{g=1}^N \sum_{t=1}^{T_g } \psi_{j(g,t)}\).
-The variance component \(\sigma_{\psi }^2\) measures the contribution of
-firm wage variability to inequality, while the covariance component
-\(\sigma_{\alpha ,\psi }\) measures the additional contribution of
-systematic sorting of high-wage workers to high-wage firms.
-
-The function \texttt{leave\_out\_KSS} provides unbiased estimates of
-\(\sigma_{\psi }^2\) and \(\sigma_{\alpha ,\psi }\) as well as an
-estimate of
-\(\sigma_{\alpha }^2 =\frac{1}{n}\sum_{g=1}^N \sum_{t=1}^{T_g } {\left(\alpha_g -\bar{\alpha} \right)}^2\)
-using the leave-out bias-correction approach proposed by KSS.
-
-\hypertarget{the-kss-correction}{%
-\subsection{The KSS Correction}\label{the-kss-correction}}
-
-We now provide some general intuition about the KSS leave-out
-methodology. A more formal discussion can be found in KSS.
-\hypertarget{the-plug-in-estimator}{%
-\subsubsection{The Plug-in Estimator}\label{the-plug-in-estimator}}
-
-Suppose that the researcher is interested in the variance of firm effects,
-\(\sigma_{\psi }^2\). To simplify the exposition, we normalize the firm
-effects so that their firm-size-weighted mean is equal to zero,
-i.e, ~\(\bar{\psi}=0\), and rewrite \(\sigma_{\psi }^2\) as
-
+Let $\hat{\eta}_{ij}$, represent the leave-cluster out residual, i.e. $\hat{\eta}_{ij} \equiv y_{ij}-x_{ij}\hat{\beta}_{-j}$. An unbiased estimate of the sampling variability of $\hat{\beta}$ is therefore
 \begin{equation}
-\sigma_{\psi }^2 =\sum_{j=1}^J s_{j}\psi^{2}_{j}
+{\mathbb{{\hat{V}}}}[\hat{\beta}]=\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1}\left[\sum_{j=1}^J\left(\sum_{i}^{n_{j}}x_{ij}y_{ij}\right)\left(\sum_{i}^{n_{j}}x_{ij}\hat{\eta}_{ij}\right)'\right]\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1},
 \end{equation}
+  
+The software described in this vignette, \texttt{KSS\_SE}, permits to compute ${\mathbb{{\hat{V}}}}[\hat{\beta}]$. We illustrate how the software works in an example where one is interested in fitting an event-study based on two-way fixed effects regression. 
 
-where $s_{j}$ gives the employment share of firm $j$, i.e., $s_{j}=\dfrac{1}{n}\sum_{g=1}^{N}\sum_{t=1}^{T_{g}}\mathbf{1}\{j(g,t)=j\}$.
-
-It is customary to report ``plug-in'' estimates of a given variance
-component using the corresponding OLS estimate. For instance, the
-plug-in estimate of the variance of firm effects \(\sigma_{\psi }^2\) is
-given by
-
-\begin{equation}
-\tilde{\sigma}_{\psi}^2=\sum_{j=1}^J s_{j}\hat{\psi}^{2}_{j}
-\end{equation}
-
-where \(\hat{\psi}_{j}\) is the OLS estimate obtained after estimating
-equation (1) via OLS.
-
-\hypertarget{the-bias-in-the-plug-in-estimator}{%
-\subsubsection{The Bias in the Plug-in
-Estimator}\label{the-bias-in-the-plug-in-estimator}}
-
-The estimated firm effect, \(\hat{\psi}_{j}\), represents a noisy
-estimate of the true firm effect, \(\psi_{j}\). The presence of noise in
-\(\hat{\psi}_{j}\) is not an issue when one is interested in
-\(\psi_{j}\) as the OLS estimator \(\hat{\psi}_{j}\) is assumed to be
-unbiased in this context, i.e., ~\(E[\hat{\psi}_{j}]=\psi_{j}\).
-
-However, the estimation error in \(\hat{\psi}_{j}\) is going to lead to
-biases if one is interested in estimating \(\psi_{j}^{2}\) using its ``plug-in'' analogue
-\(\hat{\psi}_{j}^{2}\) since
-
-\begin{equation}
-E[\hat{\psi}_{j}^{2}]=E[(\hat{\psi}_{j}-\psi_{j}+\psi_{j})^2]=\psi^{2}+\underbrace{\mathbb{V}[\hat{\psi}_{j}]}_{\text{Bias}},
-\end{equation}
-
-where \(\mathbb{V}[\hat{\psi}_{j}]\) is the squared standard error of
-\(\hat{\psi}_{j}\). Intuitively, when we take the square of
-\(\hat{\psi}_{j}\) we are not only squaring its signal, \(\psi_{j}\),
-but also the estimation error in each \(\hat{\psi}_{j}\). The latter is
-going to introduce a bias when estimating \(\psi^{2}_{j}\).
-
-The same logic applies when analyzing the bias of the plug-in estimator
-of the variance of firm effects since
-
-\begin{equation}
-E[\tilde{\sigma}_{\psi}^2]=\sigma^{2}_{\psi}+\underbrace{\sum_{j=1}^{J}s_{j}{\mathbb{V}[\hat{\psi}_{j}]}}_{\text{Bias}}
-\end{equation}
-
-\hypertarget{the-problem-with-standard-standard-errors-in-high-dimensional-models}{%
-\subsubsection{The Problem with ``Standard'' Standard Errors in High-
-Dimensional
-Models}\label{the-problem-with-standard-standard-errors-in-high-dimensional-models}}
-
-The above formula shows that the bias of the plug-in estimator of the
-variance of firm effects is
-
-\begin{equation}
-E[\tilde{\sigma}_{\psi}^2]-\sigma^{2}_{\psi}=\sum_{j=1}^{J}s_{j}{\mathbb{V}[\hat{\psi}_{j}]}.
-\end{equation}
-
-Therefore, all that is required for a bias correction is an estimate of
-the (squared) standard error of each firm effect,
-\({\mathbb{V}[\hat{\psi}_{j}]}\). Similarly, if we are interested on the
-variance of person effects, then we would need the standard error on
-each of the person effects, \({\mathbb{V}[\hat{\alpha}_{i}]}\). If we
-are interested in the covariance of worker and firm effects, then we
-would need the covariances in sampling errors between each
-\(\hat{\alpha}_{i}\) and \(\hat{\psi}_{j(i,t)}\).
-
-The above discussion highlights that an estimate of the sampling
-variability of the OLS coefficient vector
-\(\hat{\beta}=(\hat{\alpha},\hat{\psi},\hat{\delta})\) is required in
-order to derive an unbiased estimate of the variance components of the
-AKM model displayed in equation (2).
-
-Recall that the sampling variability in \(\hat{\beta}\), assuming
-independence across observations, is given by
-
-\begin{equation}
-{\mathbb{{V}}}[\hat{\beta}]=\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}\sum_{i=1}^{n}{\sigma}^{2}_{i}x_{i}x_{i}'\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1},
-\end{equation}
-
-where \(\sigma^{2}_{i}=Var(\varepsilon_{i})\).
-
-One might be tempted to provide an estimate of \(\mathbb{V}[\hat{\beta}]\)
-using heteroskedasticity \emph{consistent} (``HC'') or robust standard
-errors. Standard \cite{white1980heteroskedasticity} HC standard-errors are calculated using a plug-in
-estimate of \(\sigma^{2}_{i}\) based on
-
-\begin{equation}
-\tilde{\sigma}^{2}_{i}=(y_{i}-x_{i}'\hat{\beta})^2,
-\end{equation}
-
-where the HC-based estimate of \(\mathbb{V}[\hat{\beta}]\) is given by
-
-\begin{equation}
-\tilde{\mathbb{{V}}}[\hat{\beta}]=\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}\sum_{i=1}^{n}\tilde{{\sigma}}^{2}_{i}x_{i}x_{i}'\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}.
-\end{equation}
-
-However, HC standard errors based on \(\tilde{\sigma}^{2}_{i}\) are downward biased \citep{mackinnon1985some}. From an asymptotic perspective, HC standard errors are
-inconsistent in any high-dimensional model where the number of
-parameters grows in proportion to the sample size \citep{cattaneo2017inference}. Such "many regressor" asymptotics are natural in the worker-firm fixed effects model  as we often have fewer than 5 worker moves on average per firm.
-
-\hypertarget{the-leave-out-correction}{%
-\subsubsection{The Leave-Out
-Correction}\label{the-leave-out-correction}}
-
-KSS provides a heteroskedasticity-\emph{unbiased} (HU) estimate of the
-standard error of any coefficient obtained from a
-linear regression model.
-
-The KSS HU standard error estimate is based on a leave-out estimate of
-\(\sigma^{2}_{i}\):
-
-\begin{equation}
-\hat{\sigma}^{2}_{i}=y_{i}(y_{i}-x_{i}'\hat{\beta}_{-i}),
-\end{equation}
-
-where \(\hat{\beta}_{-i}\) is the OLS estimate of \(\beta\) from
-equation (2) when observation \(i\) is left out.
-
-KSS then replaces \(\sigma^{2}_{i}\) in \(\mathbb{V}[\hat{\beta}]\) with
-its unbiased estimate \(\hat{\sigma}^{2}_{i}\) to derive an HU estimate
-of \(\mathbb{V}[\hat{\beta}]:\)
-
-\begin{equation}
-\hat{\mathbb{{V}}}[\hat{\beta}]=\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}\sum_{i=1}^{n}\hat{{\sigma}}^{2}_{i}x_{i}x_{i}'\left(\sum_{i=1}^{n}x_{i}x_{i}'\right)^{-1}.
-\end{equation}
-
-Going back to the example of the variance of the firm effects, we can
-extract from \(\hat{\mathbb{V}}[\hat{\beta}]\) the corresponding squared
-standard error of each firm effect, \(\hat{\mathbb{V}}[\hat{\psi}_{j}]\).
-We can then use it to bias-correct the corresponding estimate of
-the variance of the firm effects as follows:
-
-\begin{equation}
-\hat{\sigma}^{2}_{\psi}=\tilde{\sigma}^{2}_{\psi}-\sum_{j=1}^{J}s_{j}{\mathbb{V}[\hat{\psi}_{j}]}.
-\end{equation}
-
-The MATLAB function \texttt{leave\_out\_KSS} is going to print the bias-corrected variance of firm effects, \(\hat{\sigma}^{2}_{\psi}\), the bias-corrected covariance of worker and firm effects and variance
-of person effects.  \texttt{leave\_out\_KSS} also provides the correct standard errors --- based on \(\hat{\mathbb{V}}[\hat{\beta}]\)  as opposed to \(\tilde{\mathbb{V}}[\hat{\beta}]\) --- when one regresses the firm effects on some observable characteristics; see Section \ref{sec:lincom}.
+\newpage
 \hypertarget{computing-the-kss-correction}{%
-\section{Computing the KSS
-Correction}\label{computing-the-kss-correction}}
+\section{Computing KSS Cluster-Robust SEs}
+\label{computing-the-kss-correction}}
 
-We now demonstrate how one can implement the KSS correction in two-way
-models using MATLAB and the function \texttt{leave\_out\_KSS}. We
-continue to work with a simple example based on an AKM model. In what
-follows, we use the words ``workers'' and ``firms'' when describing the
-procedure but the function \texttt{leave\_out\_KSS}
-can in fact be applied to any two-way fixed effects model (e.g.,~patients and doctors,
-students and teachers, strata and treatment arms).
+The function \texttt{KSS\_SE} is a MATLAB function that takes as input the following:
+\begin{itemize}
+\item \texttt{y:} outcome variable. Dimension is $N\times 1$.
+\item \texttt{D:} treatment(s) of interest. Dimension is $N\times N_{D}$.
+\item \texttt{clusterID:} variable that indexes clusters. Dimension is $N\times 1$.
+\item \texttt{indexID:} variable that indexes observations within clusters. Dimension is $N\times 1$.
+\item \texttt{controls:} additional controls. Dimension is $N\times N_{P}$.
+\end{itemize}
+The function \texttt{KSS\_SE} computes the KSS leave-out standard errors on the regression coefficients associated with \texttt{D}. These SEs are clustered at the level defined by \texttt{clusterID}, after controlling for \texttt{controls}, \texttt{clusterID} fixed effects as well as \texttt{indexID} fixed effects. 
+
+We now demonstrate the functioning of  \texttt{KSS\_SE} in the context where one is interested in fitting an event study model of the form
+\begin{equation}
+\label{ES}
+y_{it} = \alpha_{i} + \lambda_{t} + \sum_{k=a}^{b}D_{it}^{k}\theta_{k}+X_{it}'\gamma + r_{it}
+\end{equation}
+where $\alpha_{i}$ are, say, state fixed effects; $\lambda_{t}$ are year fixed effects; $R_{it}$ are event study indicators of the form $D_{it}^{k}\equiv \mathbf{1}\{t=t_{i}^{*}+k\}$ where $t_{i}^{*}$ is the year in which the policy of interest is implemented in state $i$ and $X_{it}$ are some time-varying controls. 
 
 \hypertarget{setup}{%
-\subsection{Setup}\label{setup}}
+\subsection{Building and Sending the Data To Matlab}\label{setup}}
+We begin by loading the data in STATA
 
-We begin with some auxiliary lines of code that define the relevant
-paths, call the \href{http://www.cs.cmu.edu/jkoutis/cmg.html}{CMG package} package developed by Yiannis Koutis and set-up the
-parallel environment within MATLAB.
+\begin{lstlisting}
+ local mixtape https://raw.githubusercontent.com/Mixtape-Sessions
 
-    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
-\prompt{In}{incolor}{1}{\boxspacing}
-\begin{Verbatim}[commandchars=\\\{\}]
-\PY{c}{\PYZpc{}Setup Paths and Install CMG}
-\PY{n}{clc}
-\PY{l+s}{clear}
-\PY{n}{cd} \PY{l+s}{\PYZsq{}/Users/raffaelesaggio/Dropbox/LeaveOutTwoWay\PYZsq{}}
-\PY{n}{path}\PY{p}{(}\PY{n}{path}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{codes\PYZsq{}}\PY{p}{)}\PY{p}{;} \PY{c}{\PYZpc{}this contains the main LeaveOut Routines.}
-\PY{n}{path}\PY{p}{(}\PY{n}{path}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{CMG\PYZsq{}}\PY{p}{)}\PY{p}{;} \PY{c}{\PYZpc{} CMG package http://www.cs.cmu.edu/\PYZti{}jkoutis/cmg.html}
-\PY{p}{[}\PY{n}{result}\PY{p}{,}\PY{n}{output}\PY{p}{]} \PY{p}{=} \PY{n}{evalc}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{installCMG(1)\PYZsq{}}\PY{p}{)}\PY{p}{;} \PY{c}{\PYZpc{}installs CMG routine (silently)}
-\PY{n}{delete}\PY{p}{(}\PY{n}{gcp}\PY{p}{(}\PY{l+s}{\PYZdq{}nocreate\PYZdq{}}\PY{p}{)}\PY{p}{)} \PY{c}{\PYZpc{}clear parallel envir.}
-\PY{n}{c} \PY{p}{=} \PY{n}{parcluster}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{local\PYZsq{}}\PY{p}{)}\PY{p}{;}  \PY{c}{\PYZpc{}tell me \PYZsh{} of available cores}
-\PY{n}{nw} \PY{p}{=} \PY{n}{c}\PY{p}{.}\PY{n}{NumWorkers}\PY{p}{;} \PY{c}{\PYZpc{}tell me \PYZsh{} of available cores}
-\PY{n}{pool}\PY{p}{=}\PY{n}{parpool}\PY{p}{(}\PY{n}{nw}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{IdleTimeout\PYZsq{}}\PY{p}{,} \PY{n}{Inf}\PY{p}{)}\PY{p}{;} \PY{c}{\PYZpc{}all cores will be assigned to Matlab}
-\end{Verbatim}
-\end{tcolorbox}
+. use `mixtape'/Advanced-DID/main/Exercises/Data/ehec_data.dta, clear
 
-    \begin{Verbatim}[commandchars=\\\{\}]
-Starting parallel pool (parpool) using the 'local' profile {\ldots}
-Connected to the parallel pool (number of workers: 6).
-    \end{Verbatim}
+. l in 1/5
+
+     +--------------------------------------------+
+     |  stfips   year       dins   yexp2        W |
+     |--------------------------------------------|
+  1. | alabama   2008   .6814122       .   613156 |
+  2. | alabama   2009   .6580621       .   613156 |
+  3. | alabama   2010   .6313651       .   613156 |
+  4. | alabama   2011   .6563886       .   613156 |
+  5. | alabama   2012   .6708115       .   613156 |
+     +--------------------------------------------+
+
+. tab year
+
+ Census/ACS |
+survey year |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       2008 |         46        8.33        8.33
+       2009 |         46        8.33       16.67
+       2010 |         46        8.33       25.00
+       2011 |         46        8.33       33.33
+       2012 |         46        8.33       41.67
+       2013 |         46        8.33       50.00
+       2014 |         46        8.33       58.33
+       2015 |         46        8.33       66.67
+       2016 |         46        8.33       75.00
+       2017 |         46        8.33       83.33
+       2018 |         46        8.33       91.67
+       2019 |         46        8.33      100.00
+------------+-----------------------------------
+      Total |        552      100.00
+
+. tab yexp2
+
+    Year of |
+   Medicaid |
+  Expansion |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       2014 |        264       73.33       73.33
+       2015 |         36       10.00       83.33
+       2016 |         24        6.67       90.00
+       2017 |         12        3.33       93.33
+       2019 |         24        6.67      100.00
+------------+-----------------------------------
+      Total |        360      100.00
+
+\end{lstlisting}
+This is a (balanced) state-year panel where the variable \texttt{dins} is the outcome of interest and \texttt{yexp2} measures the year in which Medicaid was expanded in a given state (it is missing for states that did not expand, like Alabama). Note that the panel runs from 2008 and 2019  and most states expanded in 2014. 
+
+We need to export to matlab the set of event study indicators. To do that, we set $a = -6$ and $b=4$ in (\ref{ES}) and run the following few lines of code
+
+
+\begin{lstlisting}
+rename yexp2 event_year
+gen time_rel_event 		= year-event_year
+global lb = -6 // winsorize pre-event coefficients at -6
+global ub = 4  // winsorize post-event coefficients at 4
+replace time_rel_event	=$ub if time_rel_event>=$ub   & time_rel_event!=.
+replace time_rel_event	=$lb if time_rel_event<=$lb   & time_rel_event!=.
+qui forval k=$lb/$ub {
+		local auxname=`k'-$lb
+		
+		gen 	D`auxname'	  = 0
+		replace D`auxname'	  = 1 	  if time_rel_event==`k' & treated == 1
+}
+local norma = -$lb - 1
+\end{lstlisting}
+Now that we have created the event study indicators, we can export the relevant information to MATLAB. Note that, to avoid multi-collinearity, we do not export $D_{it}^{-1}$, i.e. the event-study indicator relative to the year before medicaid expansion. Thus the event-study coefficients $\theta_{k}$ are all going to be expressed relative to $\theta_{-1}$.
+\begin{lstlisting}
+keep dins D* stfips year
+order dins D* stfips year 
+drop D`norma' // to avoid collinearity issue. 
+export delimited using "data_MEDICAID.csv", replace novarnames nolabel
+\end{lstlisting}
+
 
     \hypertarget{importing-the-data}{%
-\subsection{Importing the Data}\label{importing-the-data}}
+\subsection{Importing the Data in Matlab}\label{importing-the-data}}
 
 The GitHub Repo contains a matched employer-employee testing data where
 we observe the identity of the worker, the identity of the firm
