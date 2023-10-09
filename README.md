@@ -1,38 +1,8 @@
-This vignette describes a MATLAB code that permits to compute the leave-out clustered SEs introduced by <a href="https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf" target="_blank"> Kline, Saggio and Sølvsten (2020)</a> -- KSS henceforth -- in a linear regression model. 
+# Computing Cluster-Unbiased Standard Errors
 
+This readme shows how to compute standard errors for linear regression coefficients that are unbiased even in the presence of serial-correlation of the error term within cluster. This might be particularly useful when estimating a regression model with very few clusters. This [document](https://www.dropbox.com/scl/fi/vxyss0tf3h50lpwrp80c0/metrics.pdf?rlkey=ne9yiquzcj3k9d4itx4vzzlm1&dl=1) describes the econometric formula used in this package and derived in Lemma 3 of [Kline-Saggio-Sølvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf).
 
-# Introduction
-
-
-Consider a regression equation of the form
-
-$$
-y_{ij} =x_{ij}^{\prime } \beta +\varepsilon_{ij} \qquad j=1,...,J; \qquad i=1,...n_{j}; 
-$$
-
-where $i$ indexes a particular observation which belongs to a cluster $j$ and we have $N= \sum_{j}M_{j}$ total observations; $x_{ij}$ is a vector of regressors of dimension $K\times1$ and $y_{ij}$ is the outcome of interest. The error terms, $\varepsilon_{ij}$, are assumed to be heteroskedastic and potentially correlated across observations belonging to the same cluster $j$ with a block-diagonal variance-covariance matrix given by
-
-Cluster robust standard errors for the OLS estimator of $\beta$, $\hat{\beta}$, in most software packages (e.g  `reghdfe`) is based on the following well-known formula
-
-$$
-{\mathbb{{\tilde{V}}}[\hat{\beta}]=d\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1}\left[\sum_{j=1}^J\left(\sum_{i}^{n_{j}}x_{ij}\hat{e}_{ij}\right)\left(\sum_{i}^{n_{j}}x_{ij}\hat{e}_{ij}\right)'\right]\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1},
-$$
-where $d$ is some degrees of freedom adjustment and $\hat e_{ij}=y_{ij}-x_{ij}\hat{\beta}$ is the OLS residual.\footnote{For instance, \texttt{reghdfe} sets $d=\dfrac{J}{J-1}\dfrac{N}{N-K}$.}
-
-KSS introduces an unbiased estimate of the variance of $\mathbf{\Omega}_{j}$ given by 
-$$
-    \hat{\mathbf{\Omega}}_{j}=\mathbf{y}_{j}(\mathbf{y}_{j}-\mathbf{x}_{j}\hat{\beta}_{-j})',
-$$
-where $\hat{\beta}_{-j}$ is the OLS estimate of $\beta$ obtained after fitting (1) leaving cluster $j$ out; $\mathbf{y}_{j}$ is a $n_{j}\times1$ vector that stacks the outcome variable $y_{ij}$ for observations belonging in cluster $j$; similarly, $\mathbf{x}_{j}$ is a $n_{j}\times K$ matrix that stacks the regressors $x_{ij}$ for the observations belonging to cluster $j$. 
-
-Let $\hat{\eta}_{ij}$, represent the leave-cluster out residual, i.e. $\hat{\eta}_{ij} \equiv y_{ij}-x_{ij}\hat{\beta}_{-j}$. An unbiased estimate of the sampling variability of $\hat{\beta}$ is therefore
-$$
-{\mathbb{{\hat{V}}}}[\hat{\beta}]=\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1}\left[\sum_{j=1}^J\left(\sum_{i}^{n_{j}}x_{ij}y_{ij}\right)\left(\sum_{i}^{n_{j}}x_{ij}\hat{\eta}_{ij}\right)'\right]\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1},
-$$
-  
-The software described in this vignette, `KSS_SE`, permits to compute ${\mathbb{{\hat{V}}}}[\hat{\beta}]$. We illustrate how the software works in an example where one is interested in fitting an event-study using a two-way fixed effects regression. 
-
-# Computing KSS Standard Errors
+# The `KSS_SE` Function
 
 The function `KSS_SE` is a `MATLAB` function that takes as input the following:
 * `y` outcome variable. Dimension is $N\times 1$.
@@ -44,10 +14,10 @@ The function `KSS_SE` is a `MATLAB` function that takes as input the following:
 The function computes the KSS leave-out standard errors on the regression coefficients associated with `D`. These SEs are clustered at the level indexed by `clusterID`, after controlling for `controls`, `clusterID` fixed effects as well as `indexID` fixed effects. 
 
 We now demonstrate the functioning of  `KSS_SE` in the context where one is interested in fitting an event study model of the form
-\begin{equation}
+$$
 \label{ES}
 y_{it} = \alpha_{i} + \lambda_{t} + \sum_{k=a}^{b}D_{it}^{k}\theta_{k}+X_{it}'\gamma + r_{it}
-\end{equation}
+$$
 where $\alpha_{i}$ are, say, state fixed effects; $\lambda_{t}$ are year fixed effects; $R_{it}$ are event study indicators of the form $D_{it}^{k}\equiv \mathbf{1}\{t=t_{i}^{*}+k\}$ where $t_{i}^{*}$ is the year in which the policy of interest is implemented in state $i$ and $X_{it}$ are some time-varying controls. 
 
 # Building and Exporting the Data To Matlab
@@ -371,7 +341,3 @@ dlmwrite(s, out, 'delimiter', '\t', 'precision', 16); %% saving results in a  .c
 # Interpreting the Output
 
 The code `KSS_SE` prints the event-study coefficients (normalized relative to the year expansion of Medicaid) along with KSS standard errors, clustered at the state level. As shown in KSS, the standard errors printed by `KSS_SE`, are unbiased while "White" standard errors reported by standard packages (e.g. `reghdfe`)  are consistent but are typically biased in finite samples, especially when the number of clusters is small. 
-
-As shown in KSS, the standard errors printed by `KSS_SE`, are unbiased while "White" standard errors reported by standard packages (e.g. `reghdfe`)  are consistent but are typically biased in finite samples, especially when the number of clusters is small. 
-
-
