@@ -16,7 +16,7 @@ The function computes the KSS leave-out standard errors on the regression coeffi
 We now demonstrate the functioning of  `KSS_SE` in the context where one is interested in fitting an event study model of the form
 
 $$y_{it} = \alpha_{i} + \lambda_{t} + \sum_{k=a}^{b}D_{it}^{k}\theta_{k}+X_{it}'\gamma + r_{it}$$
-where $\alpha_{i}$ are, say, state fixed effects; $\lambda_{t}$ are year fixed effects; $D_{it}^{k}$ are event study indicators of the form $D_{it}^{k}={1}\{t=t^{*}_{i}+k\}$ where $t_{i}^{*}$ is the year when state $i$ implemented the policy of interest and $X_{it}$ are some time-varying controls. 
+where $\alpha_{i}$ are, say, state fixed effects; $\lambda_{t}$ are year fixed effects; $D_{it}^{k}$ are event study indicators of the form $D_{it}^{k}=1\{t=e_{i}+k\}$ where $e_{i}$ is the year when state $i$ implemented the policy of interest and $X_{it}$ are some time-varying controls. 
 
 # Building and Exporting the Data To Matlab
 
