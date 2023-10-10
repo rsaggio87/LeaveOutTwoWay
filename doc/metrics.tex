@@ -381,23 +381,22 @@
     
     \maketitle
     
-  This document is written in support of the MATLAB function \texttt{KSS\_SE} which permits to compute the
-leave-out (or ``cross-fit") clustered SEs introduced by \cite{kline2020leave}---KSS henceforth---for a linear regression model. 
+  This document explains the MATLAB function \texttt{KSS\_SE}, which computes the
+leave-out (or ``cross-fit") clustered SEs proposed by \cite{kline2020leave}---KSS henceforth---for linear regression models. 
 
     \section{Introduction}\label{introduction}
 
-Consider a regression equation of the form
+Consider a linear model of the form
 
 \[
 y_{ij} =x_{ij}^{\prime } \beta +\varepsilon_{ij} \qquad j=1,...,J; \qquad i=1,...n_{j}; 
 \]
 
-where \(i\) indexes a particular observation which belongs to a cluster
+where \(i\) indexes a particular observation belonging to a cluster
 \(j\) and we have \(N= \sum_{j}M_{j}\) total observations; \(x_{ij}\) is
 a vector of regressors of dimension \(K\times1\) and \(y_{ij}\) is the
-outcome of interest. The error terms, \(\varepsilon_{ij}\), are assumed
-to be heteroskedastic and potentially correlated across observations
-belonging to the same cluster \(j\) with a block-diagonal
+outcome of interest. The error terms, \(\varepsilon_{ij}\), are potentially heteroskedastic and correlated across observations
+within the same cluster \(j\), with a block-diagonal
 variance-covariance matrix given by
 
 \[
@@ -419,7 +418,7 @@ The variance of the OLS estimator of \(\beta\),
 where $\mathbf{x}_{j}$ is a \(n_{j}\times K\) matrix that stacks the regressors \(x_{ij}\) for
 the observations belonging to cluster \(j\).
 
-Estimates of $\mathbb{{{V}}}[\hat{\beta}]$  in most software packages (e.g \texttt{reghdfe}) are given by
+Estimates of $\mathbb{{{V}}}[\hat{\beta}]$  in most software packages (e.g., \texttt{reghdfe}) are given by
 \[
 \mathbb{{\tilde{V}}}[\hat{\beta}]=d\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1}\left[\sum_{j=1}^J\left(\sum_{i=1}^{n_{j}}x_{ij}\hat{e}_{ij}\right)\left(\sum_{i=1}^{n_{j}}x_{ij}\hat{e}_{ij}\right)'\right]\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1},
 \] where $d$ is some degrees of freedom adjustment and
