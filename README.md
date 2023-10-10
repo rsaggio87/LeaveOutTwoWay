@@ -334,7 +334,7 @@ Consider a simple DGP of the type
 
 $$y_{it} = \alpha_{i} + \lambda_{t} + \sum_{k=a}^{b}D_{it}^{k}\theta_{k}+X_{it}'\gamma + r_{it}$$
 
-where $r_{it}$ is drawn from an AR(1) process with AR(1) coefficient equal to 0.9 and normal white noise errors. In this DGP, there are 30 clusters, 20 time periods, 10 extra controls, and a total of 30 regression coefficients of interest (i.e $a$=-15 and $b$=15 in the event-study regression above). We simulate from this DGP and print the sampling variability of $\theta_{k}$ across these 1,000 simulations along with the estimate of this sampling variability based on the leave-out formula of KSS as well as estimates based on the traditional White (1980) cluster-robust standard errors that are typically printed by standard packages such as `reghdfe`. 
+where $r_{it}$ is drawn from an AR(1) process with AR(1) coefficient equal to 0.9 and normal white noise errors. In this DGP, there are 30 clusters, 20 time periods, 10 extra controls, and a total of 30 regression coefficients of interest (i.e $a$=-15 and $b$=15 in the event-study regression above). We simulate from this DGP and print the sampling variability of $\theta_{k}$ across simulations along with the estimate of this sampling variability based on the leave-out formula of KSS as well as estimates based on the traditional White (1980) cluster-robust standard errors that are typically printed by standard packages such as `reghdfe`. 
 
 
 
@@ -344,7 +344,7 @@ wins_value                      = 15; %event studies binned at -wins_value and w
 N_clusters                      = 30; %number of clusters.
 N_X                             = 10; %number of extra controls.
 T                               = 20; %number of time periods.
-S                               = 1000; %number of montercarlo draws
+S                               = 2000; %number of montercarlo draws
 coeff_sim                       = zeros(S,wins_value*2); %this will contain the estimated \theta_k for a given MC draw 
 V_sim                           = zeros(S,wins_value*2); %this will contain the estimated sampling variability of \theta_k based on KSS
 V_sim_naive                     = zeros(S,wins_value*2); %this will contain the estimated sampling variability of \theta_k based on White 
@@ -371,36 +371,36 @@ disp(a2t)
 
         True Event-Study Coefficients    Mean of OLS    Variance of OLS    Leave-Out Estimate of Variance of OLS    White Estimate of Variance of OLS
         _____________________________    ___________    _______________    _____________________________________    _________________________________
-                       0                  -0.0016801         0.17062                        0.1844                                0.15515            
-                       0                  -0.0018907         0.10706                       0.11202                                0.10272            
-                       0                   0.0010014        0.082048                      0.090545                               0.083933            
-                       0                   0.0015715        0.067141                      0.073219                               0.068104            
-                       0                  -0.0038392        0.055171                      0.058616                               0.054986            
-                       0                  -0.0051035        0.044944                      0.047458                               0.044427            
-                       0                  -0.0036778        0.036959                      0.037503                               0.035205            
-                       0                  -0.0030808        0.028284                      0.028831                               0.027252            
-                       0                  -0.0035461        0.020901                      0.021766                               0.020671            
-                       0                  -0.0024854         0.01547                      0.015701                               0.015073            
-                       0                  -0.0012375        0.010441                      0.010546                               0.010335            
-                       0                  0.00056696        0.006353                     0.0066048                              0.0065209            
-                       0                  0.00027794       0.0035436                     0.0036194                              0.0036765            
-                       0                 -0.00032673       0.0014308                     0.0014319                              0.0015648            
-                     0.1                    0.099356       0.0013028                     0.0013845                              0.0014591            
-                    0.11                     0.10905       0.0029208                     0.0029944                              0.0030115            
-                    0.12                     0.11829       0.0053641                     0.0056488                               0.005424            
-                    0.13                     0.12828       0.0087672                     0.0091082                              0.0086513            
-                    0.14                     0.13837         0.01321                      0.013634                               0.012818            
-                    0.15                     0.14855        0.018258                      0.019158                                0.01786            
-                    0.16                     0.15729        0.024534                      0.025694                                0.02392            
-                    0.17                     0.16806        0.032291                      0.033364                               0.030951            
-                    0.18                      0.1778        0.041197                      0.041861                               0.038937            
-                    0.19                     0.18553          0.0515                      0.051868                               0.047925            
-                     0.2                     0.19411        0.062587                      0.062997                               0.058119            
-                    0.21                     0.20516         0.07357                      0.074938                                0.06924            
-                    0.22                     0.21451        0.087722                       0.08838                               0.081578            
-                    0.23                     0.22303           0.103                       0.10421                               0.095235            
-                    0.24                     0.23394          0.1199                       0.12224                                 0.1105            
-                    0.25                      0.2464         0.16531                        0.1667                                0.14309            
+                       0                  -0.0040556         0.17789                       0.18336                                0.15496            
+                       0                  -0.0060226         0.11289                       0.11285                                0.10328            
+                       0                  -0.0032263        0.087846                      0.091568                               0.084712            
+                       0                  -0.0043019        0.071437                      0.073905                               0.068848            
+                       0                  -0.0067741        0.057836                      0.059208                               0.055361            
+                       0                  -0.0073806        0.046266                      0.047634                               0.044581            
+                       0                  -0.0050668        0.037065                      0.037752                               0.035442            
+                       0                  -0.0039773        0.028622                      0.029154                               0.027551            
+                       0                  -0.0046994        0.020837                      0.021864                               0.020752            
+                       0                  -0.0030443        0.015227                      0.015761                               0.015135            
+                       0                  -0.0020936        0.010429                      0.010631                               0.010387            
+                       0                  -0.0013337       0.0064955                     0.0066429                              0.0065804            
+                       0                 -0.00096364       0.0034774                     0.0035895                              0.0036595            
+                       0                 -0.00076059        0.001394                     0.0014217                              0.0015563            
+                     0.1                     0.10078       0.0013832                     0.0013565                              0.0014524            
+                    0.11                     0.11112       0.0030014                     0.0029861                               0.002991            
+                    0.12                     0.12166       0.0056235                      0.005574                              0.0054069            
+                    0.13                     0.13176       0.0091013                     0.0091083                              0.0086453            
+                    0.14                     0.14252        0.013752                       0.01364                               0.012845            
+                    0.15                     0.15309        0.018948                      0.019172                               0.017908            
+                    0.16                     0.16308        0.025667                      0.025763                                  0.024            
+                    0.17                     0.17396        0.033522                      0.033401                               0.031041            
+                    0.18                       0.184        0.042456                      0.042037                                0.03911            
+                    0.19                     0.19353        0.052811                      0.052009                                0.04814            
+                     0.2                     0.20339        0.064517                      0.063204                               0.058305            
+                    0.21                     0.21427        0.076588                        0.0754                               0.069503            
+                    0.22                      0.2244        0.090933                      0.089247                               0.081844            
+                    0.23                     0.23358         0.10739                       0.10453                               0.095597            
+                    0.24                     0.24487         0.12431                       0.12345                                0.11073            
+                    0.25                     0.25613         0.16967                       0.16682                                0.14333            
 
 
 One can see from the output above that the leave-out estimate of the sampling variability are approximately unbiased while the White SEs are downward biased. This is particularly evident when looking at the tails of the event-study coefficients (e.g last two-three rows of the table above). This is to be expected given the unbalanced nature of the design: there are very few clusters for which we are able to observe outcomes, say, 15 years after the implementation of the policy. 
