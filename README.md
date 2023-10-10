@@ -1,6 +1,7 @@
 # Leave-Out Cluster Standard Errors
 
-This readme explains how to compute leave-out estimates of the sampling variability of a set of estimated linear regression coefficients. We work with a leave-cluster-out version of the routine that remains unbiased in the presence of arbitrary within cluster correlation of the errors, a feature which may prove useful when estimating regression models with few independent clusters. This [document](https://www.dropbox.com/scl/fi/vxyss0tf3h50lpwrp80c0/metrics.pdf?rlkey=ne9yiquzcj3k9d4itx4vzzlm1&dl=0) describes and provides intuition for the variance formula used in this package, which was first proposed in Remark 1 of [Kline-Saggio-Sølvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf) -- henceforth KSS -- and its cluster robust variant, which was proposed in Remark 3 of KSS and used to derive the variance component estimates reported in Appendix B of that paper.
+This readme explains how to compute the leave-cluster-out standard errors for linear regression proposed by [Kline-Saggio-Sølvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf), henceforth KSS. The procedure yields unbiased variance (i.e., squared standard error) estimates, a feature which may prove useful when estimating regression models with few independent clusters. This [document](https://www.dropbox.com/scl/fi/vxyss0tf3h50lpwrp80c0/metrics.pdf?rlkey=ne9yiquzcj3k9d4itx4vzzlm1&dl=0) describes and provides intuition for the variance formula used in this package. The leave out ("crossfit") standard error was first proposed in Remark 1 of KSS. The cluster robust variant was proposed in Remark 3 of KSS and used to derive the variance component estimates reported in Appendix A of that paper.
+
 
 # The `KSS_SE` Function
 
@@ -403,4 +404,5 @@ disp(a2t)
                     0.25                     0.25613         0.16967                       0.16682                                0.14333            
 
 
-One can see from the output above that the leave-out estimate of the sampling variability are approximately unbiased while the White SEs are downward biased. This is particularly evident when looking at the tails of the event-study coefficients (e.g last two-three rows of the table above). This is to be expected given the unbalanced nature of the design: there are very few clusters for which we are able to observe outcomes, say, 15 years after the implementation of the policy. 
+One can see from the output above that the leave-out variance estimator is unbiased while the White SEs are downward biased. The discrepancy between the two variance estimators is particularly evident when looking at the extremal event-study coefficients (e.g., the last 2-3 rows of the table above). This phenomenon is to be expected given the unbalanced nature of the design: there are very few clusters for which we are able to observe outcomes, say, 15 years after the implementation of the policy. 
+
