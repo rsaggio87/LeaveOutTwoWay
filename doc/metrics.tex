@@ -425,13 +425,12 @@ Estimates of $\mathbb{{{V}}}[\hat{\beta}]$  in most software packages (e.g., \te
 \(\hat e_{ij}=y_{ij}-x_{ij}\hat{\beta}\) is the OLS
 residual.\footnote{For instance, \texttt{reghdfe} sets $d=\dfrac{J}{J-1}\dfrac{N}{N-K}$.}
 
-KSS introduced an unbiased variance estimator of the variance of
-\(\mathbf{\Omega}_{j}\) given by \[
+KSS introduced an unbiased variance estimator of \(\mathbf{\Omega}_{j}\) given by \[
     \hat{\mathbf{\Omega}}_{j}=\mathbf{y}_{j}(\mathbf{y}_{j}-\mathbf{x}_{j}\hat{\beta}_{-j})',
 \] where \(\hat{\beta}_{-j}\) is the OLS estimate of \(\beta\) obtained
 after fitting (1) leaving cluster \(j\) out; \(\mathbf{y}_{j}\) is a
 \(n_{j}\times1\) vector that stacks the outcome variable \(y_{ij}\) for
-observations belonging in cluster \(j\).\footnote{To improve the finite sample performance of the estimator, we  demean $\mathbf{y}_{j}$ before applying this formula. That is, we compute $\hat{\mathbf{\Omega}}_{j}=(\mathbf{y}_{j}-\bar{y})(\mathbf{y}_{j}-\mathbf{x}_{j}\hat{\beta}_{-j})'$, where $\bar{y}=\dfrac{1}{N}\sum_{i,j}y_{ij}$. This modification substantially reduces the variability of each $\hat{\mathbf{\Omega}}_{j}$ at the cost of introducing a negligible amount of bias.} Note that this residual involves a cross-product rather than a square of the sort that arises in the HC2 or HC3 variance estimators studied by \cite{mackinnon1985some}.
+observations belonging in cluster \(j\).\footnote{To improve the finite sample performance of the estimator, we  demean $\mathbf{y}_{j}$ before applying this formula. That is, we compute $\hat{\mathbf{\Omega}}_{j}=(\mathbf{y}_{j}-\bar{y})(\mathbf{y}_{j}-\mathbf{x}_{j}\hat{\beta}_{-j})'$, where $\bar{y}=\dfrac{1}{N}\sum_{i,j}y_{ij}$. This modification substantially reduces the variability of each $\hat{\mathbf{\Omega}}_{j}$ at the cost of introducing a negligible amount of bias.} Note that $\hat{\mathbf{\Omega}}_{j}$ involves a cross-product of a residual with the outcome rather than a squared residual of the sort that arises in the HC2 or HC3 variance estimators studied by \cite{mackinnon1985some}.
 
 Let \(\hat{\eta}_{ij}\), represent the leave-cluster out residual,
 i.e.~\(\hat{\eta}_{ij} \equiv y_{ij}-x_{ij}\hat{\beta}_{-j}\). KSS showed that the following estimator of $\mathbb{{{V}}}[\hat{\beta}]$ is unbiased:
