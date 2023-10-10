@@ -1,6 +1,6 @@
 # Leave-Out Cluster Standard Errors
 
-This readme shows how to compute an estimate of the samplig variability of linear regression coefficients that is unbiased even in the presence of serial-correlation of the error term within cluster. This might be particularly useful when estimating a regression model with very few clusters. This [document](https://www.dropbox.com/scl/fi/vxyss0tf3h50lpwrp80c0/metrics.pdf?rlkey=ne9yiquzcj3k9d4itx4vzzlm1&dl=0) describes and provides intuition for the econometric formula used in this package and derived in Remark 3 of [Kline-Saggio-Sølvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf)--KSS henceforth.
+This readme explains how to compute leave-out estimates of the sampling variability of a set of estimated linear regression coefficients. We work with a leave-cluster-out version of the routine that remains unbiased in the presence of arbitrary within cluster correlation of the errors, a feature which may prove useful when estimating regression models with few independent clusters. This [document](https://www.dropbox.com/scl/fi/vxyss0tf3h50lpwrp80c0/metrics.pdf?rlkey=ne9yiquzcj3k9d4itx4vzzlm1&dl=0) describes and provides intuition for the variance formula used in this package, which was first proposed in Remark 1 of [Kline-Saggio-Sølvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf) -- henceforth KSS -- and its cluster robust variant, which was proposed in Remark 3 of KSS and used to derive the variance component estimates reported in Appendix B of that paper.
 
 # The `KSS_SE` Function
 
@@ -13,10 +13,11 @@ The function `KSS_SE` is a `MATLAB` function that takes as input the following:
 
 The function computes the KSS leave-out standard errors on the regression coefficients associated with `D` after controlling for `controls`, `clusterID` fixed effects as well as `indexID` fixed effects. These SEs are clustered at the level indexed by `clusterID`.  The inputs  `indexID` and `controls` are optional and can be supplied as empty arrays `[]`.
 
-We now demonstrate the functioning of  `KSS_SE` in the context where one is interested in fitting an event study model of the form
+We now demonstrate the functioning of  `KSS_SE` in an example where one is interested in fitting an event study model of the form
 
 $$y_{it} = \alpha_{i} + \lambda_{t} + \sum_{k=a}^{b}D_{it}^{k}\theta_{k}+X_{it}'\gamma + r_{it}$$
 where $\alpha_{i}$ are, say, state fixed effects; $\lambda_{t}$ are year fixed effects; $D_{it}^{k}$ are event study indicators and $X_{it}$ are some time-varying controls. 
+
 
 # Building and Exporting the Data To Matlab
 
@@ -324,7 +325,8 @@ dlmwrite(s, out, 'delimiter', '\t', 'precision', 16); %% saving results in a  .c
 
 # Interpreting the Output
 
-The code `KSS_SE` prints the event-study coefficients (normalized relative to the year expansion of Medicaid) along with KSS standard errors, clustered at the state level. As shown in KSS, the (square) of the standard errors printed by `KSS_SE`, represent an unbiased estimate of true sampling variable of these OLS estimates. The so-called "White" standard errors that are reported by standard packages (e.g. `reghdfe`)  are consistent but are typically biased in finite samples, especially when the number of clusters is small. We demonstrate this point by means of a montecarlo simulation below.
+The code `KSS_SE` prints the event-study coefficients (normalized relative to the year expansion of Medicaid) along with KSS standard errors, clustered at the state level. As shown in KSS, the (square) of the standard errors printed by `KSS_SE`, represent an unbiased estimate of true sampling variability of these OLS estimates. The usual White (1980) standard errors that are reported by standard packages (e.g. `reghdfe`)  are consistent but are typically biased in finite samples, especially when the number of clusters is small. We demonstrate this point by means of a montecarlo simulation below.
+
 
 # Montecarlo Exercise
 
@@ -332,7 +334,8 @@ Consider a simple DGP of the type
 
 $$y_{it} = \alpha_{i} + \lambda_{t} + \sum_{k=a}^{b}D_{it}^{k}\theta_{k}+X_{it}'\gamma + r_{it}$$
 
-where $r_{it}$ is drawn from an AR(1) process with AR(1) coefficient equal to 0.9 and normal white noise errors. In this DGP, there are 30 clusters , 20 time periods, 10 extra controls and a total of 30 regression coefficients of interest (i.e $a$=-15 and $b$=15 in the event-study regression above). We simulate from this DGP and print the sampling variability of $\theta_{k}$ across these 1000 simulations along with the estimate of this sampling variability based on the leave-out formula of KSS as well as estimates based on the traditional "White" cluster-robust standard errors that are typically printed by standard packages such as `reghdfe`. 
+where $r_{it}$ is drawn from an AR(1) process with AR(1) coefficient equal to 0.9 and normal white noise errors. In this DGP, there are 30 clusters, 20 time periods, 10 extra controls, and a total of 30 regression coefficients of interest (i.e $a$=-15 and $b$=15 in the event-study regression above). We simulate from this DGP and print the sampling variability of $\theta_{k}$ across these 1,000 simulations along with the estimate of this sampling variability based on the leave-out formula of KSS as well as estimates based on the traditional White (1980) cluster-robust standard errors that are typically printed by standard packages such as `reghdfe`. 
+
 
 
 ```matlab

@@ -3,44 +3,49 @@ Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: metrics.aux
 The style file: chicago.bst
 Database file #1: lit.bib
-You've used 2 entries,
+Repeated entry---line 1225 of file lit.bib
+ : @article{mackinnon1985some
+ :                           ,
+I'm skipping whatever remains of this entry
+You've used 3 entries,
             2861 wiz_defined-function locations,
-            627 strings with 5139 characters,
-and the built_in function-call counts, 1553 in all, are:
-= -- 128
-> -- 122
+            635 strings with 5340 characters,
+and the built_in function-call counts, 2295 in all, are:
+= -- 196
+> -- 174
 < -- 0
-+ -- 36
-- -- 36
-* -- 162
-:= -- 277
-add.period$ -- 6
-call.type$ -- 2
-change.case$ -- 16
-chr.to.int$ -- 2
-cite$ -- 2
-duplicate$ -- 36
-empty$ -- 91
-format.name$ -- 44
-if$ -- 291
++ -- 52
+- -- 56
+* -- 229
+:= -- 409
+add.period$ -- 9
+call.type$ -- 3
+change.case$ -- 23
+chr.to.int$ -- 3
+cite$ -- 3
+duplicate$ -- 54
+empty$ -- 135
+format.name$ -- 68
+if$ -- 428
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 2
-newline$ -- 13
-num.names$ -- 20
-pop$ -- 10
+missing$ -- 3
+newline$ -- 18
+num.names$ -- 30
+pop$ -- 14
 preamble$ -- 1
-purify$ -- 28
+purify$ -- 41
 quote$ -- 0
-skip$ -- 35
+skip$ -- 57
 stack$ -- 0
-substring$ -- 96
-swap$ -- 12
+substring$ -- 141
+swap$ -- 18
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 40
+type$ -- 60
 warning$ -- 0
-while$ -- 16
+while$ -- 28
 width$ -- 0
-write$ -- 28
+write$ -- 41
+(There was 1 error message)

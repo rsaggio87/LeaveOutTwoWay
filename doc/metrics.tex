@@ -1,5 +1,5 @@
 \documentclass[11pt]{article}
-
+\usepackage{hyperref}
     \usepackage[breakable]{tcolorbox}
     \usepackage{parskip} % Stop auto-indenting (to mimic markdown behaviour)
         % Bibliography
@@ -426,21 +426,22 @@ Estimates of $\mathbb{{{V}}}[\hat{\beta}]$  in most software packages (e.g \text
 \(\hat e_{ij}=y_{ij}-x_{ij}\hat{\beta}\) is the OLS
 residual.\footnote{For instance, \texttt{reghdfe} sets $d=\dfrac{J}{J-1}\dfrac{N}{N-K}$.}
 
-KSS introduces an unbiased estimator of the variance of
+KSS introduced an unbiased variance estimator of the variance of
 \(\mathbf{\Omega}_{j}\) given by \[
     \hat{\mathbf{\Omega}}_{j}=\mathbf{y}_{j}(\mathbf{y}_{j}-\mathbf{x}_{j}\hat{\beta}_{-j})',
 \] where \(\hat{\beta}_{-j}\) is the OLS estimate of \(\beta\) obtained
 after fitting (1) leaving cluster \(j\) out; \(\mathbf{y}_{j}\) is a
 \(n_{j}\times1\) vector that stacks the outcome variable \(y_{ij}\) for
-observations belonging in cluster \(j\).\footnote{In practice, to improve the finite sample performance of the estimator, we use de-meaned $\mathbf{y}_{j}$ to estimate $\mathbf{\Omega}_{j}$, i.e. we compute $\hat{\mathbf{\Omega}}_{j}=(\mathbf{y}_{j}-\bar{y})(\mathbf{y}_{j}-\mathbf{x}_{j}\hat{\beta}_{-j})'$, where $\bar{y}=\dfrac{1}{N}\sum_{i,j}y_{ij}$ }
+observations belonging in cluster \(j\).\footnote{To improve the finite sample performance of the estimator, we  demean $\mathbf{y}_{j}$ before applying this formula. That is, we compute $\hat{\mathbf{\Omega}}_{j}=(\mathbf{y}_{j}-\bar{y})(\mathbf{y}_{j}-\mathbf{x}_{j}\hat{\beta}_{-j})'$, where $\bar{y}=\dfrac{1}{N}\sum_{i,j}y_{ij}$. This modification substantially reduces the variability of each $\hat{\mathbf{\Omega}}_{j}$ at the cost of introducing a negligible amount of bias.} Note that this residual involves a cross-product rather than a square of the sort that arises in the HC2 or HC3 variance estimators studied by \cite{mackinnon1985some}.
 
 Let \(\hat{\eta}_{ij}\), represent the leave-cluster out residual,
-i.e.~\(\hat{\eta}_{ij} \equiv y_{ij}-x_{ij}\hat{\beta}_{-j}\). KSS shows that the following is an unbiased estimate of $\mathbb{{{V}}}[\hat{\beta}]$
+i.e.~\(\hat{\eta}_{ij} \equiv y_{ij}-x_{ij}\hat{\beta}_{-j}\). KSS showed that the following estimator of $\mathbb{{{V}}}[\hat{\beta}]$ is unbiased:
  \[
 {\mathbb{{\hat{V}}}}[\hat{\beta}]=\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1}\left[\sum_{j=1}^J\left(\sum_{i=1}^{n_{j}}x_{ij}y_{ij}\right)\left(\sum_{i=1}^{n_{j}}x_{ij}\hat{\eta}_{ij}\right)'\right]\left(\sum_{i,j}^{N}x_{ij}x_{ij}'\right)^{-1}.
 \]
 
-It is important to note that some of the estimates contained in ${\mathbb{{\hat{V}}}}[\hat{\beta}]$, while unbiased, might turn out to be negative in a given sample. This rarely occurs when one wants to analyze the SEs of a few variables of interest (e.g. estimating event-study coefficients) but might occur in large dimensional models (e.g. estimating firm effects in a two-way worker-firm fixed effects model a la \cite{abowd1999high}). 
+An important consequence of unbiasedness is that some of the diagonal entries of ${\mathbb{{\hat{V}}}}[\hat{\beta}]$ may turn out to be negative. Negative variances are unlikely to arise in low dimensional models where interest centers on only a few parameters (e.g., event-study coefficients). In models with thousands or hundreds of thousands of coefficients, it becomes likely that at least one of the estimated variances will be negative. However, in settings where thousands of coefficients are being estimated, interest rarely centers on any particular coefficient, but rather linear combinations or quadratic functions of them (e.g. the variance of firm effects in a two-way worker-firm fixed effects model a la \cite{abowd1999high}). Estimation of linear and quadratic functions of this nature can be handled by the \href{https://github.com/rsaggio87/LeaveOutTwoWay/blob/master/codes/lincom_KSS.m}{lincom} and  \href{https://github.com/rsaggio87/LeaveOutTwoWay}{LeaveOutTwoWay}
+ routines respectively.
 
 The software described in this vignette, \texttt{KSS\_SE}, 
 computes \({\mathbb{{\hat{V}}}}[\hat{\beta}]\). The readme in this repository illustrates how this function works in an example where one is interested in estimating an
