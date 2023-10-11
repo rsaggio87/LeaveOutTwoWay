@@ -1,6 +1,27 @@
 # Leave-Out Cluster Standard Errors
 
-This readme explains how to compute the leave-cluster-out standard errors for linear regression proposed by [Kline-Saggio-Sølvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf), henceforth KSS. The procedure yields unbiased variance (i.e., squared standard error) estimates, a feature which may prove useful when estimating regression models with few independent clusters. This [document](https://www.dropbox.com/scl/fi/vxyss0tf3h50lpwrp80c0/metrics.pdf?rlkey=ne9yiquzcj3k9d4itx4vzzlm1&dl=0) describes and provides intuition for the variance formula used in this package. The leave-out ("cross-fit") standard error was first proposed in Remark 1 of KSS. The cluster robust variant was proposed in Remark 3 of KSS and used to derive the variance component estimates reported in Appendix A of that paper.
+This readme explains how to compute the leave-cluster-out standard errors for linear regression proposed by [Kline-Saggio-Sølvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf), henceforth KSS. The procedure yields unbiased variance (i.e., squared standard error) estimates, a feature which may prove useful when estimating regression models with few independent clusters. This [document](https://www.dropbox.com/scl/fi/vxyss0tf3h50lpwrp80c0/metrics.pdf?rlkey=ne9yiquzcj3k9d4itx4vzzlm1&dl=0) describes and provides intuition for the variance formula used in this package. The leave-out (aka "cross-fit") standard error was first proposed in Remark 1 of KSS. The cluster robust variant was proposed in Remark 3 of KSS and used to derive the variance component estimates reported in Appendix A of that paper.
+
+
+# The `KSS_SE` Function
+
+The function `KSS_SE` is a `MATLAB` function that takes as input the following:
+* `y` outcome variable. Dimension is $N\times 1$.
+* `D` treatment(s) of interest. Dimension is $N\times N_{D}$.
+* `clusterID` variable that indexes clusters (e.g state). Dimension is $N\times 1$.
+* `indexID`  ---OPTIONAL: other cluster dimension (e.g. year). Dimension is $N\times 1$.
+* `controls` ---OPTIONAL: additional controls. Dimension is $N\times N_{P}$.
+
+The function computes the KSS leave-out standard errors on the regression coefficients associated with `D` after controlling for `controls`, `clusterID` fixed effects as well as `indexID` fixed effects. These SEs are clustered at the level indexed by `clusterID`.  The inputs  `indexID` and `controls` are optional and can be supplied as empty arrays `[]`.
+
+The user needs to make sure that all the coefficients associated with `D` remain estimable after leaving out a particular cluster indexed by `clusterID`, see also the discussion provided <a href='#collinearity'>here</a>.
+
+We now demonstrate the functioning of  `KSS_SE` in an example where one is interested in fitting an event study model of the form
+
+$$y_{it} = \alpha_{i} + \lambda_{t} + \sum_{k=a}^{b}D_{it}^{k}\theta_{k}+X_{it}'\gamma + r_{it}$$
+where $\alpha_{i}$ are, say, state fixed effects; $\lambda_{t}$ are year fixed effects; $D_{it}^{k}$ are event study indicators and $X_{it}$ are some time-varying controls. 
+
+
 
 
 # The `KSS_SE` Function
@@ -333,7 +354,8 @@ The code `KSS_SE` prints the event-study coefficients (normalized relative to th
 <a id='collinearity'></a>
 # Leave-Out Estimability
 
-In this application, all of the event-study coefficients remains estimable even after leaving out a particular cluster $j\in{1,..., J}$. If that is not the case (e.g. we want to estimate the effect of a policy 20 years after its implementation but we observe only one state 20 years after it it implemented the policy) then `KSS_SE` will return an error. The user therefore needs to make sure that all the coefficients associated with `D` remain estimable even after leaving out from the regression a particular cluster.
+In this application, all of the event-study coefficients remain estimable when leaving out any particular cluster $j\in{1,..., J}$. Leave-out estimability would fail, however, if we tried to estimate the effect of a policy 20 years after its implementation using data where only a single state is observed 20 years after implementing the policy. In such a case `KSS_SE` will return an error. It is the user's responsibility to verify that all the coefficients associated with `D` remain estimable even after leaving out any particular cluster.
+
 
 # Montecarlo Exercise
 
