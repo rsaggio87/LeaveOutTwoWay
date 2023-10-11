@@ -1,6 +1,6 @@
 # Leave-Out Cluster Standard Errors
 
-This readme explains how to compute the leave-cluster-out standard errors for linear regression proposed by [Kline-Saggio-Sølvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf), henceforth KSS. The procedure yields unbiased variance (i.e., squared standard error) estimates, a feature which may prove useful when estimating regression models with few independent clusters. This [document](https://www.dropbox.com/scl/fi/vxyss0tf3h50lpwrp80c0/metrics.pdf?rlkey=ne9yiquzcj3k9d4itx4vzzlm1&dl=0) describes and provides intuition for the variance formula used in this package. The leave out ("crossfit") standard error was first proposed in Remark 1 of KSS. The cluster robust variant was proposed in Remark 3 of KSS and used to derive the variance component estimates reported in Appendix A of that paper.
+This readme explains how to compute the leave-cluster-out standard errors for linear regression proposed by [Kline-Saggio-Sølvsten (2020)](https://eml.berkeley.edu/~pkline/papers/KSS2020.pdf), henceforth KSS. The procedure yields unbiased variance (i.e., squared standard error) estimates, a feature which may prove useful when estimating regression models with few independent clusters. This [document](https://www.dropbox.com/scl/fi/vxyss0tf3h50lpwrp80c0/metrics.pdf?rlkey=ne9yiquzcj3k9d4itx4vzzlm1&dl=0) describes and provides intuition for the variance formula used in this package. The leave-out ("cross-fit") standard error was first proposed in Remark 1 of KSS. The cluster robust variant was proposed in Remark 3 of KSS and used to derive the variance component estimates reported in Appendix A of that paper.
 
 
 # The `KSS_SE` Function
@@ -8,11 +8,13 @@ This readme explains how to compute the leave-cluster-out standard errors for li
 The function `KSS_SE` is a `MATLAB` function that takes as input the following:
 * `y` outcome variable. Dimension is $N\times 1$.
 * `D` treatment(s) of interest. Dimension is $N\times N_{D}$.
-* `clusterID` variable that indexes clusters. Dimension is $N\times 1$.
-* `indexID` variable that indexes observations within clusters. Dimension is $N\times 1$.
-* `controls` additional controls. Dimension is $N\times N_{P}$.
+* `clusterID` variable that indexes clusters (e.g state). Dimension is $N\times 1$.
+* `indexID`  ---OPTIONAL: other cluster dimension (e.g. year). Dimension is $N\times 1$.
+* `controls` ---OPTIONAL: additional controls. Dimension is $N\times N_{P}$.
 
 The function computes the KSS leave-out standard errors on the regression coefficients associated with `D` after controlling for `controls`, `clusterID` fixed effects as well as `indexID` fixed effects. These SEs are clustered at the level indexed by `clusterID`.  The inputs  `indexID` and `controls` are optional and can be supplied as empty arrays `[]`.
+
+The user needs to make sure that all the coefficients associated with `D` remain estimable after leaving out a particular cluster indexed by `clusterID`, see also the discussion provided <a href='#collinearity'>here</a>.
 
 We now demonstrate the functioning of  `KSS_SE` in an example where one is interested in fitting an event study model of the form
 
@@ -328,6 +330,10 @@ dlmwrite(s, out, 'delimiter', '\t', 'precision', 16); %% saving results in a  .c
 
 The code `KSS_SE` prints the event-study coefficients (normalized relative to the year expansion of Medicaid) along with KSS standard errors, clustered at the state level. As shown in KSS, the (square) of the standard errors printed by `KSS_SE`, represent an unbiased estimate of true sampling variability of these OLS estimates. The usual White (1980) standard errors that are reported by standard packages (e.g. `reghdfe`)  are consistent but are typically biased in finite samples, especially when the number of clusters is small. We demonstrate this point by means of a montecarlo simulation below.
 
+<a id='collinearity'></a>
+# Leave-Out Estimability
+
+In this application, all of the event-study coefficients remains estimable even after leaving out a particular cluster $j\in{1,..., J}$. If that is not the case (e.g. we want to estimate the effect of a policy 20 years after its implementation but we observe only one state 20 years after it it implemented the policy) then `KSS_SE` will return an error. The user therefore needs to make sure that all the coefficients associated with `D` remain estimable even after leaving out from the regression a particular cluster.
 
 # Montecarlo Exercise
 
@@ -366,43 +372,47 @@ coeff_sim                       = mean(coeff_sim)'; %mean of OLS
 V_sim                           = mean(V_sim)'; %mean of leave-out estimates of the (squared) SE
 V_sim_naive                     = mean(V_sim_naive)'; %mean of White estimates of the (squared) SE
 myArray                         = [true_coeff coeff_sim  true_V V_sim V_sim_naive];
-a2t                             = array2table(myArray,"VariableNames",["True Event-Study Coefficients","Mean of OLS","Variance of OLS" "Leave-Out Estimate of Variance of OLS" "White Estimate of Variance of OLS"]);
+a2t                             = array2table(myArray,"VariableNames",["True Coefficients","Mean of OLS","Variance of OLS" "Leave-Out Estimate of Variance" "White Estimate of Variance"]);
 disp(a2t)
 ```
 
-        True Event-Study Coefficients    Mean of OLS    Variance of OLS    Leave-Out Estimate of Variance of OLS    White Estimate of Variance of OLS
-        _____________________________    ___________    _______________    _____________________________________    _________________________________
-                       0                  -0.0040556         0.17789                       0.18336                                0.15496            
-                       0                  -0.0060226         0.11289                       0.11285                                0.10328            
-                       0                  -0.0032263        0.087846                      0.091568                               0.084712            
-                       0                  -0.0043019        0.071437                      0.073905                               0.068848            
-                       0                  -0.0067741        0.057836                      0.059208                               0.055361            
-                       0                  -0.0073806        0.046266                      0.047634                               0.044581            
-                       0                  -0.0050668        0.037065                      0.037752                               0.035442            
-                       0                  -0.0039773        0.028622                      0.029154                               0.027551            
-                       0                  -0.0046994        0.020837                      0.021864                               0.020752            
-                       0                  -0.0030443        0.015227                      0.015761                               0.015135            
-                       0                  -0.0020936        0.010429                      0.010631                               0.010387            
-                       0                  -0.0013337       0.0064955                     0.0066429                              0.0065804            
-                       0                 -0.00096364       0.0034774                     0.0035895                              0.0036595            
-                       0                 -0.00076059        0.001394                     0.0014217                              0.0015563            
-                     0.1                     0.10078       0.0013832                     0.0013565                              0.0014524            
-                    0.11                     0.11112       0.0030014                     0.0029861                               0.002991            
-                    0.12                     0.12166       0.0056235                      0.005574                              0.0054069            
-                    0.13                     0.13176       0.0091013                     0.0091083                              0.0086453            
-                    0.14                     0.14252        0.013752                       0.01364                               0.012845            
-                    0.15                     0.15309        0.018948                      0.019172                               0.017908            
-                    0.16                     0.16308        0.025667                      0.025763                                  0.024            
-                    0.17                     0.17396        0.033522                      0.033401                               0.031041            
-                    0.18                       0.184        0.042456                      0.042037                                0.03911            
-                    0.19                     0.19353        0.052811                      0.052009                                0.04814            
-                     0.2                     0.20339        0.064517                      0.063204                               0.058305            
-                    0.21                     0.21427        0.076588                        0.0754                               0.069503            
-                    0.22                      0.2244        0.090933                      0.089247                               0.081844            
-                    0.23                     0.23358         0.10739                       0.10453                               0.095597            
-                    0.24                     0.24487         0.12431                       0.12345                                0.11073            
-                    0.25                     0.25613         0.16967                       0.16682                                0.14333            
+    Starting parallel pool (parpool) using the 'local' profile ...
+    Connected to the parallel pool (number of workers: 6).
+        True Coefficients    Mean of OLS    Variance of OLS    Leave-Out Estimate of Variance    White Estimate of Variance
+        _________________    ___________    _______________    ______________________________    __________________________
+                 0           -0.0034972          0.17833                   0.18322                         0.15495         
+                 0           -0.0058781          0.11336                   0.11287                         0.10336         
+                 0           -0.0025856         0.088164                  0.091534                        0.084745         
+                 0           -0.0036835         0.071591                  0.073881                        0.068837         
+                 0            -0.006225         0.058015                  0.059163                        0.055371         
+                 0           -0.0072952         0.046329                  0.047619                        0.044583         
+                 0           -0.0047942         0.037149                  0.037721                        0.035435         
+                 0           -0.0041232         0.028629                  0.029111                         0.02753         
+                 0           -0.0047115         0.020869                  0.021835                         0.02074         
+                 0           -0.0030175         0.015246                  0.015741                        0.015119         
+                 0           -0.0019857         0.010454                  0.010619                        0.010371         
+                 0           -0.0014574        0.0065195                 0.0066325                       0.0065764         
+                 0           -0.0010792        0.0034737                 0.0035842                       0.0036569         
+                 0            -0.000614        0.0013899                  0.001417                       0.0015541         
+               0.1              0.10086        0.0013755                 0.0013531                       0.0014509         
+              0.11              0.11125        0.0029936                 0.0029879                       0.0029923         
+              0.12              0.12177        0.0056129                 0.0055757                       0.0054122         
+              0.13              0.13188        0.0090921                 0.0091126                       0.0086568         
+              0.14              0.14281         0.013732                  0.013658                        0.012865         
+              0.15              0.15334         0.018973                  0.019184                        0.017936         
+              0.16              0.16327         0.025664                  0.025786                         0.02404         
+              0.17              0.17436         0.033544                  0.033452                        0.031089         
+              0.18               0.1843         0.042526                  0.042071                         0.03917         
+              0.19              0.19395         0.052884                  0.052064                        0.048213         
+               0.2               0.2037         0.064651                  0.063237                          0.0584         
+              0.21              0.21486          0.07669                   0.07546                        0.069608         
+              0.22              0.22472          0.09113                  0.089294                        0.081998         
+              0.23              0.23389          0.10759                   0.10464                        0.095733         
+              0.24              0.24549          0.12445                   0.12367                           0.111         
+              0.25              0.25683          0.16969                   0.16697                         0.14373         
 
 
 One can see from the output above that the leave-out variance estimator is unbiased while the White SEs are downward biased. The discrepancy between the two variance estimators is particularly evident when looking at the extremal event-study coefficients (e.g., the last 2-3 rows of the table above). This phenomenon is to be expected given the unbalanced nature of the design: there are very few clusters for which we are able to observe outcomes, say, 15 years after the implementation of the policy. 
+
+
 
