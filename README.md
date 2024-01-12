@@ -7,7 +7,7 @@ See this [vignette](doc/VIGNETTE.pdf) for a description of the package.
 
 ## Julia Version
 
-The Julia version of the package can be 
+The Julia version of the package (developed by Paul Courcera) can be 
 found [here](https://github.com/HighDimensionalEconLab/VarianceComponentsHDFE.jl). On the same
 page, one can find an executable that permits estimation of the leave-out correction even if the user does not have MATLAB or JULIA. 
 
