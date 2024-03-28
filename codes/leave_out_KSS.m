@@ -1,4 +1,4 @@
-function tabella = leave_out_KSS(y,id,firmid,firmid_orig,controls,leave_out_level,type_algorithm,simulations_JLA,filename,union_status,type_decom)
+function tabella = leave_out_KSS(y,id,firmid,controls,leave_out_level,type_algorithm,simulations_JLA,filename,group_indicator,group_index)
 
 if 1 == 1
 %Listing options
@@ -39,7 +39,7 @@ lagfirmid(gcs==1)=NaN; %%first obs for each worker
 
 %Find connected_set
 K=size(controls,2);
-controls=[controls firmid_orig union_status];
+controls=[controls group_indicator];
 [y,id,firmid,id_old,firmid_old,controls] = connected_set(y,id,firmid,lagfirmid,controls);
 
 
@@ -71,9 +71,8 @@ id=id(sel,:);
 id_old=id_old(sel,:);
 firmid_old=firmid_old(sel,:);
 controls=controls(sel,:);
-union_status=controls(:,end);
-firmid_orig=controls(:,end-1);
-controls=controls(:,1:end-2);
+group_indicator=controls(:,end);
+controls=controls(:,1:end-1);
 
 %Resetting ids one last time.
 [~,~,n]=unique(firmid);
@@ -109,24 +108,14 @@ clear id_mover
 %Summarize
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
-if type_decom == 0
-s=['Info on the leave one out connected set (Non-Union Jobs at Non-Union Firms):'];
-disp(s);
-end
-if type_decom == 1
-s=['Info on the leave one out connected set (Union Jobs at Union Firms):'];
-disp(s);
-end
-if type_decom == 2
-s=['Info on the leave one out connected set (Non-Union Jobs at Union Firms):'];
-disp(s);
-end
+s=['Info on person-year obs in the leave one out connected set and that are associated with group:' num2str(group_index)];
+disp(s)
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
-sel = union_status == type_decom;
-s=['mean wage: ' num2str(mean(y(sel)))];
+sel = group_indicator == group_index;
+s=['mean outcome: ' num2str(mean(y(sel)))];
 disp(s)
-s=['variance of wage: ' num2str(var(y(sel)))];
+s=['variance of outcome: ' num2str(var(y(sel)))];
 var_den = var(y(sel));
 disp(s)
 id_sel = id(sel);
@@ -140,13 +129,13 @@ disp(s);
 s=['# of Person Year Observations: ' num2str(sum(sel))];
 disp(s);
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
-disp(s)
+disp(s);
+disp(s);
 N_of_workers    = max(id_sel);
 N_of_firms      = max(firmid_sel);
 N_of_OBS        = sum(sel);
 mean_outcome    = mean(y(sel));
 var_outcome     = var_den;
-
 %% STEP 3: Residualizing and Collapsing
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
@@ -167,15 +156,9 @@ disp(s);
             b           = pcg(xx,xy,1e-10,1000);
    end
    y=y-X(:,N+J:end)*b(N+J:end); %variance decomposition will be based on this residualized outcome.
-   cs=[id_old firmid_old firmid_orig union_status y];
+   cs=[id_old firmid_old group_indicator y];
 
 
-  %Matrices for dual connected firms
- if  type_decom == 2
-    [X_union, X_non_union,n_double]                   = dual_connected_union(firmid,firmid_orig,union_status,N);
- end
-    
-   
 %Collapsing
 %If the user wants to run the KSS correction leaving a match out, we're
 %going to collapse the data down to match-means and weight this collapsed
@@ -192,7 +175,6 @@ if strcmp(leave_out_level,'matches')
    firmid_old           = accumarray(match_id,firmid_old,[],@(x)mean(x));
    y					= accumarray(match_id,y,[],@(x)mean(x));
    y_untransformed      = y;
-   firmid_orig	        = accumarray(match_id,firmid_orig,[],@(x)mean(x));
 end
 
 %% STEP 4: COMPUTATION OF (Pii,Bii)
@@ -212,7 +194,7 @@ end
 %Weighting Matrices
 	X_fe=[sparse(NT,N) X(:,N+1:end)];
     X_fe=repelem(X_fe,peso,1); %weight by lenght of the spell
-    sel = union_status == type_decom;
+    sel = group_indicator == group_index;
     X_fe=X_fe(sel,:);
     X_pe=[X(:,1:N) sparse(NT,J-1)];
     X_pe=repelem(X_pe,peso,1); %weight by lenght of the spell
@@ -223,157 +205,131 @@ end
     xx=X'*X;
     disp('Calculating the statistical leverages...')
     Lchol               = lchol_iter(xx); %preconditioner for Laplacian matrices.   
-     tic    
-if n_of_parameters==1
+    tic    
+    if n_of_parameters==1
     [Pii, Mii, correction_JLA, Bii_fe]=leverages(X_fe,X_pe,X,xx,Lchol,type_algorithm,simulations_JLA);
-end
+    end
 
-if n_of_parameters==2
+    if n_of_parameters==2
     [Pii, Mii, correction_JLA, Bii_fe, Bii_cov]=leverages(X_fe,X_pe,X,xx,Lchol,type_algorithm,simulations_JLA);
-end
+    end
 
-if n_of_parameters==3
+    if n_of_parameters==3
     [Pii, Mii, correction_JLA, Bii_fe, Bii_cov, Bii_pe]=leverages(X_fe,X_pe,X,xx,Lchol,type_algorithm,simulations_JLA);
-end
-
- %Matrices for dual connected firms
- if  type_decom == 2
-    [~, ~, ~, Bii_union, Bii_cov_union, Bii_non_union]= leverages(X_union,X_non_union,X,xx,Lchol,type_algorithm,simulations_JLA);
- end
-
-
-
-disp('Done!')
-toc
+    end
+    disp('Done!')
+    toc
 
 
 %% STEP 5: ESTIMATION OF VARIANCE COMPONENTS
 %We use the statistical leverages, Pii, and the Bii associated with a given
 %variance component to bias correct these quantities using the KSS approach
-
-X_fe                = [sparse(NT,N) F];
-X_fe                = repelem(X_fe,peso,1); %weight by lenght of the spell
-X_fe                = X_fe(sel,:);
-X_pe                = [D sparse(NT,J)];
-X_pe                = repelem(X_pe,peso,1); %weight by lenght of the spell
-X_pe                = X_pe(sel,:);
-S                   = speye(J-1);
-S                   = [S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
-X                   = [D,F*S]; %back to grounded Laplacian. 
-X                   = PESO_MAT*X;% TO ACCOUNT FOR WEIGHTING (FGLS)
-xx                  = X'*X;
-xy                  = X'*y;
-Lchol               = lchol_iter(xx);
-if size(Lchol,1) > 0 % if one of the -ichol()- evaluations succeeded, then use preconditioner
-        b           = pcg(xx,xy,1e-10,1000,Lchol,Lchol');
-else 
-        b           = pcg(xx,xy,1e-10,1000);
-end
-eta                 = y-X*b;
-eta_h				= eta./Mii; %Leave one out residual
-sigma_i				= (y-mean(y)).*eta_h; %KSS estimate of individual variance.
-sigma_i				= sigma_i.*correction_JLA; %to adjust for non-linear bias induced by JLA.
-
-X_fe                = X_fe(:,1:end-1);
-X_pe                = X_pe(:,1:end-1);
-pe                  = b(1:N);
-pe                  = D*pe;
-fe                  = b(N+1:end);
-fe                  = [fe;0];
-fe                  = F*fe;
-
-if strcmp(leave_out_level,'matches')
-    T               = accumarray(id,1);
-    stayers         = T==1;
-    stayers         = stayers(id);
-    sigma_stayers   = sigma_for_stayers(y_py,id,firmid,peso,b);
-    sigma_i(stayers)= sigma_stayers(stayers); 
+    X_fe                = [sparse(NT,N) F];
+    X_fe                = repelem(X_fe,peso,1); %weight by lenght of the spell
+    X_fe                = X_fe(sel,:);
+    X_pe                = [D sparse(NT,J)];
+    X_pe                = repelem(X_pe,peso,1); %weight by lenght of the spell
+    X_pe                = X_pe(sel,:);
+    S                   = speye(J-1);
+    S                   = [S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
+    X                   = [D,F*S]; %back to grounded Laplacian. 
+    X                   = PESO_MAT*X;% TO ACCOUNT FOR WEIGHTING (FGLS)
+    xx                  = X'*X;
+    xy                  = X'*y;
+    Lchol               = lchol_iter(xx);
+    if size(Lchol,1) > 0 % if one of the -ichol()- evaluations succeeded, then use preconditioner
+            b           = pcg(xx,xy,1e-10,1000,Lchol,Lchol');
+    else 
+            b           = pcg(xx,xy,1e-10,1000);
+    end
+    eta                 = y-X*b;
+    eta_h				= eta./Mii; %Leave one out residual
+    sigma_i				= (y-mean(y)).*eta_h; %KSS estimate of individual variance.
+    sigma_i				= sigma_i.*correction_JLA; %to adjust for non-linear bias induced by JLA.
     
-end
-
-if n_of_parameters==1
-    [sigma_2_psi_AKM, sigma2_psi]           = kss_quadratic_form(sigma_i,X_fe,X_fe,b,Bii_fe);
-end
-
-if n_of_parameters==2
-    [sigma_2_psi_AKM, sigma2_psi]           = kss_quadratic_form(sigma_i,X_fe,X_fe,b,Bii_fe);
-    [sigma_alpha_psi_AKM, sigma_psi_alpha]  = kss_quadratic_form(sigma_i,X_fe,X_pe,b,Bii_cov);
-end
-
-if  n_of_parameters==3
-    [sigma_2_psi_AKM, sigma2_psi]           = kss_quadratic_form(sigma_i,X_fe,X_fe,b,Bii_fe);
-    [sigma_alpha_psi_AKM, sigma_psi_alpha]  = kss_quadratic_form(sigma_i,X_fe,X_pe,b,Bii_cov);
-    [sigma_2_alpha_AKM, sigma2_alpha]       = kss_quadratic_form(sigma_i,X_pe,X_pe,b,Bii_pe);
-end
-if  type_decom == 2
-    [~, var_firm_effects_dual_union]        = kss_quadratic_form(sigma_i,X_union,X_union,b,Bii_union);
-    [~, var_firm_effects_dual_non_union]    = kss_quadratic_form(sigma_i,X_non_union,X_non_union,b,Bii_non_union);
-    [~, cov_firm_effects_dual]              = kss_quadratic_form(sigma_i,X_union,X_non_union,b,Bii_cov_union);
-    all_for_this                            = cov_firm_effects_dual/(sqrt(var_firm_effects_dual_union)*sqrt(var_firm_effects_dual_non_union));
-end
-
+    X_fe                = X_fe(:,1:end-1);
+    X_pe                = X_pe(:,1:end-1);
+    pe                  = b(1:N);
+    pe                  = D*pe;
+    fe                  = b(N+1:end);
+    fe                  = [fe;0];
+    fe                  = F*fe;
+    
+    if strcmp(leave_out_level,'matches')
+        T               = accumarray(id,1);
+        stayers         = T==1;
+        stayers         = stayers(id);
+        sigma_stayers   = sigma_for_stayers(y_py,id,firmid,peso,b);
+        sigma_i(stayers)= sigma_stayers(stayers); 
+        
+    end
+    
+    if n_of_parameters==1
+        [sigma_2_psi_AKM, sigma2_psi]           = kss_quadratic_form(sigma_i,X_fe,X_fe,b,Bii_fe);
+    end
+    
+    if n_of_parameters==2
+        [sigma_2_psi_AKM, sigma2_psi]           = kss_quadratic_form(sigma_i,X_fe,X_fe,b,Bii_fe);
+        [sigma_alpha_psi_AKM, sigma_psi_alpha]  = kss_quadratic_form(sigma_i,X_fe,X_pe,b,Bii_cov);
+    end
+    
+    if  n_of_parameters==3
+        [sigma_2_psi_AKM, sigma2_psi]           = kss_quadratic_form(sigma_i,X_fe,X_fe,b,Bii_fe);
+        [sigma_alpha_psi_AKM, sigma_psi_alpha]  = kss_quadratic_form(sigma_i,X_fe,X_pe,b,Bii_cov);
+        [sigma_2_alpha_AKM, sigma2_alpha]       = kss_quadratic_form(sigma_i,X_pe,X_pe,b,Bii_pe);
+    end
 
 %% STEP 6: PRINTING RESULTS
-s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
-disp(s);
-disp(s);
-if type_decom == 0
-s=['Variance Decomposition (Non-Union Jobs at Non-Union Firms):'];
-disp(s);
-end
-if type_decom == 1
-s=['Variance Decomposition (Union Jobs at Union Firms):'];
-disp(s);
-end
-if type_decom == 2
-s=['Variance Decomposition (Non-Union Jobs at Union Firms):'];
-disp(s);
-end
-s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
-disp(s);
-disp(s);
-s=['PLUG-IN ESTIMATES (BIASED)'];
-disp(s)
-s=['Variance of Firm Effects: ' num2str(sigma_2_psi_AKM)];
-disp(s)
-if n_of_parameters>=2
-s=['Covariance of Firm, Person Effects: ' num2str(sigma_alpha_psi_AKM)];
-disp(s);
-end
-if n_of_parameters==3
-s=['Variance of Person Effects: ' num2str(sigma_2_alpha_AKM)];
-disp(s);
-s=['Correlation of Firm, Person Effects: ' num2str(sigma_alpha_psi_AKM/(sqrt(sigma_2_psi_AKM)*sqrt(sigma_2_alpha_AKM)))];
-disp(s);
-s=['Fraction of Variance explained by Worker and Firm Effects: ' num2str((sigma_2_psi_AKM+2*sigma_alpha_psi_AKM+sigma_2_alpha_AKM)/var_den)];
-disp(s);
-end
-s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
-disp(s);
-disp(s);
-s=['BIAS CORRECTED ESTIMATES'];
-disp(s)
-s=['Variance of Firm Effects: ' num2str(sigma2_psi)];
-disp(s);
-if n_of_parameters>=2
-s=['Covariance of Firm and Person Effects: ' num2str(sigma_psi_alpha)];
-disp(s);
-end
-if n_of_parameters==3
-s=['Variance of Person Effects: ' num2str(sigma2_alpha)];
-disp(s);
-s=['Correlation of Firm, Person Effects: ' num2str(sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)))];
-disp(s);
-s=['Fraction of Variance explained by Worker and Firm Effects: ' num2str((sigma2_psi+2*sigma_psi_alpha+sigma2_alpha)/var_den)];
-disp(s);
-R2=(sigma2_psi+2*sigma_psi_alpha+sigma2_alpha)/var_den;
-end
+    s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
+    disp(s);
+    disp(s);
+    s=['Variance Decomposition for group: ' num2str(group_index)];
+    disp(s);
+    s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
+    disp(s);
+    disp(s);
+    s=['PLUG-IN ESTIMATES (BIASED)'];
+    disp(s)
+    s=['Variance of Firm Effects: ' num2str(sigma_2_psi_AKM)];
+    disp(s)
+    if n_of_parameters>=2
+    s=['Covariance of Firm, Person Effects: ' num2str(sigma_alpha_psi_AKM)];
+    disp(s);
+    end
+    if n_of_parameters==3
+    s=['Variance of Person Effects: ' num2str(sigma_2_alpha_AKM)];
+    disp(s);
+    s=['Correlation of Firm, Person Effects: ' num2str(sigma_alpha_psi_AKM/(sqrt(sigma_2_psi_AKM)*sqrt(sigma_2_alpha_AKM)))];
+    disp(s);
+    s=['Fraction of Variance explained by Worker and Firm Effects: ' num2str((sigma_2_psi_AKM+2*sigma_alpha_psi_AKM+sigma_2_alpha_AKM)/var_den)];
+    disp(s);
+    end
+    s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
+    disp(s);
+    disp(s);
+    s=['BIAS CORRECTED ESTIMATES'];
+    disp(s)
+    s=['Variance of Firm Effects: ' num2str(sigma2_psi)];
+    disp(s);
+    if n_of_parameters>=2
+    s=['Covariance of Firm and Person Effects: ' num2str(sigma_psi_alpha)];
+    disp(s);
+    end
+    if n_of_parameters==3
+    s=['Variance of Person Effects: ' num2str(sigma2_alpha)];
+    disp(s);
+    s=['Correlation of Firm, Person Effects: ' num2str(sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)))];
+    disp(s);
+    s=['Fraction of Variance explained by Worker and Firm Effects: ' num2str((sigma2_psi+2*sigma_psi_alpha+sigma2_alpha)/var_den)];
+    disp(s);
+    s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
+    disp(s);
+    disp(s);
+    end
 
 %% STEP 7: SAVE OUTPUT
 %Export csv with data from leave out connected set with person, firm
 %effects and statistical leverages
-if type_decom == 0
-
 fe      = repelem(fe,peso,1); %wback to person-year space
 pe      = repelem(pe,peso,1); %wback to person-year space
 firmid  = repelem(firmid,peso,1); %wback to person-year space
@@ -383,18 +339,9 @@ cs      = full(cs);
 s=['data/' filename '.csv'];
 dlmwrite(s, cs, 'delimiter', '\t', 'precision', 16);
 
-myMatrix = [sigma_i,y_untransformed,D,F*S];
-myMatrix = repelem(myMatrix,peso,1); 
-filename = ['data/designMatrix ' filename];
-save( filename, 'myMatrix' )
-
-end
-
-if type_decom == 2
-tabella = [N_of_workers; N_of_firms; N_of_OBS; n_double;-9;mean_outcome; var_outcome;-9;-9; sqrt(sigma2_psi); sqrt(sigma2_alpha);  sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)); all_for_this; -9;-9; sigma2_psi/var_den; sigma2_alpha/var_den; (2*sigma_psi_alpha)/var_den];
-end
-
-if type_decom < 2
+%Export variance decomposition within each subgroup
 tabella = [N_of_workers; N_of_firms; N_of_OBS; -9;-9;mean_outcome; var_outcome;-9;-9; sqrt(sigma2_psi); sqrt(sigma2_alpha);  sigma_psi_alpha/(sqrt(sigma2_psi)*sqrt(sigma2_alpha)); -9; -9;-9; sigma2_psi/var_den; sigma2_alpha/var_den; (2*sigma_psi_alpha)/var_den];
-end
-end
+tabella=full(tabella);
+s=['results/variance_decomp___GROUP' num2str(group_index) '___' filename '.csv'];
+dlmwrite(s, tabella, 'delimiter', '\t', 'precision', 16);
+
