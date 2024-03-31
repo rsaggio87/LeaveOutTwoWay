@@ -1,18 +1,10 @@
-function tabella = leave_out_KSS(y,id,firmid,controls,leave_out_level,type_algorithm,simulations_JLA,filename,group_indicator,group_index)
+function tabella = leave_out_KSS_coll(y,id,firmid,Tspell,leave_out_level,type_algorithm,simulations_JLA,filename,group_indicator,group_index)
 
 if 1 == 1
 %Listing options
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
-disp('Running KSS Correction with the following options')
-if strcmp(leave_out_level,'matches') 
-s=['Leave Out Strategy: Leave match out'];
-disp(s);
-end
-if strcmp(leave_out_level,'obs') 
-s=['Leave Out Strategy: Leave person-year observation out'];
-disp(s);
-end
+disp('Running KSS Correction on data collapsed at the match level')
 if strcmp(type_algorithm,'exact')
 s=['Algorithm for Computation of Statistical Leverages: Exact'];
 disp(s);
@@ -38,8 +30,7 @@ lagfirmid(gcs==1)=NaN; %%first obs for each worker
 
 
 %Find connected_set
-K=size(controls,2);
-controls=[controls group_indicator];
+controls=[group_indicator Tspell];
 [y,id,firmid,id_old,firmid_old,controls] = connected_set(y,id,firmid,lagfirmid,controls);
 
 
@@ -61,7 +52,8 @@ disp(s);
 [results,y,firmid,id,id_old,firmid_old,controls] = evalc('pruning_unbal_v3(y,firmid,id,id_old,firmid_old,controls)');
 
 
-%%%Drop stayers with a single person year observation
+%% Dropping stayers from the analysis
+disp('Dropping stayers....')
 T=accumarray(id,1);
 T=T(id);
 sel=T>1;
@@ -71,9 +63,8 @@ id=id(sel,:);
 id_old=id_old(sel,:);
 firmid_old=firmid_old(sel,:);
 controls=controls(sel,:);
-group_indicator=controls(:,end);
-controls=controls(:,1:end-1);
-
+group_indicator=controls(:,1);
+peso=controls(:,2);
 %Resetting ids one last time.
 [~,~,n]=unique(firmid);
 firmid=n;
@@ -81,43 +72,29 @@ firmid=n;
 id=n; 
 
 %Important Auxiliaries
-gcs = [NaN; id(1:end-1)];
-gcs = id~=gcs;
-lagfirmid=[NaN; firmid(1:end-1)];
-lagfirmid(gcs==1)=NaN; %%first obs for each worker
-stayer=(firmid==lagfirmid);
-stayer(gcs==1)=1;
-stayer=accumarray(id,stayer);
-T=accumarray(id,1);
-stayer=T==stayer;
-movers=stayer~=1;
-movers=movers(id);
-T=T(id);
-id_movers=id(movers);
-[~,~,n]=unique(id_movers);
-Nmovers=max(n);
-NT=size(y,1);
-D=sparse(1:NT,id',1);
-N=size(D,2);
-F=sparse(1:NT,firmid',1);
-J=size(F,2);
-var_den=var(y);
-clear id_mover
-%If the model includes controls, we're going to estimate the coefficients
-%of those controls and partial them out as follows
-%Summarize
+conteggio_matches           = sum(group_indicator==group_index);
+y_expand                    = repelem(y,peso,1);
+group_indicator_coll        = group_indicator;
+group_indicator             = repelem(group_indicator,peso,1);
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
-s=['Info on person-year obs in the leave one out connected set and that are associated with group:' num2str(group_index)];
+s=['Summary-Stats-->group:' num2str(group_index) ' (KSS leave-out connected set; all stats are person-year weighted)'];
 disp(s)
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s)
 sel = group_indicator == group_index;
-s=['mean outcome: ' num2str(mean(y(sel)))];
+conteggio_py                = sum(sel);
+
+%% py weighted stats
+s=['mean outcome: ' num2str(mean(y_expand(sel)))];
 disp(s)
-s=['variance of outcome: ' num2str(var(y(sel)))];
-var_den = var(y(sel));
+s=['variance of match means: (might want to adjust this so that it includes also within-job variability) ' num2str(var(y_expand(sel)))];
 disp(s)
+mean_outcome=mean(y_expand(sel));
+var_den=var(y_expand(sel));
+y_expand=[];
+%% count workers and firms in group g
+sel = group_indicator_coll == group_index;
 id_sel = id(sel);
 [~,~,id_sel]=unique(id_sel);
 s=['# of Workers: ' num2str(max(id_sel))];
@@ -126,7 +103,9 @@ id_sel = firmid(sel);
 [~,~,firmid_sel]=unique(id_sel);
 s=['# of Firms: ' num2str(max(firmid_sel))];
 disp(s);
-s=['# of Person Year Observations: ' num2str(sum(sel))];
+s=['# of Person Year Observations: ' num2str(conteggio_py)];
+disp(s);
+s=['# of Matches: ' num2str(conteggio_matches)];
 disp(s);
 s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
 disp(s);
@@ -134,64 +113,29 @@ disp(s);
 N_of_workers    = max(id_sel);
 N_of_firms      = max(firmid_sel);
 N_of_OBS        = sum(sel);
-mean_outcome    = mean(y(sel));
 var_outcome     = var_den;
-%% STEP 3: Residualizing and Collapsing
-s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
-disp(s);
-disp('SECTION 2')
-s=['-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'];
-disp(s);
-disp(s);
-%Residualize
-   S=speye(J-1);
-   S=[S;sparse(-zeros(1,J-1))];  %N+JxN+J-1 restriction matrix 
-   X=[D,F*S,controls];
-   xx=X'*X;
-   xy=X'*y;
-   Lchol=lchol_iter(xx);
-   if size(Lchol,1) > 0 % if one of the -ichol()- evaluations succeeded, then use preconditioner
-            b           = pcg(xx,xy,1e-10,1000,Lchol,Lchol');
-   else 
-            b           = pcg(xx,xy,1e-10,1000);
-   end
-   y=y-X(:,N+J:end)*b(N+J:end); %variance decomposition will be based on this residualized outcome.
-   cs=[id_old firmid_old group_indicator y];
 
 
-%Collapsing
-%If the user wants to run the KSS correction leaving a match out, we're
-%going to collapse the data down to match-means and weight this collapsed
-%data by the length of a given match. 
-
-peso=ones(size(y,1),1);
-y_py=y;
 if strcmp(leave_out_level,'matches') 
-   [~,~,match_id] 		= unique([id firmid],'rows','stable');
-   peso					= accumarray(match_id,1);
-   id					= accumarray(match_id,id,[],@(x)mean(x));
-   firmid			    = accumarray(match_id,firmid,[],@(x)mean(x));
-   id_old               = accumarray(match_id,id_old,[],@(x)mean(x));
-   firmid_old           = accumarray(match_id,firmid_old,[],@(x)mean(x));
-   y					= accumarray(match_id,y,[],@(x)mean(x));
-   y_untransformed      = y;
+   disp('error: you cannot run leave-out matches on an already collapsed data')
 end
 
-%% STEP 4: COMPUTATION OF (Pii,Bii)
+%% STEP 3: COMPUTATION OF (Pii,Bii)
 %This is the computationally expensive part of the code where we compute
 %the terms (Pii,Bii) as defined in KSS.
 
-%Build Design
+%Build Design Matrices
     NT=size(y,1);
     D=sparse(1:NT,id',1);
     F=sparse(1:NT,firmid',1);
+    J = max(firmid);
     S=speye(J-1);
     S=[S;sparse(-zeros(1,J-1))];
     X=[D,F*S]; %shaped in a pure Laplacian format.
     N=size(D,2);
     J=size(F,2);
     
-%Weighting Matrices
+%Weighting Matrices for Variance Components
 	X_fe=[sparse(NT,N) X(:,N+1:end)];
     X_fe=repelem(X_fe,peso,1); %weight by lenght of the spell
     sel = group_indicator == group_index;
@@ -221,7 +165,7 @@ end
     toc
 
 
-%% STEP 5: ESTIMATION OF VARIANCE COMPONENTS
+%% STEP 4: ESTIMATION OF VARIANCE COMPONENTS
 %We use the statistical leverages, Pii, and the Bii associated with a given
 %variance component to bias correct these quantities using the KSS approach
     X_fe                = [sparse(NT,N) F];
@@ -254,15 +198,6 @@ end
     fe                  = b(N+1:end);
     fe                  = [fe;0];
     fe                  = F*fe;
-    
-    if strcmp(leave_out_level,'matches')
-        T               = accumarray(id,1);
-        stayers         = T==1;
-        stayers         = stayers(id);
-        sigma_stayers   = sigma_for_stayers(y_py,id,firmid,peso,b);
-        sigma_i(stayers)= sigma_stayers(stayers); 
-        
-    end
     
     if n_of_parameters==1
         [sigma_2_psi_AKM, sigma2_psi]           = kss_quadratic_form(sigma_i,X_fe,X_fe,b,Bii_fe);
@@ -329,12 +264,8 @@ end
 
 %% STEP 7: SAVE OUTPUT
 %Export csv with data from leave out connected set with person, firm
-%effects and statistical leverages
-fe      = repelem(fe,peso,1); %wback to person-year space
-pe      = repelem(pe,peso,1); %wback to person-year space
-firmid  = repelem(firmid,peso,1); %wback to person-year space
-id      = repelem(id,peso,1);
-cs      = [cs fe pe id firmid];
+%effects
+cs      = [id_old firmid_old fe pe id firmid];
 cs      = full(cs);
 s=['results/' filename '.csv'];
 dlmwrite(s, cs, 'delimiter', '\t', 'precision', 16);
