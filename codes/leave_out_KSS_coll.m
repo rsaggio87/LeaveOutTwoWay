@@ -120,6 +120,9 @@ if strcmp(leave_out_level,'matches')
    disp('error: you cannot run leave-out matches on an already collapsed data')
 end
 
+%% demean
+y = y-mean_outcome;
+
 %% STEP 3: COMPUTATION OF (Pii,Bii)
 %This is the computationally expensive part of the code where we compute
 %the terms (Pii,Bii) as defined in KSS.
