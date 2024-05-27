@@ -18,12 +18,12 @@ if 1 == 1
 %% read data
 namesrc='data/unions_SAKM.csv'; %path to data
 data=importdata(namesrc); %import data
-id=data(:,1); %worker identifiers
-firmid=data(:,2); %firm identifiers (unrestricted interaction of firmid and union dummy)
-id_orig=data(:,3); %original firm identifiers
+id=data(:,1); %worker identifiers (unrestricted interaction of worker id and union dummy)
+firmid=data(:,2); %firm identifiers 
+id_orig=data(:,3); %original worker id identifier
 year=data(:,4);
 y=data(:,5); % outcome variable
-union_status = data(:,6); %0 for non-union job at firm where union share is 0%; 1 for union job; 2 for non-union job at firm with non-zero share of union jobs
+union_status = data(:,6); %0 for non-union job; 1 for union job.
 age=data(:,7);
 clear data
 
