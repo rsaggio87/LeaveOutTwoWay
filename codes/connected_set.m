@@ -53,11 +53,11 @@ end
 A=sparse(lagfirmid(sel),firmid(sel),1); %adjacency matrix
 %make it square
 [m,n]=size(A);
-if m>n
-    A=[A,zeros(m,m-n)];
+if m > n
+A = [A, sparse(m, m - n)];
 end
-if m<n
-    A=[A;zeros(n-m,n)];
+if m < n
+A = [A; sparse(n - m, n)];
 end
 A=max(A,A'); %connections are undirected
 %[sindex, sz]=components(A); %old code using BGL.
